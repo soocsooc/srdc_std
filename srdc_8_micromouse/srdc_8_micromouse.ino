@@ -1,0 +1,53 @@
+// Copyright 2025 RT Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "pico_common.h"
+
+void setup()
+{
+  // デバイス、フラッシュ、パラメータを初期化
+  deviceInit();
+  flashBegin();
+  paramRead();
+  mapCopy();  // 電源を切っても前回の地図から続けられるようにする(§2.61)
+
+  // 起動音を鳴らしてからモーターを無効化
+  motorDisable();
+  buzzerEnable(INC_FREQ);
+  delay(80);
+  buzzerDisable();
+
+  // 起動時はモード選択画面から開始
+  g_misc.mode_select = 1;
+}
+
+void loop()
+{
+  // 待機中はUSBシリアルからのパラメータ設定を受け付ける
+  paramSerialPoll();
+  // 選択中のモードをLEDで表示
+  ledSet(g_misc.mode_select);
+  switch (switchGet()) {
+    case SW_RM:
+      // SW1で次のモードへ移動(15の次は1)
+      g_misc.mode_select = g_misc.buttonInc(g_misc.mode_select, 15, 1);
+      break;
+    case SW_CM:
+      // SW2で選択したモードを実行(走行モードはプリセットを選んでから)
+      g_misc.buttonOk();
+      g_misc.modeRun(g_misc.mode_select);
+      break;
+  }
+  delay(1);
+}
