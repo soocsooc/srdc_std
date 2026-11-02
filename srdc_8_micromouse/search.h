@@ -20,13 +20,8 @@
 class SEARCH
 {
 public:
-  void lefthand(void);
   void lefthandGetWall(char gx, char gy, char gx2, char gy2);
-  void adachi(char gx, char gy, char gx2, char gy2);
-  void lefthandSlalom(void);
-  void adachiSlalom(char gx, char gy, char gx2, char gy2);
-  // adachi()のcase frontのみoneStepDynamic()に置き換えた版。adachi()自体は無変更。
-  // 詳細は設計メモ §4参照。
+  // 足立法。前進は前壁が見えたら区画境界とみなすoneStepDynamic()。詳細は設計メモ §4参照。
   void adachiDynamic(char gx, char gy, char gx2, char gy2);
   // adachiDynamic()の旋回をslalomCell()にした版。詳細は設計メモ §3参照。
   void adachiSlalomDynamic(char gx, char gy, char gx2, char gy2);

@@ -88,7 +88,7 @@ void FAST::run(short gx, short gy, short gx2, short gy2)
       straight_count * SECTION, turn_speed, g_run.max_speed, turn_speed);
   }
   // 復路の探索が最初の向きを未知の壁で決めないよう、入ったゴール区画の壁を記録する(設計メモ §11)
-  g_map.wallSet(g_sensor.sen_fr.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
+  g_map.wallSet(g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
   g_run.decelerate(HALF_SECTION, turn_speed);
 }
 
@@ -147,7 +147,7 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
         }
         g_run.decelerate(HALF_SECTION, g_run.speed);
         g_search.turnBack(
-          g_sensor.sen_fr.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
+          g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
         g_run.accelerate(HALF_SECTION, g_run.slalom_speed);
         break;
       case loca_dir_error:
@@ -162,9 +162,9 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
   if (straight_count > 0) {
     g_run.straight(straight_count * SECTION, g_run.speed, g_run.max_speed, stop_speed);
   }
-  // ゴール区画の壁を記録する(run()と同じ、設計メモ §11)。側壁は復路のモード9と同じth_wall_slalomで判定
+  // ゴール区画の壁を記録する(run()と同じ、設計メモ §11)。側壁は復路のモード3と同じth_wall_slalomで判定
   g_map.wallSet(
-    g_sensor.sen_fr.is_wall, g_sensor.sen_r.value > g_sensor.sen_r.th_wall_slalom,
+    g_sensor.sen_f.is_wall, g_sensor.sen_r.value > g_sensor.sen_r.th_wall_slalom,
     g_sensor.sen_l.value > g_sensor.sen_l.th_wall_slalom);
   g_run.decelerate(HALF_SECTION, g_run.speed);
 }

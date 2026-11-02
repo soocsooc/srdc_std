@@ -147,8 +147,8 @@ static void sensorUpdate(void)
   const int cy = (int)floor((double)(pose.y + DY[d] * LOOKAHEAD) / SECTION);
   const bool f = isWall(cx, cy, d), r = isWall(cx, cy, (d + 1) & 3),
              l = isWall(cx, cy, (d + 3) & 3);
-  g_sensor.sen_fr.is_wall = g_sensor.sen_fl.is_wall = f;
-  g_sensor.sen_fr.value = g_sensor.sen_fl.value = f ? 200 : 0;
+  g_sensor.sen_f.is_wall = f;
+  g_sensor.sen_f.value = f ? 200 : 0;
   g_sensor.sen_r.is_wall = r;
   g_sensor.sen_l.is_wall = l;
   g_sensor.sen_r.value = r ? g_sensor.sen_r.th_wall_slalom + 50 : 0;
@@ -431,7 +431,7 @@ int main(int argc, char ** argv)
   g_sensor.sen_l.th_wall_slalom = TH_SEN_L_SLALOM_INIT;
 
   // 探索モードのあと、その地図で最短モードを走らせる(最短モードの帰りの探索で地図が変わるので毎回戻す)
-  const int search_modes[] = {2, 6, 8, 9}, fast_modes[] = {3, 7};
+  const int search_modes[] = {2, 3}, fast_modes[] = {4, 5};
   std::map<int, Stat> stats;
   unsigned char searched_map[16][16];
   for (long i = 0; i < n; i++) {

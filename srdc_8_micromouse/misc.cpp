@@ -90,10 +90,10 @@ unsigned char MISC::presetSelect(void)
 }
 
 // 走行モードはプリセットを選び、速度・加速度をベース値×%にして実行する。終了後にベース値へ戻すので、
-// モード1・2のようにmodeExec()が入れ子になっても二重に掛からない(設計メモ §12)
+// modeExec()が入れ子になっても二重に掛からない(設計メモ §12)
 void MISC::modeRun(int mode)
 {
-  if ((mode < 1) || (mode > 9)) {
+  if ((mode < 1) || (mode > MODE_RUN_MAX)) {
     modeExec(mode);
     return;
   }
@@ -128,17 +128,13 @@ void MISC::modeRun(int mode)
 void MISC::modeListPrint(void)
 {
   static const char * const names[] = {
-    "1: lefthand",
+    "1: lefthand (get wall)",
     "2: adachi search",
-    "3: fast run",
-    "4: lefthand (get wall)",
-    "5: lefthand slalom",
-    "6: adachi search slalom",
-    "7: fast run slalom",
-    "8: adachi search dynamic",
-    "9: adachi search dynamic slalom",
-    "10: erase map",
-    "15: adjust menu",
+    "3: adachi search slalom",
+    "4: fast run",
+    "5: fast run slalom",
+    "6: erase map",
+    "7: adjust menu",
   };
   for (const char * n : names) Serial.println(n);
 }
@@ -146,87 +142,19 @@ void MISC::modeListPrint(void)
 // 選択された走行・調整モードを実行
 void MISC::modeExec(int mode)
 {
-  // 実行するモードを選択状態として記録する(最短走行3/7を含め全モード共通、設計メモ §13参照)
+  // 実行するモードを選択状態として記録する(全モード共通、設計メモ §13参照)
   mode_select = mode;
   g_map.unreachable = false;
   motorEnable();
   delay(1000);
 
   switch (mode) {
-    case 1:
-      g_search.lefthand();
-      break;
-    case 2:  //足立法
-      g_map.positionInit();
-      g_search.adachi(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
-      g_run.rotate(right, 2);
-      g_map.nextDir(right);
-      g_map.nextDir(right);
-      g_misc.goalAppeal();
-      g_search.adachi(0, 0, 0, 0);	// スタートに戻る
-      if (g_map.unreachable) break;
-      g_run.rotate(right, 2);
-      g_map.nextDir(right);
-      g_map.nextDir(right);
-      mapWrite();
-      break;
-    case 3:  //最短走行
-      mapCopy();
-      g_map.positionInit();
-      g_fast.run(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
-      g_run.rotate(right, 2);
-      g_map.nextDir(right);
-      g_map.nextDir(right);
-      g_misc.goalAppeal();
-      g_search.adachiDynamic(0, 0, 0, 0);  // 復路は未知区画を通る探索で戻る(設計メモ §11)
-      if (g_map.unreachable) break;
-      g_run.rotate(right, 2);
-      g_map.nextDir(right);
-      g_map.nextDir(right);
-      mapWrite();
-      break;
-    case 4:  //迷路情報を取得する左手法
+    case 1:  //迷路情報を取得する左手法
       g_map.positionInit();
       g_search.lefthandGetWall(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
       mapWrite();
       break;
-    case 5:  //左手法(スラローム版)
-      g_search.lefthandSlalom();
-      break;
-    case 6:  //足立法(スラローム版)
-      g_map.positionInit();
-      g_search.adachiSlalom(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
-      g_run.rotate(right, 2);
-      g_map.nextDir(right);
-      g_map.nextDir(right);
-      g_misc.goalAppeal();
-      g_search.adachiSlalom(0, 0, 0, 0);	// スタートに戻る
-      if (g_map.unreachable) break;
-      g_run.rotate(right, 2);
-      g_map.nextDir(right);
-      g_map.nextDir(right);
-      mapWrite();
-      break;
-    case 7:  //最短走行(スラローム版)
-      mapCopy();
-      g_map.positionInit();
-      g_fast.runSlalom(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
-      g_run.rotate(right, 2);
-      g_map.nextDir(right);
-      g_map.nextDir(right);
-      g_misc.goalAppeal();
-      g_search.adachiSlalomDynamic(0, 0, 0, 0);  // 復路はモード9の探索で戻る(設計メモ §11)
-      if (g_map.unreachable) break;
-      g_run.rotate(right, 2);
-      g_map.nextDir(right);
-      g_map.nextDir(right);
-      mapWrite();
-      break;
-    case 8:  //足立法(センサ閾値主導の動的到達判定版)
+    case 2:  //足立法(前壁で区画境界を判定)
       g_map.positionInit();
       g_search.adachiDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
@@ -241,7 +169,7 @@ void MISC::modeExec(int mode)
       g_map.nextDir(right);
       mapWrite();
       break;
-    case 9:  //足立法(センサ閾値主導の動的到達判定版・スラローム版)
+    case 3:  //足立法(前壁で区画境界を判定、スラローム版)
       g_map.positionInit();
       g_search.adachiSlalomDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
@@ -256,19 +184,43 @@ void MISC::modeExec(int mode)
       g_map.nextDir(right);
       mapWrite();
       break;
-    case 10:  //Flash上のマップ情報を消去
+    case 4:  //最短走行
+      mapCopy();
+      g_map.positionInit();
+      g_fast.run(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      g_misc.goalAppeal();
+      g_search.adachiDynamic(0, 0, 0, 0);  // 復路はモード2の探索で戻る(設計メモ §11)
+      if (g_map.unreachable) break;
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      mapWrite();
+      break;
+    case 5:  //最短走行(スラローム版)
+      mapCopy();
+      g_map.positionInit();
+      g_fast.runSlalom(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      g_misc.goalAppeal();
+      g_search.adachiSlalomDynamic(0, 0, 0, 0);  // 復路はモード3の探索で戻る(設計メモ §11)
+      if (g_map.unreachable) break;
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      mapWrite();
+      break;
+    case MODE_ERASE_MAP:  //Flash上のマップ情報を消去
       mapErase();
       g_misc.buttonOk();  //完了を音で通知
       break;
-    case 11:
-      break;
-    case 12:
-      break;
-    case 13:
-      break;
-    case 14:
-      break;
-    case 15:
+    case MODE_ADJUST:
       motorDisable();
       g_adjust.menu();  //調整メニューに行く
       break;

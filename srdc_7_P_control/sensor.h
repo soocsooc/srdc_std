@@ -33,7 +33,7 @@ class SENSOR
 {
 public:
   SENSOR();
-  volatile t_sensor sen_r, sen_l, sen_fr, sen_fl;
+  volatile t_sensor sen_r, sen_l, sen_f;
   volatile short battery_value;
   void interrupt(void);
 };

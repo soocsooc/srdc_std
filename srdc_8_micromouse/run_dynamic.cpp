@@ -17,9 +17,9 @@
 
 #include "pico_common.h"
 
-// FR+FLがth_sumを超えるか、max_lenに達したら止まる版のoneStep()(設計メモ §4)。
+// 前センサの値がthを超えるか、max_lenに達したら止まる版のoneStep()(設計メモ §4)。
 // debug_log=trueで実測ログを出力し、スイッチで即stop()できる(設計メモ §4)。中断したらtrueを返す
-bool RUN::oneStepDynamic(int max_len, int init_speed, int th_sum, bool debug_log)
+bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
 {
   int obj_step;
   unsigned long last_log_ms = 0;
@@ -38,11 +38,10 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th_sum, bool debug_log
     stepGet();
     speedSet(speed_target_l, speed_target_r);
 
-    const int fr = g_sensor.sen_fr.value;
-    const int fl = g_sensor.sen_fl.value;
+    const int f = g_sensor.sen_f.value;
     if (debug_log && ((millis() - last_log_ms) >= 20)) {
       last_log_ms = millis();
-      Serial.printf("len=%d fr=%d fl=%d sum=%d\r\n", step_lr_len, fr, fl, fr + fl);
+      Serial.printf("len=%d f=%d\r\n", step_lr_len, f);
     }
 
     if (debug_log && (switchGet() != 0)) {
@@ -52,7 +51,7 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th_sum, bool debug_log
     if (step_lr > obj_step) {
       break;  // 距離の安全上限フォールバック(壁が無い区画等)
     }
-    if ((fr + fl) > th_sum) {
+    if (f > th) {
       break;  // 前方センサ閾値主導の到達判定
     }
   }

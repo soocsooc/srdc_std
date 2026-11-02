@@ -27,14 +27,14 @@ const char * password = "ルータのパスワード";
 #endif
 
 // web表示専用の安定化。リクエストごとに.valueを5個貯めてメディアンを返す(STEP8_動作まとめ.md §10)。
-// ch: 0=L 1=R 2=FL 3=FR
+// ch: 0=L 1=R 2=F
 #define WEB_SEN_MED_N 5
 
 static short webSenStable(unsigned char ch, short v)
 {
-  static short hist[4][WEB_SEN_MED_N];
-  static unsigned char pos[4];
-  static bool full[4];
+  static short hist[3][WEB_SEN_MED_N];
+  static unsigned char pos[3];
+  static bool full[3];
 
   hist[ch][pos[ch]] = v;
   if (++pos[ch] >= WEB_SEN_MED_N) {
@@ -133,10 +133,8 @@ static String htmlSensorValueSection(void)
   html += R"HTML(</td><td id="right_value">)HTML";
   html += String(g_sensor.sen_r.value);
   html += R"HTML(</td></tr>
-<tr><th>FRONT VALUE</th><td id="left_front_value">)HTML";
-  html += String(g_sensor.sen_fl.value);
-  html += R"HTML(</td><td id="right_front_value">)HTML";
-  html += String(g_sensor.sen_fr.value);
+<tr><th>FRONT VALUE</th><td colspan="2" id="front_value">)HTML";
+  html += String(g_sensor.sen_f.value);
   html += R"HTML(</td></tr>
 </table>
 <br>
@@ -177,15 +175,11 @@ static String htmlSensorParameterSection(void)
   html += "</td><td>";
   html += inputBox("th_sen_r", String(b.th_r)) + " (" + String(g_sensor.sen_r.th_wall) + ")";
   html += R"HTML(</td></tr>
-<tr><th>FRONT Threshold</th><td>)HTML";
-  html += inputBox("th_sen_fl", String(b.th_fl)) + " (" + String(g_sensor.sen_fl.th_wall) + ")";
-  html += "</td><td>";
-  html += inputBox("th_sen_fr", String(b.th_fr)) + " (" + String(g_sensor.sen_fr.th_wall) + ")";
+<tr><th>FRONT Threshold</th><td colspan="2">)HTML";
+  html += inputBox("th_sen_f", String(b.th_f)) + " (" + String(g_sensor.sen_f.th_wall) + ")";
   html += R"HTML(</td></tr>
-<tr><th>FRONT measured(wall / no wall)</th><td>)HTML";
-  html += String(b.fl_wall) + " / " + String(b.fl_nowall);
-  html += "</td><td>";
-  html += String(b.fr_wall) + " / " + String(b.fr_nowall);
+<tr><th>FRONT measured(wall / no wall)</th><td colspan="2">)HTML";
+  html += String(b.f_wall) + " / " + String(b.f_nowall);
   html += R"HTML(</td></tr>
 <tr><th>SIDE Threshold(Slalom)</th><td>)HTML";
   html += inputBox("th_sen_l_slalom", String(b.th_l_slalom)) + " (" +
@@ -194,13 +188,13 @@ static String htmlSensorParameterSection(void)
   html += inputBox("th_sen_r_slalom", String(b.th_r_slalom)) + " (" +
           String(g_sensor.sen_r.th_wall_slalom) + ")";
   html += R"HTML(</td></tr>
-<tr><th>FRONT Approach Threshold(FL+FR)</th><td colspan="2">)HTML";
-  html += inputBox("th_sen_f_approach_sum", String(b.th_approach_sum)) + " (" +
-          String(g_sensor.th_approach_sum) + ")";
+<tr><th>FRONT Approach Threshold</th><td colspan="2">)HTML";
+  html += inputBox("th_sen_f_approach", String(b.th_approach)) + " (" +
+          String(g_sensor.th_approach) + ")";
   html += R"HTML(</td></tr>
-<tr><th>FRONT Approach Threshold(Slalom, FL+FR)</th><td colspan="2">)HTML";
-  html += inputBox("th_sen_f_approach_sum_slalom", String(b.th_approach_sum_slalom)) + " (" +
-          String(g_sensor.th_approach_sum_slalom) + ")";
+<tr><th>FRONT Approach Threshold(Slalom)</th><td colspan="2">)HTML";
+  html += inputBox("th_sen_f_approach_slalom", String(b.th_approach_slalom)) + " (" +
+          String(g_sensor.th_approach_slalom) + ")";
   html += R"HTML(</td></tr>
 </table>
 <br>
@@ -366,20 +360,15 @@ static String htmlModeSection(void)
 <p><h2>走行モード一覧</h2></p>
 <table align="center">
 <tr><th>No</th><th>挙動</th></tr>
-<tr><td>1</td><td>左手法。座標・壁情報を管理せずゴールでも止まらない。スイッチで次の区画境界に減速停止</td></tr>
-<tr><td>2</td><td>足立法探索。スタート→ゴール→スタートと往復し、迷路情報をFlashへ保存</td></tr>
-<tr><td>3</td><td>最短走行。Flashの迷路情報でゴールへ行き、復路はモード8の探索で戻ってFlashへ保存</td></tr>
-<tr><td>4</td><td>左手法+壁情報記録。ゴール到達かスイッチ押下で停止しFlashへ保存</td></tr>
-<tr><td>5</td><td>左手法(スラローム版)。90°旋回を止まらず曲がる</td></tr>
-<tr><td>6</td><td>足立法探索(スラローム版)。往復してFlashへ保存(モード2のスラローム版)</td></tr>
-<tr><td>7</td><td>最短走行(スラローム版)。復路はモード9の探索で戻ってFlashへ保存</td></tr>
-<tr><td>8</td><td>足立法探索。前方センサ閾値で1区画の到達判定(距離カウントに依らない動的停止版)</td></tr>
-<tr><td>9</td><td>足立法探索(モード8のスラローム版)。区画境界から止まらずに曲がる</td></tr>
-<tr><td>10</td><td>Flash上のマップ情報(/map.txt)をボタン操作のみで消去。モータは動かさない</td></tr>
-<tr><td>11〜14</td><td>未使用</td></tr>
-<tr><td>15</td><td>調整メニューへ移行(モータOFF)</td></tr>
+<tr><td>1</td><td>左手法+壁情報記録。ゴール到達かスイッチ押下で停止しFlashへ保存</td></tr>
+<tr><td>2</td><td>足立法探索。前センサで区画境界を判定し、スタート→ゴール→スタートと往復してFlashへ保存</td></tr>
+<tr><td>3</td><td>足立法探索(モード2のスラローム版)。区画境界から止まらずに曲がる</td></tr>
+<tr><td>4</td><td>最短走行。Flashの迷路情報でゴールへ行き、復路はモード2の探索で戻ってFlashへ保存</td></tr>
+<tr><td>5</td><td>最短走行(スラローム版)。復路はモード3の探索で戻ってFlashへ保存</td></tr>
+<tr><td>6</td><td>Flash上のマップ情報(/map.txt)をボタン操作のみで消去。モータは動かさない</td></tr>
+<tr><td>7</td><td>調整メニューへ移行(モータOFF)</td></tr>
 </table>
-<p><h2>調整モード一覧(モード15から選択)</h2></p>
+<p><h2>調整モード一覧(モード7から選択)</h2></p>
 <table align="center">
 <tr><th>No</th><th>挙動</th></tr>
 <tr><td>1</td><td>このWebサーバを起動(AP: 192.168.4.1)</td></tr>
@@ -389,7 +378,7 @@ static String htmlModeSection(void)
 <tr><td>5</td><td>3区画直進。距離のズレでTIRE_DIAMETERを調整</td></tr>
 <tr><td>6</td><td>センサ値・電池電圧をシリアルモニタへ連続表示(いずれかのスイッチで終了)</td></tr>
 <tr><td>7</td><td>連続旋回(S字)・旋回直後の直進・U字を一続きに確認</td></tr>
-<tr><td>8</td><td>モード8・9の到達判定閾値の実測診断。前壁への走行距離とセンサ生値(FR/FL/和)をシリアルへ出力</td></tr>
+<tr><td>8</td><td>モード2・3の到達判定閾値の実測診断。前壁への走行距離と前センサの値をシリアルへ出力</td></tr>
 <tr><td>9</td><td>単発のスラローム旋回の確認(2区画直進した区画で曲がる)。張り出しをシリアルへ出力</td></tr>
 <tr><td>10</td><td>前センサ閾値の校正。区画中央に置き、1区画先(次の区画の奥)の前壁あり→なしの順にSW2で測り、平均をFRONT Thresholdへ保存</td></tr>
 <tr><td>11〜</td><td>調整メニューを終了し走行モード選択へ戻る</td></tr>
@@ -409,9 +398,9 @@ static String htmlParameterNotes(void)
 <li><b>Sensor ratio</b>: センサのベース値(SIDE REF・各Threshold)に掛ける倍率[%]。会場で、練習場と同じ置き方をしたときのセンサ値の比を入れると、しきい値をまとめて合わせられる(例: 会場の値が練習場の0.9倍なら90)。</li>
 <li><b>SIDE REF</b>: 区画中央にいるときの横センサの目標値。これがずれていると、Gainを合わせても中央からずれた位置に収束してしまう。</li>
 <li><b>SIDE/FRONT Threshold</b>: 壁の有無を判定するしきい値。大きすぎると実際は壁があるのに「壁なし」と誤判定(見落とし)し、小さすぎると壁が無いのに「壁あり」と誤判定して不要に曲がる/止まる。</li>
-<li><b>FRONT Approach Threshold(FL+FR)</b>: モード8で、走行中に前壁が近づいたら区画境界に着いたとみなすしきい値(前センサFL+FRの和)。大きいほど壁の近くまで進む。小さすぎると手前で止まって旋回時に柱へ接触しやすい。</li>
-<li><b>FRONT Approach Threshold(Slalom, FL+FR)</b>: モード9用の同しきい値。モード9も区画境界で判定するが、モード8より速く走るため別の値にしてある。大きすぎると旋回が遅れて外側の壁に寄る。</li>
-<li><b>SIDE Threshold(Slalom)</b>: モード9用の側壁判定しきい値。大きすぎると壁を見落とし、小さすぎると無い壁を認識して誤ったUターン等になる。</li>
+<li><b>FRONT Approach Threshold</b>: モード2で、走行中に前壁が近づいたら区画境界に着いたとみなすしきい値(前センサの値と比べる)。大きいほど壁の近くまで進む。小さすぎると手前で止まって旋回時に柱へ接触しやすい。</li>
+<li><b>FRONT Approach Threshold(Slalom)</b>: モード3用の同しきい値。モード3も区画境界で判定するが、モード2より速く走るため別の値にしてある。大きすぎると旋回が遅れて外側の壁に寄る。</li>
+<li><b>SIDE Threshold(Slalom)</b>: モード3用の側壁判定しきい値。大きすぎると壁を見落とし、小さすぎると無い壁を認識して誤ったUターン等になる。</li>
 <li><b>TIRE_DIAMETER</b>: 実際より大きい値にすると走行距離を過小評価し、目標距離に届く前に止めるべき所を通り過ぎてオーバーラン気味になる。小さい値だと逆に手前で止まる(アンダーラン)。直進(モード5など)で狙った距離とのズレを見て補正する。</li>
 <li><b>TREAD_WIDTH</b>: 実際より大きい値にすると回転量を過小に見積もり、90°回りきる前に旋回を止めてしまう(曲がり不足)。小さい値だと曲がりすぎる(オーバーターン)。720°旋回(モード2)で向きのズレを見て補正する。スラロームの旋回角もこの値で決まる。</li>
 <li><b>Search accel</b>: 直進の加減速の急さ。大きいほど短い区間でも最高速に届きやすいが、急すぎるとスリップ・脱調しやすい。小さいと滑らかだが、短い区間では目標速度に届く前に距離を使い切り実効速度が落ちる。</li>
@@ -421,9 +410,9 @@ static String htmlParameterNotes(void)
 <li><b>Slalom outer gain</b>: 旋回の中央で外輪をSlalom speedの何倍増しにするか(0〜1.0)。上げると同じ小回りのまま旋回が速く終わるが、外輪が速くなる分スリップしやすい。</li>
 <li><b>Slalom ramp len</b>: 旋回の入口・出口で、外輪がこの距離[mm]を走る間に内輪を徐々に落とす/戻す。短いほど張り出しが小さいが、急に曲がり始めるため姿勢が乱れやすい。</li>
 <li><b>Slalom offset(計算値)</b>: 上の3つから計算した、区画中心から旋回の開始・終了点までの距離。区画境界から(90 − この値)mm直進してから曲がる。90を超えると区画内に収まらない。</li>
-<li><b>Search speed</b>: 迷路探索時の巡航速度。大きいほど探索は速いが、壁センサの読み取りや姿勢制御が追いつかず衝突・誤判定のリスクが増える。モード3の旋回前後とモード8の探索では、半区画で止まり切れる速度(Search accel 1.5で約520mm/s)に自動で抑えられる。</li>
-<li><b>max speed</b>: 最短走行(モード3・7)で直線区間を走る最高速度。大きいほどタイムは縮むが、その分加速に必要な距離や、次のカーブ手前での減速が間に合うかの余裕が減る。</li>
-<li><b>Uturn back len</b> / <b>Wall return len</b> / <b>Uturn speed</b>: 行き止まりUターン(90度旋回→バック→前進×2)とモード8・9のスタート位置合わせでのバック距離・前進距離と速度。バックは壁に確実に当てるため前進より長くし、壁からの位置は前進距離で決まる。</li>
+<li><b>Search speed</b>: 迷路探索時の巡航速度。大きいほど探索は速いが、壁センサの読み取りや姿勢制御が追いつかず衝突・誤判定のリスクが増える。モード4の旋回前後とモード2の探索では、半区画で止まり切れる速度(Search accel 1.5で約520mm/s)に自動で抑えられる。</li>
+<li><b>max speed</b>: 最短走行(モード4・5)で直線区間を走る最高速度。大きいほどタイムは縮むが、その分加速に必要な距離や、次のカーブ手前での減速が間に合うかの余裕が減る。</li>
+<li><b>Uturn back len</b> / <b>Wall return len</b> / <b>Uturn speed</b>: 行き止まりUターン(90度旋回→バック→前進×2)とモード2・3のスタート位置合わせでのバック距離・前進距離と速度。バックは壁に確実に当てるため前進より長くし、壁からの位置は前進距離で決まる。</li>
 <li><b>Preset</b>: 走行モードをSW2で決定した後、LED4の点滅中にSW1で選ぶ(LED1〜3の点灯位置が番号)。Search speed・max speed・Slalom speedにSpeed %、Search accel・Turn accelにAccel %を掛けて走る。</li>
 </ul>
 </div>
@@ -471,29 +460,17 @@ xhr.send(null);
 };
 setInterval(getRightValue, 200);
 
-var getLeftFrontValue = function () {
+var getFrontValue = function () {
 var xhr = new XMLHttpRequest();
 xhr.onreadystatechange = function() {
 if (this.readyState == 4 && this.status == 200) {
-document.getElementById("left_front_value").innerHTML = this.responseText;
+document.getElementById("front_value").innerHTML = this.responseText;
 }
 };
-xhr.open("GET", "/left_front_value", true);
+xhr.open("GET", "/front_value", true);
 xhr.send(null);
 };
-setInterval(getLeftFrontValue, 200);
-
-var getRightFrontValue = function () {
-var xhr = new XMLHttpRequest();
-xhr.onreadystatechange = function() {
-if (this.readyState == 4 && this.status == 200) {
-document.getElementById("right_front_value").innerHTML = this.responseText;
-}
-};
-xhr.open("GET", "/right_front_value", true);
-xhr.send(null);
-};
-setInterval(getRightFrontValue, 200);
+setInterval(getFrontValue, 200);
 
 var getMap = function () {
 var xhr = new XMLHttpRequest();
@@ -632,12 +609,8 @@ void webServerSetup(void)
     request->send(200, "text/plain", String(webSenStable(1, g_sensor.sen_r.value)));
   });
 
-  server.on("/left_front_value", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send(200, "text/plain", String(webSenStable(2, g_sensor.sen_fl.value)));
-  });
-
-  server.on("/right_front_value", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send(200, "text/plain", String(webSenStable(3, g_sensor.sen_fr.value)));
+  server.on("/front_value", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(200, "text/plain", String(webSenStable(2, g_sensor.sen_f.value)));
   });
 
   server.on("/map", HTTP_GET, [](AsyncWebServerRequest * request) {

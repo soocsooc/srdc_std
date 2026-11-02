@@ -24,14 +24,13 @@ void ADJUST::adcView(void)
 
   while (switchGet() == 0) {
     Serial.printf("r_sen        is\t%d   \r\n", g_sensor.sen_r.value);
-    Serial.printf("fr_sen       is\t%d   \r\n", g_sensor.sen_fr.value);
-    Serial.printf("fl_sen       is\t%d  \r\n", g_sensor.sen_fl.value);
+    Serial.printf("f_sen        is\t%d   \r\n", g_sensor.sen_f.value);
     Serial.printf("l_sen        is\t%d   \r\n", g_sensor.sen_l.value);
     Serial.printf("VDD          is\t%d mV\r\n", g_sensor.battery_value);
-    // SLED点灯窓が伸びて棄却したサンプルの累計 (FR/FL/R/L)。WiFi接続中に増える。
+    // SLED点灯窓が伸びて棄却したサンプルの累計 (前/右/左)。WiFi接続中に増える。
     Serial.printf(
-      "reject FR/FL/R/L\t%lu %lu %lu %lu\r\n", g_sensor.sample_reject[0], g_sensor.sample_reject[1],
-      g_sensor.sample_reject[2], g_sensor.sample_reject[3]);
+      "reject F/R/L\t%lu %lu %lu\r\n", g_sensor.sample_reject[0], g_sensor.sample_reject[1],
+      g_sensor.sample_reject[2]);
     Serial.printf("\n\r");
     delay(100);
     Serial.printf("\x1b[2J");
@@ -138,7 +137,7 @@ void ADJUST::straightSensorDiag(float section_check)	// 最大走行区画数(�
   motorDisable();
 }
 
-// 前壁が見えるまで直進し、区画中心で止まる(Pゲイン調整用)。モード8と同じくth_approach_sumで
+// 前壁が見えるまで直進し、区画中心で止まる(Pゲイン調整用)。モード2と同じくth_approachで
 // 区画境界とみなしてdecelerate(HALF_SECTION)する。走行中はログを出し、スイッチで即停止できる(STEP8_動作まとめ.md §5)
 void ADJUST::straightToWallCheck(void)
 {
@@ -148,13 +147,13 @@ void ADJUST::straightToWallCheck(void)
   delay(1000);
   g_run.startAccelerate(HALF_SECTION, cruise_speed);
   if (!g_run.oneStepDynamic(
-        SECTION * MAZESIZE_MAX, cruise_speed, g_sensor.th_approach_sum, true)) {
+        SECTION * MAZESIZE_MAX, cruise_speed, g_sensor.th_approach, true)) {
     g_run.decelerate(HALF_SECTION, g_run.speed);
   }
   motorDisable();
 }
 
-// 単発のslalomCell()の確認(モード9と同じ入り方)。スタートから2区画直進した区画(前壁あり)で
+// 単発のslalomCell()の確認(モード3と同じ入り方)。スタートから2区画直進した区画(前壁あり)で
 // 曲がり、次の区画の中心で止まる。張り出しslalom_offsetをSerialへ出力する(設計メモ §3)。
 void ADJUST::slalomTurnCheck(t_local_direction dir)
 {
@@ -162,15 +161,14 @@ void ADJUST::slalomTurnCheck(t_local_direction dir)
   motorEnable();
   delay(1000);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
-  g_run.oneStepDynamic(SECTION * 2, g_run.search_speed, g_sensor.th_approach_sum_slalom);
+  g_run.oneStepDynamic(SECTION * 2, g_run.search_speed, g_sensor.th_approach_slalom);
   g_run.slalomCell(dir);
   g_run.decelerate(HALF_SECTION, g_run.speed);
   motorDisable();
 }
 
-// SW2を待ってFR/FLを約1秒平均し、ベース値(Sensor ratio=100%相当)で返す。
-// SW1ならfalse(前センサは1個のため、FRとFLは同じ値になる)
-static bool frontSensorSample(short * fr, short * fl)
+// SW2を待って前センサを約1秒平均し、ベース値(Sensor ratio=100%相当)で返す。SW1ならfalse
+static bool frontSensorSample(short * f)
 {
   const int samples = 100;
   unsigned char sw;
@@ -178,45 +176,40 @@ static bool frontSensorSample(short * fr, short * fl)
   if (sw != SW_CM) return false;
   delay(500);  // スイッチを押した手がセンサにかからないよう待つ
 
-  long sum_fr = 0, sum_fl = 0;
+  long sum = 0;
   for (int i = 0; i < samples; i++) {
-    sum_fr += g_sensor.sen_fr.value;
-    sum_fl += g_sensor.sen_fl.value;
+    sum += g_sensor.sen_f.value;
     delay(10);
   }
   const long div = (long)samples * g_sensor.ratio_pct / 100;
-  *fr = (short)((sum_fr + div / 2) / div);
-  *fl = (short)((sum_fl + div / 2) / div);
+  *f = (short)((sum + div / 2) / div);
   return true;
 }
 
-// 区画中央に置き、1区画先の前壁あり→なしでFR/FLを測り、測定値と平均(th_sen_fr/fl)を保存する。
+// 区画中央に置き、1区画先の前壁あり→なしで前センサを測り、測定値と平均(th_sen_f)を保存する。
 // LEDは前壁あり=0b0110、なし=0b1001。SW1で中止。詳細は設計メモ §7参照
 void ADJUST::frontThresholdCalib(void)
 {
-  short fr_wall, fl_wall, fr_nowall, fl_nowall;
+  short f_wall, f_nowall;
 
   Serial.println("place at cell center, wall 1 cell ahead (no wall in this cell) -> center SW");
   ledSet(0b0110);
-  if (!frontSensorSample(&fr_wall, &fl_wall)) return;
-  Serial.printf("wall    fr=%d fl=%d\r\n", fr_wall, fl_wall);
+  if (!frontSensorSample(&f_wall)) return;
+  Serial.printf("wall    f=%d\r\n", f_wall);
   g_misc.buttonOk();
 
   Serial.println("remove the wall -> center SW");
   ledSet(0b1001);
-  if (!frontSensorSample(&fr_nowall, &fl_nowall)) return;
-  Serial.printf("no wall fr=%d fl=%d\r\n", fr_nowall, fl_nowall);
+  if (!frontSensorSample(&f_nowall)) return;
+  Serial.printf("no wall f=%d\r\n", f_nowall);
 
   t_sensor_base & b = g_sensor.base;
-  b.fr_wall = fr_wall;
-  b.fl_wall = fl_wall;
-  b.fr_nowall = fr_nowall;
-  b.fl_nowall = fl_nowall;
-  b.th_fr = (fr_wall + fr_nowall) / 2;
-  b.th_fl = (fl_wall + fl_nowall) / 2;
+  b.f_wall = f_wall;
+  b.f_nowall = f_nowall;
+  b.th_f = (f_wall + f_nowall) / 2;
   paramApply();
   paramWrite();
-  Serial.printf("th_sen_fr=%d th_sen_fl=%d (base)\r\n", b.th_fr, b.th_fl);
+  Serial.printf("th_sen_f=%d (base)\r\n", b.th_f);
   g_misc.buttonOk();
 }
 

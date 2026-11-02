@@ -28,8 +28,7 @@ SENSOR::SENSOR()
   sen_r.th_wall = TH_SEN_R;
   sen_l.th_wall = TH_SEN_L;
 
-  sen_fr.th_wall = TH_SEN_FR;
-  sen_fl.th_wall = TH_SEN_FL;
+  sen_f.th_wall = TH_SEN_F;
 
   sen_r.th_control = CONTH_SEN_R;
   sen_l.th_control = CONTH_SEN_L;
@@ -45,16 +44,13 @@ void SENSOR::interrupt(void)
 
   switch (cnt) {	// センサーの順番に応じた処理
     case 0:
-      // 前センサは1個のため、読んだ値をFR/FLの両方に入れる
       digitalWrite(SLED_F, HIGH);  //LED点灯
       for (int i = 0; i < 300; i++) {
         asm("nop \n");
       }
-      sen_fr.value = analogRead(AD_F);
+      sen_f.value = analogRead(AD_F);
       digitalWrite(SLED_F, LOW);  //LED消灯
-      sen_fr.is_wall = (sen_fr.value > sen_fr.th_wall);  // 前壁検知
-      sen_fl.value = sen_fr.value;
-      sen_fl.is_wall = sen_fr.is_wall;
+      sen_f.is_wall = (sen_f.value > sen_f.th_wall);  // 前壁検知
       break;
     case 1:
       digitalWrite(SLED_R, HIGH);  //LED点灯

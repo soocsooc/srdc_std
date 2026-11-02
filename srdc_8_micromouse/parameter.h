@@ -15,7 +15,7 @@
 #define PARAMETER_H_
 
 // 初期パラメータ。標準機体では未校正のため、v3(Pi:Co Classic3)の値を仮に入れてある。
-// タイヤ径・トレッド幅・センサ値は調整メニュー(モード15)とWeb調整で校正すること
+// タイヤ径・トレッド幅・センサ値は調整メニュー(モード7)とWeb調整で校正すること
 #define TIRE_DIAMETER_INIT (48.0)
 #define TREAD_WIDTH_INIT (65.0)
 
@@ -23,29 +23,25 @@
 // 実機で1回転させて確認すること
 #define PULSE_PER_REV 400.0
 
-// 前センサは1個のため、FR/FLの値は同じにしておく
 #define REF_SEN_R_INIT 589
 #define REF_SEN_L_INIT 628
 
 #define TH_SEN_R_INIT 300
 #define TH_SEN_L_INIT 215
-#define TH_SEN_FR_INIT 103
-#define TH_SEN_FL_INIT 103
+#define TH_SEN_F_INIT 103
 // 調整モード10で区画中央に置き、1区画先の前壁あり/なしで測った前センサ値(ベース値、設計メモ §7)
-#define SEN_FR_WALL_INIT 150
-#define SEN_FL_WALL_INIT 150
-#define SEN_FR_NOWALL_INIT 56
-#define SEN_FL_NOWALL_INIT 56
+#define SEN_F_WALL_INIT 150
+#define SEN_F_NOWALL_INIT 56
 
-// ---- センサ動的到達判定版(モード8・9、run_dynamic.cpp/search_dynamic.cpp)のパラメータ ----
+// ---- センサ動的到達判定版(モード2・3、run_dynamic.cpp/search_dynamic.cpp)のパラメータ ----
 // 詳細は設計メモ §4参照。
 
-// 走行中の前壁到達判定閾値(FR+FLの和、設計メモ §4)。モード8は区画境界で止まる前提。
-// モード9も区画境界で判定するが、速度が違うため別値にしてある(設計メモ §4)。
-#define TH_SEN_F_APPROACH_SUM_INIT 290
-#define TH_SEN_F_APPROACH_SUM_SLALOM_INIT 140
+// 走行中の前壁到達判定閾値(前センサの値、設計メモ §4)。モード2は区画境界で止まる前提。
+// モード3も区画境界で判定するが、速度が違うため別値にしてある(設計メモ §4)。
+#define TH_SEN_F_APPROACH_INIT 145
+#define TH_SEN_F_APPROACH_SLALOM_INIT 70
 
-// モード9の側方壁判定閾値。TH_SEN_R/L_INITは真の区画中心での停止前提のため別枠(設計メモ §5)。
+// モード3の側方壁判定閾値。TH_SEN_R/L_INITは真の区画中心での停止前提のため別枠(設計メモ §5)。
 #define TH_SEN_R_SLALOM_INIT TH_SEN_R_INIT
 #define TH_SEN_L_SLALOM_INIT TH_SEN_L_INIT
 

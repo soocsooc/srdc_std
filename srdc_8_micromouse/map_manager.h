@@ -64,7 +64,7 @@ public:
   void mapClear(void);
   void wallDataSet(unsigned char x, unsigned char y, t_global_direction dir, char data);
   char wallDataGet(unsigned char x, unsigned char y, t_global_direction dir);
-  void wallSet(bool IS_SEN_FR, bool IS_SEN_R, bool IS_SEN_L);
+  void wallSet(bool IS_SEN_F, bool IS_SEN_R, bool IS_SEN_L);
 
 private:
   unsigned short steps_map[MAZESIZE_MAX][MAZESIZE_MAX];  //歩数マップ

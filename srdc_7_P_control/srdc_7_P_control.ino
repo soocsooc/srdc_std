@@ -104,8 +104,7 @@ void loop()
   if (digitalRead(SW1) == 0) { // SW1でセンサ値の表示(SW2で走行)
     while (1) {
       Serial.printf("r_sen  is %d\n\r", g_sensor.sen_r.value);
-      Serial.printf("fr_sen is %d\n\r", g_sensor.sen_fr.value);
-      Serial.printf("fl_sen is %d\n\r", g_sensor.sen_fl.value);
+      Serial.printf("f_sen  is %d\n\r", g_sensor.sen_f.value);
       Serial.printf("l_sen  is %d\n\r", g_sensor.sen_l.value);
       Serial.printf("VDD    is %d\n\r", g_sensor.battery_value);
       delay(100);

@@ -16,8 +16,7 @@
 
 SENSOR g_sensor;
 
-// センサ計測の入口。sensorTask(device.cpp)から1ms周期で5回呼ばれる(電池電圧処理1回+FR/FL/R/L)。
-// 標準機体の前センサは1個のため、FRで読んだ値をFLにも入れる(上位の処理はFR/FLのまま使う)
+// センサ計測の入口。sensorTask(device.cpp)から1ms周期で4回呼ばれる(電池電圧処理1回+前/右/左)
 void sensorInterrupt(void) { g_sensor.interrupt(); }
 
 static short senScale(short v, short pct) { return (short)(((long)v * pct + 50) / 100); }
@@ -33,21 +32,20 @@ void SENSOR::applyRatio(void)
   sen_r.th_control = sen_r.th_wall;
   sen_l.th_wall = senScale(base.th_l, p);
   sen_l.th_control = sen_l.th_wall;
-  sen_fr.th_wall = senScale(base.th_fr, p);
-  sen_fl.th_wall = senScale(base.th_fl, p);
+  sen_f.th_wall = senScale(base.th_f, p);
   sen_r.th_wall_slalom = senScale(base.th_r_slalom, p);
   sen_l.th_wall_slalom = senScale(base.th_l_slalom, p);
-  th_approach_sum = senScale(base.th_approach_sum, p);
-  th_approach_sum_slalom = senScale(base.th_approach_sum_slalom, p);
+  th_approach = senScale(base.th_approach, p);
+  th_approach_slalom = senScale(base.th_approach_slalom, p);
 }
 
 // --- センサ値の平滑化 ------------------------------------------------------
 // 1パルス1リード(捨て読みは信号を潰すため禁止)で、senMedian3(スパイク除去)->senFilter(IIR、
-// 時定数≒3ms)の2段で処理する。ch: 0=FR 1=FL 2=R 3=L
+// 時定数≒3ms)の2段で処理する。ch: 0=前 1=右 2=左
 
-static short g_raw_hist[4][3];
-static unsigned char g_raw_pos[4];
-static bool g_raw_full[4];
+static short g_raw_hist[3][3];
+static unsigned char g_raw_pos[3];
+static bool g_raw_full[3];
 
 static short senMedian3(unsigned char ch, unsigned short raw)
 {
@@ -89,7 +87,7 @@ void SENSOR::interrupt(void)
   static char cnt = 0;
   static unsigned short batt_low_cnt = 0;  // 電池低下の連続カウント[ms]
 
-  // 5回の呼び出しで電池電圧処理+前後左右のセンサを1巡させる
+  // 4回の呼び出しで電池電圧処理+前・右・左のセンサを1巡させる
   switch (cnt) {
     case 0:
       battery_value = batteryVoltGet();
@@ -106,16 +104,11 @@ void SENSOR::interrupt(void)
       }
       break;
     case 1:
-      sen_fr.value = senProcess(0, sen_fr.value, sensorGetF());
+      sen_f.value = senProcess(0, sen_f.value, sensorGetF());
+      sen_f.is_wall = (sen_f.value > sen_f.th_wall);
       break;
     case 2:
-      sen_fl.value = sen_fr.value;  // 前センサは1個(FRと同じ値)
-      // 前壁はFR+FLの和で判定し、FR/FLの結果を揃える(車体の向きの影響を打ち消す、設計メモ §7)
-      sen_fr.is_wall = sen_fl.is_wall =
-        (sen_fr.value + sen_fl.value) > (sen_fr.th_wall + sen_fl.th_wall);
-      break;
-    case 3:
-      sen_r.value = senProcess(2, sen_r.value, sensorGetR());
+      sen_r.value = senProcess(1, sen_r.value, sensorGetR());
       if (sen_r.value > sen_r.th_wall) {
         sen_r.is_wall = true;
       } else {
@@ -129,8 +122,8 @@ void SENSOR::interrupt(void)
         sen_r.is_control = false;
       }
       break;
-    case 4:
-      sen_l.value = senProcess(3, sen_l.value, sensorGetL());
+    case 3:
+      sen_l.value = senProcess(2, sen_l.value, sensorGetL());
       if (sen_l.value > sen_l.th_wall) {
         sen_l.is_wall = true;
       } else {
@@ -149,5 +142,5 @@ void SENSOR::interrupt(void)
       break;
   }
   cnt++;
-  if (cnt >= 5) cnt = 0;
+  if (cnt >= 4) cnt = 0;
 }

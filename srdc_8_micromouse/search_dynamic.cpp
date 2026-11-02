@@ -36,8 +36,8 @@ void SEARCH::turnBack(bool wall_f, bool wall_r, bool wall_l)
   }
 }
 
-// adachi()(search.cpp)と同一の骨格。case frontのみg_run.oneStep()をg_run.oneStepDynamic()に
-// 置き換え、前方センサ閾値主導で1区画分の到達を判定する。right/left/rearの旋回は無変更。
+// 足立法で壁情報を更新しながらゴールまで探索する。前進はoneStepDynamic()で、前センサの値から
+// 区画境界への到達を判定する。right/leftはrotate()で回る。
 void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
 {
   t_global_direction glob_nextdir;
@@ -73,12 +73,12 @@ void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
 
   // センサで壁情報を更新し、次の方向へ進む
   while (!g_map.posIn(gx, gy, gx2, gy2)) {
-    g_map.wallSet(g_sensor.sen_fr.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
-    ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_fr.is_wall, g_sensor.sen_r.is_wall);
+    g_map.wallSet(g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
+    ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall);
 
     switch (g_map.nextDirGet(gx, gy, gx2, gy2, &glob_nextdir)) {
       case front:
-        g_run.oneStepDynamic(SECTION + start_short, cruise_speed, g_sensor.th_approach_sum);
+        g_run.oneStepDynamic(SECTION + start_short, cruise_speed, g_sensor.th_approach);
         break;
       case right:
         g_run.decelerate(HALF_SECTION + start_short, cruise_speed);
@@ -105,8 +105,8 @@ void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
     g_map.axisUpdate();
   }
 
-  g_map.wallSet(g_sensor.sen_fr.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
-  ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_fr.is_wall, g_sensor.sen_r.is_wall);
+  g_map.wallSet(g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
+  ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall);
   g_run.decelerate(HALF_SECTION + start_short, cruise_speed);
 }
 
@@ -146,17 +146,17 @@ void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
 
   // センサで壁情報を更新し、次の方向へ進む
   while (!g_map.posIn(gx, gy, gx2, gy2)) {
-    // 側方壁はモード9専用のth_wall_slalomで判定する(設計メモ §5)
+    // 側方壁はモード3専用のth_wall_slalomで判定する(設計メモ §5)
     const bool is_wall_r = g_sensor.sen_r.value > g_sensor.sen_r.th_wall_slalom;
     const bool is_wall_l = g_sensor.sen_l.value > g_sensor.sen_l.th_wall_slalom;
-    g_map.wallSet(g_sensor.sen_fr.is_wall, is_wall_r, is_wall_l);
-    ledWallShow(is_wall_l, g_sensor.sen_fr.is_wall, is_wall_r);
+    g_map.wallSet(g_sensor.sen_f.is_wall, is_wall_r, is_wall_l);
+    ledWallShow(is_wall_l, g_sensor.sen_f.is_wall, is_wall_r);
 
     const t_local_direction local_dir = g_map.nextDirGet(gx, gy, gx2, gy2, &glob_nextdir);
     switch (local_dir) {
       case front:
         g_run.oneStepDynamic(
-          SECTION + start_short, g_run.search_speed, g_sensor.th_approach_sum_slalom);
+          SECTION + start_short, g_run.search_speed, g_sensor.th_approach_slalom);
         break;
       case right:
       case left:
@@ -166,7 +166,7 @@ void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
       case rear:
         // 当てる壁のある側へ回る(設計メモ §5)
         g_run.decelerate(HALF_SECTION + start_short, g_run.speed);
-        turnBack(g_sensor.sen_fr.is_wall, is_wall_r, is_wall_l);
+        turnBack(g_sensor.sen_f.is_wall, is_wall_r, is_wall_l);
         g_run.accelerate(HALF_SECTION, g_run.search_speed);
         break;
       case loca_dir_error:
@@ -181,7 +181,7 @@ void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
 
   const bool goal_wall_r = g_sensor.sen_r.value > g_sensor.sen_r.th_wall_slalom;
   const bool goal_wall_l = g_sensor.sen_l.value > g_sensor.sen_l.th_wall_slalom;
-  g_map.wallSet(g_sensor.sen_fr.is_wall, goal_wall_r, goal_wall_l);
-  ledWallShow(goal_wall_l, g_sensor.sen_fr.is_wall, goal_wall_r);
+  g_map.wallSet(g_sensor.sen_f.is_wall, goal_wall_r, goal_wall_l);
+  ledWallShow(goal_wall_l, g_sensor.sen_f.is_wall, goal_wall_r);
   g_run.decelerate(HALF_SECTION + start_short, g_run.speed);
 }

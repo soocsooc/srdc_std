@@ -15,6 +15,11 @@
 #ifndef SRC_MISC_H_
 #define SRC_MISC_H_
 
+// 走行モードは1〜MODE_RUN_MAX、MODE_ADJUSTで調整メニュー。SW1で1つ進め、MODE_ADJUSTの次は1
+#define MODE_RUN_MAX 5
+#define MODE_ERASE_MAP 6
+#define MODE_ADJUST 7
+
 class MISC
 {
 public:

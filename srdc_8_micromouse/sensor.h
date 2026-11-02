@@ -24,7 +24,7 @@ typedef struct
   short ref;
   short th_wall;
   short th_control;
-  // モード9専用の側方壁判定しきい値(sen_r/sen_lのみ使用)。詳細は設計メモ §5参照。
+  // モード3専用の側方壁判定しきい値(sen_r/sen_lのみ使用)。詳細は設計メモ §5参照。
   short th_wall_slalom;
   bool is_wall;
   bool is_control;
@@ -34,27 +34,26 @@ typedef struct
 typedef struct
 {
   short ref_r, ref_l;
-  short th_r, th_l, th_fr, th_fl;
+  short th_r, th_l, th_f;
   short th_r_slalom, th_l_slalom;
-  short th_approach_sum, th_approach_sum_slalom;
-  // 調整モード10の測定値(区画中央、1区画先の前壁あり/なし)。th_fr/flはこの平均。判定には使わない
-  short fr_wall, fl_wall, fr_nowall, fl_nowall;
+  short th_approach, th_approach_slalom;
+  // 調整モード10の測定値(区画中央、1区画先の前壁あり/なし)。th_fはこの平均。判定には使わない
+  short f_wall, f_nowall;
 } t_sensor_base;
 
 class SENSOR
 {
 public:
-  volatile t_sensor sen_r, sen_l, sen_fr, sen_fl;
+  volatile t_sensor sen_r, sen_l, sen_f;
   volatile short battery_value;
-  // oneStepDynamic()の前壁到達判定閾値(FR+FLの和、モード8用/モード9用)。和にするのは車体の
-  // 向きの影響を打ち消すため。詳細は設計メモ §4参照。
-  short th_approach_sum;
-  short th_approach_sum_slalom;
+  // oneStepDynamic()の前壁到達判定閾値(前センサの値、モード2用/モード3用)。詳細は設計メモ §4参照。
+  short th_approach;
+  short th_approach_slalom;
   t_sensor_base base;
   short ratio_pct;  // baseに掛ける倍率[%]
-  // SLED点灯窓が伸びて棄却したサンプル数 (ch: 0=FR 1=FL 2=R 3=L)。
+  // SLED点灯窓が伸びて棄却したサンプル数 (ch: 0=前 1=右 2=左)。
   // SLED_WINDOW_MAX_US のチューニング用。
-  volatile unsigned long sample_reject[4];
+  volatile unsigned long sample_reject[3];
   void interrupt(void);
   void applyRatio(void);  // base×ratio_pctを判定用の値へ反映する
 };

@@ -47,8 +47,8 @@ static void sensorTask(void * arg)
   for (;;) {
     if (g_sensor_run) {
       g_sensor_paused = false;
-      // g_sensor.interrupt(): cnt 0(電池/LED,SLEDなし)->4(L)で1巡(sensor.cpp参照)
-      for (int i = 0; i < 5; i++) {
+      // g_sensor.interrupt(): cnt 0(電池,SLEDなし)->3(左)で1巡(sensor.cpp参照)
+      for (int i = 0; i < 4; i++) {
         sensorInterrupt();
       }
     } else {

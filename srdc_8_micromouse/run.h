@@ -76,10 +76,10 @@ public:
   // slalom形状パラメータの範囲チェックとslalom_offsetの再計算
   void slalomParamUpdate(void);
   void uTurn(t_local_direction dir);
-  // 前方センサの和FR+FLがth_sumを超えたら到達とする版のoneStep()(距離は安全上限)。
+  // 前センサの値がthを超えたら到達とする版のoneStep()(距離は安全上限)。
   // debug_log=trueで実測ログを出し、スイッチで中断できる(中断したらtrue)。
   // 詳細は設計メモ §4参照
-  bool oneStepDynamic(int max_len, int init_speed, int th_sum, bool debug_log = false);
+  bool oneStepDynamic(int max_len, int init_speed, int th, bool debug_log = false);
   // スタート位置を固定するための初期動作: 後ろ壁に押し付けてからwall_return_len前進する。
   // uTurn()と同じuturn_back_len/wall_return_len/uturn_speedを流用する。詳細は設計メモ §6参照。
   void alignStartPosition(void);

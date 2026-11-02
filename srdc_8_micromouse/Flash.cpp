@@ -42,16 +42,13 @@ static const t_param_entry param_table[] = {
   {"ref_sen_l", PARAM_SHORT, &g_sensor.base.ref_l, REF_SEN_L_INIT, NO_CHECK},
   {"th_sen_r", PARAM_SHORT, &g_sensor.base.th_r, TH_SEN_R_INIT, NO_CHECK},
   {"th_sen_l", PARAM_SHORT, &g_sensor.base.th_l, TH_SEN_L_INIT, NO_CHECK},
-  {"th_sen_fr", PARAM_SHORT, &g_sensor.base.th_fr, TH_SEN_FR_INIT, NO_CHECK},
-  {"th_sen_fl", PARAM_SHORT, &g_sensor.base.th_fl, TH_SEN_FL_INIT, NO_CHECK},
-  {"sen_fr_wall", PARAM_SHORT, &g_sensor.base.fr_wall, SEN_FR_WALL_INIT, NO_CHECK},
-  {"sen_fl_wall", PARAM_SHORT, &g_sensor.base.fl_wall, SEN_FL_WALL_INIT, NO_CHECK},
-  {"sen_fr_nowall", PARAM_SHORT, &g_sensor.base.fr_nowall, SEN_FR_NOWALL_INIT, NO_CHECK},
-  {"sen_fl_nowall", PARAM_SHORT, &g_sensor.base.fl_nowall, SEN_FL_NOWALL_INIT, NO_CHECK},
-  {"th_sen_f_approach_sum", PARAM_SHORT, &g_sensor.base.th_approach_sum,
-   TH_SEN_F_APPROACH_SUM_INIT, NO_CHECK},
-  {"th_sen_f_approach_sum_slalom", PARAM_SHORT, &g_sensor.base.th_approach_sum_slalom,
-   TH_SEN_F_APPROACH_SUM_SLALOM_INIT, NO_CHECK},
+  {"th_sen_f", PARAM_SHORT, &g_sensor.base.th_f, TH_SEN_F_INIT, NO_CHECK},
+  {"sen_f_wall", PARAM_SHORT, &g_sensor.base.f_wall, SEN_F_WALL_INIT, NO_CHECK},
+  {"sen_f_nowall", PARAM_SHORT, &g_sensor.base.f_nowall, SEN_F_NOWALL_INIT, NO_CHECK},
+  {"th_sen_f_approach", PARAM_SHORT, &g_sensor.base.th_approach, TH_SEN_F_APPROACH_INIT,
+   NO_CHECK},
+  {"th_sen_f_approach_slalom", PARAM_SHORT, &g_sensor.base.th_approach_slalom,
+   TH_SEN_F_APPROACH_SLALOM_INIT, NO_CHECK},
   {"th_sen_r_slalom", PARAM_SHORT, &g_sensor.base.th_r_slalom, TH_SEN_R_SLALOM_INIT, NO_CHECK},
   {"th_sen_l_slalom", PARAM_SHORT, &g_sensor.base.th_l_slalom, TH_SEN_L_SLALOM_INIT, NO_CHECK},
   {"sen_ratio", PARAM_SHORT, &g_sensor.ratio_pct, SEN_RATIO_INIT, SEN_RATIO_MIN, SEN_RATIO_MAX},
@@ -307,7 +304,7 @@ void mapWrite(void)
   sensorInterruptStart();
 }
 
-// 壁情報を未知の状態へ戻して/map.txtへ書き戻す(走行モード10用)。詳細は設計メモ §10参照
+// 壁情報を未知の状態へ戻して/map.txtへ書き戻す(走行モード6用)。詳細は設計メモ §10参照
 void mapErase(void)
 {
   g_map.mapClear();

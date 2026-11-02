@@ -156,38 +156,38 @@ void MapManager::nextDir(t_local_direction l_local_dir)
 }
 
 // センサの壁判定を現在位置と隣接マスへ記録
-void MapManager::wallSet(bool IS_SEN_FR, bool IS_SEN_R, bool IS_SEN_L)  //壁情報を記録
+void MapManager::wallSet(bool IS_SEN_F, bool IS_SEN_R, bool IS_SEN_L)  //壁情報を記録
 {
   switch (mypos.dir) {
     case north:
-      wall[mypos.x][mypos.y].north = IS_SEN_FR ? WALL : NOWALL;
+      wall[mypos.x][mypos.y].north = IS_SEN_F ? WALL : NOWALL;
       wall[mypos.x][mypos.y].east = IS_SEN_R ? WALL : NOWALL;
       wall[mypos.x][mypos.y].west = IS_SEN_L ? WALL : NOWALL;
-      if (mypos.y < (maze_y - 1)) wall[mypos.x][mypos.y + 1].south = IS_SEN_FR ? WALL : NOWALL;
+      if (mypos.y < (maze_y - 1)) wall[mypos.x][mypos.y + 1].south = IS_SEN_F ? WALL : NOWALL;
       if (mypos.x < (maze_x - 1)) wall[mypos.x + 1][mypos.y].west = IS_SEN_R ? WALL : NOWALL;
       if (mypos.x > 0) wall[mypos.x - 1][mypos.y].east = IS_SEN_L ? WALL : NOWALL;
       break;
     case east:
-      wall[mypos.x][mypos.y].east = IS_SEN_FR ? WALL : NOWALL;
+      wall[mypos.x][mypos.y].east = IS_SEN_F ? WALL : NOWALL;
       wall[mypos.x][mypos.y].south = IS_SEN_R ? WALL : NOWALL;
       wall[mypos.x][mypos.y].north = IS_SEN_L ? WALL : NOWALL;
-      if (mypos.x < (maze_x - 1)) wall[mypos.x + 1][mypos.y].west = IS_SEN_FR ? WALL : NOWALL;
+      if (mypos.x < (maze_x - 1)) wall[mypos.x + 1][mypos.y].west = IS_SEN_F ? WALL : NOWALL;
       if (mypos.y > 0) wall[mypos.x][mypos.y - 1].north = IS_SEN_R ? WALL : NOWALL;
       if (mypos.y < (maze_y - 1)) wall[mypos.x][mypos.y + 1].south = IS_SEN_L ? WALL : NOWALL;
       break;
     case south:
-      wall[mypos.x][mypos.y].south = IS_SEN_FR ? WALL : NOWALL;
+      wall[mypos.x][mypos.y].south = IS_SEN_F ? WALL : NOWALL;
       wall[mypos.x][mypos.y].west = IS_SEN_R ? WALL : NOWALL;
       wall[mypos.x][mypos.y].east = IS_SEN_L ? WALL : NOWALL;
-      if (mypos.y > 0) wall[mypos.x][mypos.y - 1].north = IS_SEN_FR ? WALL : NOWALL;
+      if (mypos.y > 0) wall[mypos.x][mypos.y - 1].north = IS_SEN_F ? WALL : NOWALL;
       if (mypos.x > 0) wall[mypos.x - 1][mypos.y].east = IS_SEN_R ? WALL : NOWALL;
       if (mypos.x < (maze_x - 1)) wall[mypos.x + 1][mypos.y].west = IS_SEN_L ? WALL : NOWALL;
       break;
     case west:
-      wall[mypos.x][mypos.y].west = IS_SEN_FR ? WALL : NOWALL;
+      wall[mypos.x][mypos.y].west = IS_SEN_F ? WALL : NOWALL;
       wall[mypos.x][mypos.y].north = IS_SEN_R ? WALL : NOWALL;
       wall[mypos.x][mypos.y].south = IS_SEN_L ? WALL : NOWALL;
-      if (mypos.x > 0) wall[mypos.x - 1][mypos.y].east = IS_SEN_FR ? WALL : NOWALL;
+      if (mypos.x > 0) wall[mypos.x - 1][mypos.y].east = IS_SEN_F ? WALL : NOWALL;
       if (mypos.y < (maze_y - 1)) wall[mypos.x][mypos.y + 1].south = IS_SEN_R ? WALL : NOWALL;
       if (mypos.y > 0) wall[mypos.x][mypos.y - 1].north = IS_SEN_L ? WALL : NOWALL;
       break;
