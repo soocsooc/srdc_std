@@ -116,7 +116,7 @@ void SEARCH::adachi(char gx, char gy, char gx2, char gy2)
       break;
     case loca_dir_error:
       // 壁情報の破損等でゴール到達不能と判定(motorDisable()はnextDirGet()内で実行済み)。
-      // 詳細はスラローム機能_実装まとめ.md §2.17参照
+      // 詳細は設計メモ §8参照
       return;
   }
 
@@ -151,7 +151,7 @@ void SEARCH::adachi(char gx, char gy, char gx2, char gy2)
         g_run.accelerate(HALF_SECTION, g_run.search_speed);
         break;
       case loca_dir_error:
-        // motorDisable()はnextDirGet()内で実行済み。詳細は§2.17参照
+        // motorDisable()はnextDirGet()内で実行済み。詳細は設計メモ §8参照
         return;
     }
 
@@ -164,7 +164,7 @@ void SEARCH::adachi(char gx, char gy, char gx2, char gy2)
 }
 
 // 左手法で迷路を探索(スラローム版)。lefthand()との違いは行き止まりのuTurn()のみで、90度旋回は
-// rotate()のまま(slalom()化は壁衝突が頻発したため撤回、スラローム機能_実装まとめ.md §2.16参照)
+// rotate()のまま(slalom()化は壁衝突が頻発したため撤回、設計メモ §14参照)
 void SEARCH::lefthandSlalom(void)
 {
   g_run.startAccelerate(SECTION / 3, g_run.search_speed);
@@ -184,7 +184,7 @@ void SEARCH::lefthandSlalom(void)
       g_run.accelerate(HALF_SECTION, g_run.search_speed);
     } else {
       // 行き止まり: 90度旋回->バック->前進を2回行い、180度回頭しつつ縦横の位置を
-      // 中心へ補正するuTurn()を使う(本フォークで追加)
+      // 中心へ補正するuTurn()を使う
       g_run.decelerate(SECTION / 3, g_run.search_speed);
       g_run.uTurn(right);
       g_run.accelerate(SECTION / 3, g_run.search_speed);
@@ -195,7 +195,7 @@ void SEARCH::lefthandSlalom(void)
   g_run.decelerate(HALF_SECTION, g_run.search_speed);
 }
 
-// 足立法で壁情報を更新しながらゴールまで探索(スラローム版)。90度旋回はslalomCell()(§2.65)、
+// 足立法で壁情報を更新しながらゴールまで探索(スラローム版)。90度旋回はslalomCell()(設計メモ §3)、
 // 開始直後の方向合わせはrotate()、行き止まりはuTurn()
 void SEARCH::adachiSlalom(char gx, char gy, char gx2, char gy2)
 {
@@ -216,7 +216,7 @@ void SEARCH::adachiSlalom(char gx, char gy, char gx2, char gy2)
       break;
     case loca_dir_error:
       // 壁情報の破損等でゴール到達不能と判定(motorDisable()はnextDirGet()内で実行済み)。
-      // 詳細はスラローム機能_実装まとめ.md §2.17参照
+      // 詳細は設計メモ §8参照
       return;
   }
 
@@ -241,10 +241,10 @@ void SEARCH::adachiSlalom(char gx, char gy, char gx2, char gy2)
         g_run.slalomCell(local_dir);
         break;
       case loca_dir_error:
-        // motorDisable()はnextDirGet()内で実行済み。詳細は§2.17参照
+        // motorDisable()はnextDirGet()内で実行済み。詳細は設計メモ §8参照
         return;
       case rear:
-        // 当てる壁があればuTurn()で位置を補正しながら回頭する(§2.70)
+        // 当てる壁があればuTurn()で位置を補正しながら回頭する(設計メモ §5)
         g_run.decelerate(HALF_SECTION, g_run.speed);
         turnBack(g_sensor.sen_fr.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
         g_run.accelerate(HALF_SECTION, g_run.search_speed);

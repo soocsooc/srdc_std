@@ -45,7 +45,7 @@ public:
   short max_speed;
   short slalom_speed;  // slalom()の旋回中の並進速度(外輪の基準速度)
   float turn_accel;
-  // slalom()の旋回形状(§2.65)。内輪の最低速度比、外輪の増速率、fを0→1にする外輪の走行距離[mm]
+  // slalom()の旋回形状(設計メモ §3)。内輪の最低速度比、外輪の増速率、fを0→1にする外輪の走行距離[mm]
   float slalom_inner_ratio;
   float slalom_outer_gain;
   float slalom_ramp_len;
@@ -71,19 +71,19 @@ public:
   int stoppableSpeed(int len);
   void rotate(t_local_direction dir, int times);
   void slalom(t_local_direction dir, float angle);
-  // 区画境界から次の区画境界までを1動作で90度曲がる(区画中心の前後slalom_offsetで旋回、§2.65)
+  // 区画境界から次の区画境界までを1動作で90度曲がる(区画中心の前後slalom_offsetで旋回、設計メモ §3)
   void slalomCell(t_local_direction dir);
   // slalom形状パラメータの範囲チェックとslalom_offsetの再計算
   void slalomParamUpdate(void);
   void uTurn(t_local_direction dir);
   // 前方センサの和FR+FLがth_sumを超えたら到達とする版のoneStep()(距離は安全上限)。
   // debug_log=trueで実測ログを出し、スイッチで中断できる(中断したらtrue)。
-  // 詳細はスラローム機能_実装まとめ.md §2.18・§2.46参照
+  // 詳細は設計メモ §4参照
   bool oneStepDynamic(int max_len, int init_speed, int th_sum, bool debug_log = false);
   // スタート位置を固定するための初期動作: 後ろ壁に押し付けてからwall_return_len前進する。
-  // uTurn()と同じuturn_back_len/wall_return_len/uturn_speedを流用する。詳細は§2.24参照。
+  // uTurn()と同じuturn_back_len/wall_return_len/uturn_speedを流用する。詳細は設計メモ §6参照。
   void alignStartPosition(void);
-  // 走行開始時の加速。align=trueなら先にalignStartPosition()で区画中心へ合わせる(§2.69)
+  // 走行開始時の加速。align=trueなら先にalignStartPosition()で区画中心へ合わせる(設計メモ §6)
   void startAccelerate(int len, int finish_speed, bool align = true);
 
 private:

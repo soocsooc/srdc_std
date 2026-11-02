@@ -1,52 +1,71 @@
 # srdc_std
 
-SRDC2026標準機体（ESP32-DevKitC-32E、モータドライバ EIC4311）用の Arduino スケッチ集です。
-[soocsooc/micromouse](https://github.com/soocsooc/micromouse)（Pi:Co Classic4 用）の STEP1〜8 を移植しました。
-モータの駆動は Pi:Co Classic3 のサンプルと同じ方式で、タイマー割り込みでステップパルスを出します。
+SRDC2026 標準機体用の Arduino スケッチ集です。STEP1〜7 でハードウェアを 1 つずつ動かし、STEP8 で迷路を探索して最短経路を走ります。
 
-## 動作環境
+## 機体
 
-- Arduino CLI（各スケッチの `sketch.yaml` の `esp32` プロファイルで版を固定）
+| 項目 | 内容 |
+| --- | --- |
+| マイコン | ESP32-DevKitC-32E（無印 ESP32） |
+| モータドライバ | EIC4311（SLA7078 互換）。CLOCK と CW/CCW で駆動する |
+| LED | 4 個（GPIO 5, 13, 15, 16）。**LOW で点灯** |
+| スイッチ | SW1（GPIO33）、SW2（GPIO35） |
+| 壁センサ | 前・右・左の 3 組（前は 1 個） |
+| 電池 | LiPo 3 セル |
+
+**SW2 には外付けのプルアップ抵抗が必要です。** GPIO35 は入力専用ピンで、内部プルアップがありません。SW2 と 3.3V の間に 10kΩ を付けてください。付けないと、押していなくても押したと判定されることがあります。
+
+ピンの一覧は [srdc_8_micromouse/STEP8_動作まとめ.md §2](srdc_8_micromouse/STEP8_動作まとめ.md) にあります。
+
+## スケッチ
+
+| スケッチ | 内容 |
+| --- | --- |
+| `srdc_1_LED` | LED を点滅させる |
+| `srdc_2_SWITCH` | SW1 で LED0・1、SW2 で LED2・3 を点けたり消したりする |
+| `srdc_3_Buzzer` | SW1 でモード番号を進め、SW2 でモードごとの音を鳴らす |
+| `srdc_4_Sensor` | 壁センサと電池電圧をシリアルに表示する |
+| `srdc_5_Straight` | スイッチを押すと 2 区画直進する |
+| `srdc_6_rotate` | スイッチを押すと右 90°・左 90°・右 180°・左 180° と回る |
+| `srdc_7_P_control` | 横の壁を見ながら 4 区画直進する（SW2）。SW1 でセンサ値を表示する |
+| `srdc_8_micromouse` | 迷路を探索して最短経路を走る。使い方は [STEP8_動作まとめ.md](srdc_8_micromouse/STEP8_動作まとめ.md)、設計の理由は [設計メモ.md](srdc_8_micromouse/設計メモ.md) |
+
+STEP5〜7 のピンとタイヤ径などは、各スケッチの `pins_config.h` にまとめてあります。STEP8 では `device.h` と `parameter.h` です。
+
+## ビルド
+
+各スケッチの `sketch.yaml` の `esp32` プロファイルで、ボードとライブラリの版を固定しています。
+
 - Arduino-ESP32 3.3.11（FQBN `esp32:esp32:esp32`）
-- Async TCP 3.5.0、ESP Async WebServer 3.12.0
+- Async TCP 3.5.0、ESP Async WebServer 3.12.0（STEP8 で使う）
 
 ```bash
 arduino-cli compile --profile esp32 srdc_8_micromouse
 arduino-cli upload -p COM3 --profile esp32 srdc_8_micromouse
 ```
 
-## Pi:Co Classic4 版との違い
-
-| 項目 | 標準機体 |
-| --- | --- |
-| LED | GPIO 5, 13, 15, 16。**LOW で点灯** |
-| スイッチ | SW1 = GPIO33（次へ）、SW2 = GPIO35（決定）。−1 の操作はない。起動時に SW2 を押すとフラッシュを初期化する |
-| SW2 のプルアップ | GPIO35 は内部プルアップがないため、**SW2 と 3.3V の間に 10k の外付けが必要** |
-| 壁センサ | 前・右・左の 3 個（前は 1 個）。STEP8 は前の値を FR と FL の両方に入れて、上位の処理を Classic4 版のまま使う |
-| モータ | MOTOR_EN = GPIO17（**HIGH で有効**）、CLOCK R/L = 19/18、CW/CCW R/L = 25/26 |
-| 残量 LED | なし。電池電圧が下がるとブザーで知らせる（LiPo 3 セル、10.0V 未満） |
-| Web 調整の AP | SSID `SRDC_STD`（192.168.4.1） |
-
-ピン定義は STEP8 では `srdc_8_micromouse/device.h`、STEP5〜7 では各スケッチの `pins_config.h` にまとめてあります。
+`.ino` と `.h` はリポジトリの [.clang-format](.clang-format) で整形します。CI はスケッチのコンパイルと、clang-format による整形のチェックを行います。
 
 ## 実機で確認・調整が必要な値
 
-標準機体ではまだ校正していないため、次の値は仮置きです。
+次の値はまだ実機で確かめていない仮の値です。
 
-- **1 回転あたりのパルス数** `PULSE_PER_REV`（400）：M2=H、M1/M3=L の前提。1 回転させて確かめる
-- **モータの回転方向** `CW_R_FORWARD` / `CW_L_FORWARD`：前進しなければ反転する
-- **受光素子の割り当て** `AD_F`/`AD_R`/`AD_L`（GPIO 36/39/34）：センサ値を表示して確かめる
-- **タイヤ径・トレッド幅・センサのしきい値**：Pi:Co Classic3 の値が入っている。STEP8 の調整メニュー（モード 15）と Web 調整で校正する
-- **モータ電流**：基板のトリマ R26 で合わせる
+| 項目 | 場所 | 確認方法 |
+| --- | --- | --- |
+| 1 回転あたりのパルス数（400） | `PULSE_PER_REV` | モータを 1 回転させる |
+| モータの回転方向 | `CW_R_FORWARD`／`CW_L_FORWARD` | STEP5 で前進しなければ反転する |
+| 受光素子の割り当て（前 36・右 39・左 34） | `AD_F`／`AD_R`／`AD_L` | STEP4 でセンサ値を表示する |
+| モータの電流 | 基板のトリマ R26 | 脱調や発熱を見ながら合わせる |
+| タイヤ径・トレッド幅・センサの基準値としきい値 | `parameter.h`（STEP8）、`pins_config.h`（STEP5〜7） | STEP8 の調整メニューと Web 調整で校正する |
+
+STEP8 の調整の順序は [STEP8_動作まとめ.md §11](srdc_8_micromouse/STEP8_動作まとめ.md) にあります。
 
 ## PC シミュレーター
 
-`tools/step8_sim` で STEP8 の迷路ロジックを PC 上で確かめられます。使い方は `tools/step8_sim/README.md` を参照してください。
-
-## 資料
-
-`srdc_8_micromouse/STEP8_動作まとめ.md` と `スラローム機能_実装まとめ.md` は、Classic4 版の資料をそのまま持ってきたものです。コード中の `§` 番号はこの資料を指します。TMC5240 に関する記述は標準機体には当てはまりません。
+[tools/step8_sim](tools/step8_sim/README.md) で、STEP8 の迷路ロジック（探索と最短走行）を PC 上でランダムな迷路に対して確かめられます。
 
 ## License
 
-元のスケッチは (C) 2025 RT Corporation で、Apache License, Version 2.0 に基づき公開されています。詳しくは [LICENSE](./LICENSE) を参照してください。
+(C) 2025 RT Corporation
+
+各ファイルはライセンスがファイル中に明記されている場合、そのライセンスに従います。明記されていない場合は、Apache License, Version 2.0 に基づき公開されています。ライセンスの全文は [LICENSE](./LICENSE) にあります。

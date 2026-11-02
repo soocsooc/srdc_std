@@ -19,7 +19,7 @@ class MISC
 {
 public:
   unsigned char mode_select;
-  // 速度・加速度のプリセット[%](ベース値に掛ける)と、前回選んだ番号(0始まり)。§2.64参照
+  // 速度・加速度のプリセット[%](ベース値に掛ける)と、前回選んだ番号(0始まり)。設計メモ §12参照
   short preset_speed_pct[PRESET_NUM];
   short preset_accel_pct[PRESET_NUM];
   unsigned char preset_select;

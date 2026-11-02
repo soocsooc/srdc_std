@@ -90,7 +90,7 @@ unsigned char MISC::presetSelect(void)
 }
 
 // 走行モードはプリセットを選び、速度・加速度をベース値×%にして実行する。終了後にベース値へ戻すので、
-// モード1・2のようにmodeExec()が入れ子になっても二重に掛からない(§2.64)
+// モード1・2のようにmodeExec()が入れ子になっても二重に掛からない(設計メモ §12)
 void MISC::modeRun(int mode)
 {
   if ((mode < 1) || (mode > 9)) {
@@ -146,7 +146,7 @@ void MISC::modeListPrint(void)
 // 選択された走行・調整モードを実行
 void MISC::modeExec(int mode)
 {
-  // 実行するモードを選択状態として記録する(最短走行3/7を含め全モード共通、§2.44参照)
+  // 実行するモードを選択状態として記録する(最短走行3/7を含め全モード共通、設計メモ §13参照)
   mode_select = mode;
   g_map.unreachable = false;
   motorEnable();
@@ -159,7 +159,7 @@ void MISC::modeExec(int mode)
     case 2:  //足立法
       g_map.positionInit();
       g_search.adachi(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(§2.53)
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -175,12 +175,12 @@ void MISC::modeExec(int mode)
       mapCopy();
       g_map.positionInit();
       g_fast.run(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(§2.53)
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
       g_misc.goalAppeal();
-      g_search.adachiDynamic(0, 0, 0, 0);  // 復路は未知区画を通る探索で戻る(§2.62)
+      g_search.adachiDynamic(0, 0, 0, 0);  // 復路は未知区画を通る探索で戻る(設計メモ §11)
       if (g_map.unreachable) break;
       g_run.rotate(right, 2);
       g_map.nextDir(right);
@@ -198,7 +198,7 @@ void MISC::modeExec(int mode)
     case 6:  //足立法(スラローム版)
       g_map.positionInit();
       g_search.adachiSlalom(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(§2.53)
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -214,12 +214,12 @@ void MISC::modeExec(int mode)
       mapCopy();
       g_map.positionInit();
       g_fast.runSlalom(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(§2.53)
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
       g_misc.goalAppeal();
-      g_search.adachiSlalomDynamic(0, 0, 0, 0);  // 復路はモード9の探索で戻る(§2.62)
+      g_search.adachiSlalomDynamic(0, 0, 0, 0);  // 復路はモード9の探索で戻る(設計メモ §11)
       if (g_map.unreachable) break;
       g_run.rotate(right, 2);
       g_map.nextDir(right);
@@ -229,7 +229,7 @@ void MISC::modeExec(int mode)
     case 8:  //足立法(センサ閾値主導の動的到達判定版)
       g_map.positionInit();
       g_search.adachiDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(§2.53)
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -244,7 +244,7 @@ void MISC::modeExec(int mode)
     case 9:  //足立法(センサ閾値主導の動的到達判定版・スラローム版)
       g_map.positionInit();
       g_search.adachiSlalomDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
-      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(§2.53)
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -276,6 +276,6 @@ void MISC::modeExec(int mode)
       break;
   }
 
-  ledSet(mode);  // 走行中のLED表示を、実行したモード番号の表示へ戻す(§2.44)
+  ledSet(mode);  // 走行中のLED表示を、実行したモード番号の表示へ戻す(設計メモ §13)
   motorDisable();
 }

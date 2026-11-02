@@ -75,8 +75,8 @@ static unsigned char slalomTailLed(float tail)
 }
 
 // 4x4区画コースの最外周をスラローム旋回でつないで周回する。各辺は2区画の直進+角の
-// slalomCell()。switchGet()の判定は角を曲がった後の区画境界でのみ行う(§2.8・§2.65)。
-// 角を曲がった後は、その旋回の余計な走行距離をslalomTailLed()で次の角まで表示する(§2.71)
+// slalomCell()。switchGet()の判定は角を曲がった後の区画境界でのみ行う(設計メモ §3)。
+// 角を曲がった後は、その旋回の余計な走行距離をslalomTailLed()で次の角まで表示する(設計メモ §3)
 void ADJUST::circuitCheck(void)
 {
   motorEnable();
@@ -96,7 +96,7 @@ void ADJUST::circuitCheck(void)
 }
 
 // 連続旋回(S字)・旋回直後の再加速・U字(同方向の連続旋回)を一続きに確認する。
-// スタートから 右→左→1区画直進→右→右 の順に曲がれるコースで行う(§2.7・§2.65)。
+// スタートから 右→左→1区画直進→右→右 の順に曲がれるコースで行う(設計メモ §3)。
 void ADJUST::slalomSequenceCheck(void)
 {
   motorEnable();
@@ -126,7 +126,7 @@ void ADJUST::slalomSequenceCheck(void)
 }
 
 // 到達判定閾値の実測用。センサ停止を無効化(INT_MAX)して壁へ向けて走り、走行距離と前センサ値を
-// Serialへ出力する。スイッチで即停止できる。詳細はスラローム機能_実装まとめ.md §2.21参照。
+// Serialへ出力する。スイッチで即停止できる。詳細は設計メモ §4参照。
 void ADJUST::straightSensorDiag(float section_check)	// 最大走行区画数(壁の手前で止まる値にすること)
 {
   motorEnable();
@@ -139,7 +139,7 @@ void ADJUST::straightSensorDiag(float section_check)	// 最大走行区画数(�
 }
 
 // 前壁が見えるまで直進し、区画中心で止まる(Pゲイン調整用)。モード8と同じくth_approach_sumで
-// 区画境界とみなしてdecelerate(HALF_SECTION)する。走行中はログを出し、スイッチで即停止できる(§2.68)
+// 区画境界とみなしてdecelerate(HALF_SECTION)する。走行中はログを出し、スイッチで即停止できる(STEP8_動作まとめ.md §5)
 void ADJUST::straightToWallCheck(void)
 {
   const int cruise_speed = g_run.stoppableSpeed(HALF_SECTION);  // 半区画で止まり切れる速度
@@ -155,7 +155,7 @@ void ADJUST::straightToWallCheck(void)
 }
 
 // 単発のslalomCell()の確認(モード9と同じ入り方)。スタートから2区画直進した区画(前壁あり)で
-// 曲がり、次の区画の中心で止まる。張り出しslalom_offsetをSerialへ出力する(§2.65)。
+// 曲がり、次の区画の中心で止まる。張り出しslalom_offsetをSerialへ出力する(設計メモ §3)。
 void ADJUST::slalomTurnCheck(t_local_direction dir)
 {
   Serial.printf("slalom_offset = %.1f mm\r\n", g_run.slalom_offset);
@@ -191,7 +191,7 @@ static bool frontSensorSample(short * fr, short * fl)
 }
 
 // 区画中央に置き、1区画先の前壁あり→なしでFR/FLを測り、測定値と平均(th_sen_fr/fl)を保存する。
-// LEDは前壁あり=0b0110、なし=0b1001。SW1で中止。詳細はスラローム機能_実装まとめ.md §2.67参照
+// LEDは前壁あり=0b0110、なし=0b1001。SW1で中止。詳細は設計メモ §7参照
 void ADJUST::frontThresholdCalib(void)
 {
   short fr_wall, fl_wall, fr_nowall, fl_nowall;

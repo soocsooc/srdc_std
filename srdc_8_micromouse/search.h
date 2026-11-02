@@ -26,11 +26,11 @@ public:
   void lefthandSlalom(void);
   void adachiSlalom(char gx, char gy, char gx2, char gy2);
   // adachi()のcase frontのみoneStepDynamic()に置き換えた版。adachi()自体は無変更。
-  // 詳細はスラローム機能_実装まとめ.md §2.18参照。
+  // 詳細は設計メモ §4参照。
   void adachiDynamic(char gx, char gy, char gx2, char gy2);
-  // adachiDynamic()の旋回をslalomCell()にした版。詳細はスラローム機能_実装まとめ.md §2.65参照。
+  // adachiDynamic()の旋回をslalomCell()にした版。詳細は設計メモ §3参照。
   void adachiSlalomDynamic(char gx, char gy, char gx2, char gy2);
-  // 区画中心で180度回頭する。前壁と左右どちらかの壁があればuTurn()、なければrotate()(§2.70)
+  // 区画中心で180度回頭する。前壁と左右どちらかの壁があればuTurn()、なければrotate()(設計メモ §5)
   void turnBack(bool wall_f, bool wall_r, bool wall_l);
 };
 

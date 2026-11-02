@@ -15,7 +15,7 @@
 #ifndef MAP_MANAGER_H_
 #define MAP_MANAGER_H_
 
-#define MAZESIZE_MAX (16)  //配列の大きさ。実際の迷路の大きさはmaze_x/maze_y(§2.59)
+#define MAZESIZE_MAX (16)  //配列の大きさ。実際の迷路の大きさはmaze_x/maze_y(設計メモ §9)
 
 #define _UNKNOWN 2  //壁があるかないか判らない状態の場合の値
 #define NOWALL 0    //壁がない場合の値
@@ -46,10 +46,10 @@ public:
   MapManager();
 
   t_position mypos;
-  short maze_x, maze_y;  // 迷路の大きさ[区画](Web UIで変更可、§2.59)
-  // ゴール区画(長方形の対角2座標)。1区画のときは2座標を同じにする(§2.56)
+  short maze_x, maze_y;  // 迷路の大きさ[区画](Web UIで変更可、設計メモ §9)
+  // ゴール区画(長方形の対角2座標)。1区画のときは2座標を同じにする(設計メモ §9)
   short goal_mx, goal_my, goal_mx2, goal_my2;
-  // ゴール到達不能でスイッチ脱出した。modeExec()が復路以降を中断するのに使う(§2.53)
+  // ゴール到達不能でスイッチ脱出した。modeExec()が復路以降を中断するのに使う(設計メモ §8)
   bool unreachable;
 
   void axisUpdate(void);

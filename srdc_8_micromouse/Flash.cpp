@@ -17,7 +17,7 @@
 typedef enum { PARAM_SHORT, PARAM_FLOAT, PARAM_DOUBLE } t_param_type;
 
 // /parameters.txtの1行(キーと値)。値がmin〜maxの外ならinitへ戻す(min>maxなら範囲チェックなし)。
-// 範囲チェックの由来は STEP8_動作まとめ.md §6参照。
+// 範囲チェックの由来は 設計メモ §12参照。
 typedef struct
 {
   const char * key;
@@ -153,7 +153,7 @@ void paramApply(void)
 // paramSet()後の検証・反映・保存(Web/シリアル共通)
 void paramCommit(short old_maze_x, short old_maze_y)
 {
-  // 迷路の大きさが変わると外周の壁も変わるため、迷路情報を消去する(§2.59)
+  // 迷路の大きさが変わると外周の壁も変わるため、迷路情報を消去する(設計メモ §9)
   g_map.mazeSizeValidate();
   if ((g_map.maze_x != old_maze_x) || (g_map.maze_y != old_maze_y)) {
     mapErase();
@@ -282,11 +282,11 @@ void mapWrite(void)
   File file = SPIFFS.open(file_tmp, FILE_WRITE);
   if (!file) {
     Serial.println("- failed to open file for writing");
-    controlInterruptStart();  // 早期returnで割り込みを止めたままにしない(§2.44)
+    controlInterruptStart();  // 早期returnで割り込みを止めたままにしない(設計メモ §10)
     sensorInterruptStart();
     return;
   }
-  // ファイルは16x16=256バイトのまま、実際の迷路範囲(maze_x/maze_y)外は0を書く(範囲外参照の防止、§2.44)
+  // ファイルは16x16=256バイトのまま、実際の迷路範囲(maze_x/maze_y)外は0を書く(範囲外参照の防止、設計メモ §10)
   for (int i = 0; i < 16; i++) {
     for (int j = 0; j < 16; j++) {
       if ((i >= g_map.maze_x) || (j >= g_map.maze_y)) {
@@ -307,7 +307,7 @@ void mapWrite(void)
   sensorInterruptStart();
 }
 
-// 壁情報を未知の状態へ戻して/map.txtへ書き戻す(走行モード10用)。詳細はスラローム機能_実装まとめ.md §2.27参照
+// 壁情報を未知の状態へ戻して/map.txtへ書き戻す(走行モード10用)。詳細は設計メモ §10参照
 void mapErase(void)
 {
   g_map.mapClear();
@@ -326,7 +326,7 @@ void mapCopy(void)
   File file = SPIFFS.open("/map.txt", FILE_READ);
   if (!file || file.isDirectory()) {
     Serial.println("- failed to open file for reading");
-    controlInterruptStart();  // 早期returnで割り込みを止めたままにしない(§2.44)
+    controlInterruptStart();  // 早期returnで割り込みを止めたままにしない(設計メモ §10)
     sensorInterruptStart();
     return;
   }
@@ -334,7 +334,7 @@ void mapCopy(void)
     for (int j = 0; j < 16; j++) {
       if (file.available()) {
         read_data = file.read();
-        if ((i >= g_map.maze_x) || (j >= g_map.maze_y)) continue;  // 範囲外へ書かない(§2.44)
+        if ((i >= g_map.maze_x) || (j >= g_map.maze_y)) continue;  // 範囲外へ書かない(設計メモ §10)
         g_map.wallDataSet(i, j, north, read_data & 0x03);
         g_map.wallDataSet(i, j, east, (read_data >> 2) & 0x03);
         g_map.wallDataSet(i, j, south, (read_data >> 4) & 0x03);
@@ -376,9 +376,9 @@ void paramRead(void)
   sensorInterruptStop();
   delay(10);
 
-  // ファイルに無いキーは初期値のまま使う(古いparameters.txt対策、§2.19)
+  // ファイルに無いキーは初期値のまま使う(古いparameters.txt対策、設計メモ §12)
   paramDefault();
-  // goal_x2/y2が無い古いファイルでは1区画ゴール(goal_x/yと同じ)として扱う(§2.56)
+  // goal_x2/y2が無い古いファイルでは1区画ゴール(goal_x/yと同じ)として扱う(設計メモ §9)
   g_map.goal_mx2 = g_map.goal_my2 = -1;
 
   File file = SPIFFS.open("/parameters.txt");
@@ -389,7 +389,7 @@ void paramRead(void)
     Serial.println("- read from file:");
     while (file.available()) {
       split(file.readStringUntil('\n'), ' ', cmds);
-      // 削除したパラメータのキーは読み飛ばす(§2.65)
+      // 削除したパラメータのキーは読み飛ばす(設計メモ §12)
       if (!paramSet(cmds[0], cmds[1])) {
         Serial.print("parameter unknown key (ignored) ");
         Serial.println(cmds[0]);
@@ -403,7 +403,7 @@ void paramRead(void)
   if (g_map.goal_mx2 < 0) g_map.goal_mx2 = g_map.goal_mx;
   if (g_map.goal_my2 < 0) g_map.goal_my2 = g_map.goal_my;
   g_map.mazeSizeValidate();
-  g_map.mapClear();  // 起動時の壁情報(外周)を読み込んだ迷路の大きさで作り直す(§2.59)
+  g_map.mapClear();  // 起動時の壁情報(外周)を読み込んだ迷路の大きさで作り直す(設計メモ §9)
   g_map.goalValidate();
   paramApply();
   controlInterruptStart();

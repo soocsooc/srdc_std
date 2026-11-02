@@ -20,7 +20,7 @@ void setup()
   deviceInit();
   flashBegin();
   paramRead();
-  mapCopy();  // 電源を切っても前回の地図から続けられるようにする(§2.61)
+  mapCopy();  // 電源を切っても前回の地図から続けられるようにする(設計メモ §10)
 
   // 起動音を鳴らしてからモーターを無効化
   motorDisable();

@@ -13,12 +13,12 @@
 // limitations under the License.
 
 // 距離カウント方式の既存走行(run.cpp)とは別に、センサ閾値主導の到達判定を試すための新規
-// ファイル。既存のoneStep()/straight()等は無変更。詳細はスラローム機能_実装まとめ.md §2.18参照。
+// ファイル。既存のoneStep()/straight()等は無変更。詳細は設計メモ §4参照。
 
 #include "pico_common.h"
 
-// FR+FLがth_sumを超えるか、max_lenに達したら止まる版のoneStep()(§2.18・§2.46)。
-// debug_log=trueで実測ログを出力し、スイッチで即stop()できる(§2.21)。中断したらtrueを返す
+// FR+FLがth_sumを超えるか、max_lenに達したら止まる版のoneStep()(設計メモ §4)。
+// debug_log=trueで実測ログを出力し、スイッチで即stop()できる(設計メモ §4)。中断したらtrueを返す
 bool RUN::oneStepDynamic(int max_len, int init_speed, int th_sum, bool debug_log)
 {
   int obj_step;
@@ -66,14 +66,14 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th_sum, bool debug_log
 }
 
 // スタート位置を固定するための初期動作: 後ろ壁に押し付けてから前進する。
-// uTurn()と同じuturn_back_len/wall_return_len/uturn_speedを流用する。詳細はスラローム機能_実装まとめ.md §2.24参照。
+// uTurn()と同じuturn_back_len/wall_return_len/uturn_speedを流用する。詳細は設計メモ §6参照。
 void RUN::alignStartPosition(void)
 {
   moveFixed(MOT_BACK, uturn_back_len, uturn_speed);
   moveFixed(MOT_FORWARD, wall_return_len, uturn_speed);
 }
 
-// 走行開始時の加速。後ろに壁がない開始(ゴールからの復路など)はalign=falseで呼ぶ(§2.69)
+// 走行開始時の加速。後ろに壁がない開始(ゴールからの復路など)はalign=falseで呼ぶ(設計メモ §6)
 void RUN::startAccelerate(int len, int finish_speed, bool align)
 {
   if (align) alignStartPosition();

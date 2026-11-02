@@ -24,13 +24,13 @@ typedef struct
   short ref;
   short th_wall;
   short th_control;
-  // モード9専用の側方壁判定しきい値(sen_r/sen_lのみ使用)。詳細は§2.28・§2.29参照。
+  // モード9専用の側方壁判定しきい値(sen_r/sen_lのみ使用)。詳細は設計メモ §5参照。
   short th_wall_slalom;
   bool is_wall;
   bool is_control;
 } t_sensor;
 
-// REF・しきい値のベース値(Flash・Webで編集する値)。判定に使う値はapplyRatio()で倍率を掛けて作る(§2.63)
+// REF・しきい値のベース値(Flash・Webで編集する値)。判定に使う値はapplyRatio()で倍率を掛けて作る(設計メモ §12)
 typedef struct
 {
   short ref_r, ref_l;
@@ -47,7 +47,7 @@ public:
   volatile t_sensor sen_r, sen_l, sen_fr, sen_fl;
   volatile short battery_value;
   // oneStepDynamic()の前壁到達判定閾値(FR+FLの和、モード8用/モード9用)。和にするのは車体の
-  // 向きの影響を打ち消すため。詳細はスラローム機能_実装まとめ.md §2.46参照。
+  // 向きの影響を打ち消すため。詳細は設計メモ §4参照。
   short th_approach_sum;
   short th_approach_sum_slalom;
   t_sensor_base base;

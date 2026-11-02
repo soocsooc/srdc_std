@@ -52,10 +52,10 @@ void RUN::interrupt(void)
     speed_target_r = speed + con_wall.control;
     speed_target_l = speed - con_wall.control;
   } else if (turn_enable == true) {
-    // スラローム中: 外輪を増速し、内輪を減速する(turn_fは旋回ループが外輪の走行距離から更新、§2.65)
+    // スラローム中: 外輪を増速し、内輪を減速する(turn_fは旋回ループが外輪の走行距離から更新、設計メモ §3)
     double outer = speed * (1.0 + slalom_outer_gain * turn_f);
     double inner = speed * (1.0 - (1.0 - slalom_inner_ratio) * turn_f);
-    // 内輪がMIN_SPEEDで頭打ちになると軌跡がずれるため、左右の速度比を保って持ち上げる(§2.71)
+    // 内輪がMIN_SPEEDで頭打ちになると軌跡がずれるため、左右の速度比を保って持ち上げる(設計メモ §3)
     if (inner < MIN_SPEED) {
       const double k = min(SLALOM_MIN_SPEED_SCALE_MAX, MIN_SPEED / max(inner, 1.0));
       outer *= k;
@@ -337,7 +337,7 @@ void RUN::rotate(t_local_direction dir, int times)
   stop();
 
   // 基板の接触不良等でstep_lr_lenが進まなくなり回転が終わらない場合のフェイルセーフ。
-  // 詳細はスラローム機能_実装まとめ.md §2.17参照
+  // 詳細は設計メモ §8参照
   if (timed_out) {
     buzzerEnable(400);
     delay(200);
@@ -346,7 +346,7 @@ void RUN::rotate(t_local_direction dir, int times)
 }
 
 // 旋回の強さfを外輪の走行距離s_outから求める。外輪が全体でs_total走る間に、入口と出口を同じ傾き
-// (ramp_lenで0⇔1)にした前後対称な台形にする(§2.66)
+// (ramp_lenで0⇔1)にした前後対称な台形にする(設計メモ §3)
 static double slalomProfile(double s_out, double s_total, double ramp_len)
 {
   const double f = min(1.0, min(s_out, s_total - s_out) / ramp_len);
@@ -380,7 +380,7 @@ double RUN::slalomRampAngle(double s_end)
 }
 
 // obj_th[rad]曲がるときの外輪の走行距離[mm]。台形なら旋回角が距離の一次式になるので直接求め、
-// 入口と出口のランプだけで曲がりきる三角形なら二分法で求める(§2.66)
+// 入口と出口のランプだけで曲がりきる三角形なら二分法で求める(設計メモ §3)
 double RUN::slalomLength(double obj_th)
 {
   const double len = slalom_ramp_len;
@@ -401,7 +401,7 @@ double RUN::slalomLength(double obj_th)
 }
 
 // 停止せず外輪の増速と内輪の減速で指定角度[度]曲がる。軌跡は速度によらず、並進速度は
-// slalom_speedまで下げて次の動作へつなげる。詳細はスラローム機能_実装まとめ.md §2.65・§2.66参照
+// slalom_speedまで下げて次の動作へつなげる。詳細は設計メモ §3参照
 void RUN::slalom(t_local_direction dir, float angle)
 {
   const double obj_th = (double)angle * PI / 180.0;
@@ -446,7 +446,7 @@ void RUN::slalom(t_local_direction dir, float angle)
   accel = 0.0;
   slalom_tail = (float)max(0.0, s_out - s_total);
 
-  // 基板の接触不良等でパルス数が進まず旋回が終わらない場合は強制停止する(§2.17)
+  // 基板の接触不良等でパルス数が進まず旋回が終わらない場合は強制停止する(設計メモ §8)
   if (timed_out) {
     upper_speed_limit = lower_speed_limit = MIN_SPEED;
     stop();
@@ -457,11 +457,11 @@ void RUN::slalom(t_local_direction dir, float angle)
     upper_speed_limit = lower_speed_limit = speed;
   }
 
-  // straight()等は開始時にcounterClear()しない前提のため、ここで明示的にクリアする(§2.9)
+  // straight()等は開始時にcounterClear()しない前提のため、ここで明示的にクリアする(設計メモ §2)
   counterClear();
 }
 
-// 区画境界から次の区画境界までを1動作で90度曲がる(§2.65)
+// 区画境界から次の区画境界までを1動作で90度曲がる(設計メモ §3)
 void RUN::slalomCell(t_local_direction dir)
 {
   const int pre = max(0, (int)(HALF_SECTION - slalom_offset + 0.5f));
@@ -471,7 +471,7 @@ void RUN::slalomCell(t_local_direction dir)
 }
 
 // slalom形状パラメータを範囲内に収め、90度旋回の張り出しslalom_offsetをslalomProfile()と同じ
-// プロファイルの数値積分で求める(§2.65)
+// プロファイルの数値積分で求める(設計メモ §3)
 void RUN::slalomParamUpdate(void)
 {
   if ((slalom_inner_ratio < 0.0f) || (slalom_inner_ratio > SLALOM_INNER_RATIO_MAX)) {

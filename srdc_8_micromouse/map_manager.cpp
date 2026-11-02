@@ -33,7 +33,7 @@ MapManager::MapManager()
 }
 
 // 壁情報を未知の状態(スタート地点周辺と外周のみ既知)へ戻す。現在位置・ゴール座標は変えない。
-// 詳細はスラローム機能_実装まとめ.md §2.27参照
+// 詳細は設計メモ §10参照
 void MapManager::mapClear(void)
 {
   for (int i = 0; i < maze_x; i++) {
@@ -322,7 +322,7 @@ t_local_direction MapManager::nextDirGet(
 
   if (steps_map[mypos.x][mypos.y] == 65535) {
     // 到達不能を示す点滅。接触不良による誤判定もあるため、モータを止めてスイッチで抜けられる
-    // ようにする(§2.17)。脱出済みなら再度止めずに即座に返す(§2.53)
+    // ようにする(設計メモ §8)。脱出済みなら再度止めずに即座に返す(設計メモ §8)
     while (!unreachable && (switchGet() == 0)) {
       motorDisable();
       ledSet(0x0a);
@@ -366,7 +366,7 @@ t_local_direction MapManager::nextDir2Get(
   }
 
   if (steps_map[mypos.x][mypos.y] == 65535) {  //Goalにいけない
-    // モータを止めてスイッチで抜けられるようにする(詳細は§2.17・§2.53参照、nextDirGet()と同じ)
+    // モータを止めてスイッチで抜けられるようにする(詳細は設計メモ §8参照、nextDirGet()と同じ)
     while (!unreachable && (switchGet() == 0)) {
       motorDisable();
       ledSet(0x0a);
@@ -390,7 +390,7 @@ bool MapManager::posIn(short x, short y, short x2, short y2)
   return (px >= min(x, x2)) && (px <= max(x, x2)) && (py >= min(y, y2)) && (py <= max(y, y2));
 }
 
-// 迷路の大きさが2〜MAZESIZE_MAXの範囲外なら初期値へ戻す(§2.59)
+// 迷路の大きさが2〜MAZESIZE_MAXの範囲外なら初期値へ戻す(設計メモ §9)
 void MapManager::mazeSizeValidate(void)
 {
   if ((maze_x < 2) || (maze_x > MAZESIZE_MAX) || (maze_y < 2) || (maze_y > MAZESIZE_MAX)) {
@@ -400,7 +400,7 @@ void MapManager::mazeSizeValidate(void)
   }
 }
 
-// ゴール座標が迷路外、またはスタート(0,0)を含む長方形なら初期値へ戻す(§2.56)
+// ゴール座標が迷路外、またはスタート(0,0)を含む長方形なら初期値へ戻す(設計メモ §9)
 void MapManager::goalValidate(void)
 {
   const short v[4] = {goal_mx, goal_my, goal_mx2, goal_my2};
@@ -419,7 +419,7 @@ void MapManager::goalValidate(void)
     goal_my = GOAL_Y_INIT;
     goal_mx2 = GOAL_X2_INIT;
     goal_my2 = GOAL_Y2_INIT;
-    // 初期値も迷路の外なら、スタートと反対の角の1区画にする(§2.59)
+    // 初期値も迷路の外なら、スタートと反対の角の1区画にする(設計メモ §9)
     if ((max(goal_mx, goal_mx2) >= maze_x) || (max(goal_my, goal_my2) >= maze_y)) {
       goal_mx = goal_mx2 = maze_x - 1;
       goal_my = goal_my2 = maze_y - 1;
@@ -427,7 +427,7 @@ void MapManager::goalValidate(void)
   }
 }
 
-// 歩数マップを未到達で埋め、目標の長方形内の全区画を0にする(複数区画ゴール、§2.56)
+// 歩数マップを未到達で埋め、目標の長方形内の全区画を0にする(複数区画ゴール、設計メモ §9)
 void MapManager::stepMapInit(int x, int y, int x2, int y2)
 {
   for (int i = 0; i < maze_x; i++) {

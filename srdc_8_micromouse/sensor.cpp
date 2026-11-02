@@ -22,7 +22,7 @@ void sensorInterrupt(void) { g_sensor.interrupt(); }
 
 static short senScale(short v, short pct) { return (short)(((long)v * pct + 50) / 100); }
 
-// REF・しきい値のベース値に倍率を掛けて判定用の値にする(§2.63)
+// REF・しきい値のベース値に倍率を掛けて判定用の値にする(設計メモ §12)
 void SENSOR::applyRatio(void)
 {
   if ((ratio_pct < SEN_RATIO_MIN) || (ratio_pct > SEN_RATIO_MAX)) ratio_pct = SEN_RATIO_INIT;
@@ -110,7 +110,7 @@ void SENSOR::interrupt(void)
       break;
     case 2:
       sen_fl.value = sen_fr.value;  // 前センサは1個(FRと同じ値)
-      // 前壁はFR+FLの和で判定し、FR/FLの結果を揃える(車体の向きの影響を打ち消す、§2.57)
+      // 前壁はFR+FLの和で判定し、FR/FLの結果を揃える(車体の向きの影響を打ち消す、設計メモ §7)
       sen_fr.is_wall = sen_fl.is_wall =
         (sen_fr.value + sen_fl.value) > (sen_fr.th_wall + sen_fl.th_wall);
       break;
