@@ -15,7 +15,7 @@
 #ifndef SRC_MISC_H_
 #define SRC_MISC_H_
 
-// 走行モードは1〜MODE_RUN_MAX、MODE_ADJUSTで調整メニュー。SW1で1つ進め、MODE_ADJUSTの次は1
+// 走行モードは1〜MODE_RUN_MAX、MODE_ADJUSTで調整メニュー。「次」で1つ進め、MODE_ADJUSTの次は1
 #define MODE_RUN_MAX 5
 #define MODE_ERASE_MAP 6
 #define MODE_ADJUST 7
@@ -24,19 +24,12 @@ class MISC
 {
 public:
   unsigned char mode_select;
-  // 速度・加速度のプリセット[%](ベース値に掛ける)と、前回選んだ番号(0始まり)。設計メモ §12参照
-  short preset_speed_pct[PRESET_NUM];
-  short preset_accel_pct[PRESET_NUM];
-  unsigned char preset_select;
-  void modeRun(int mode);  // 走行モードはプリセットを選んでからmodeExec()する
   void modeExec(int mode);
   void modeListPrint(void);  // 走行モード一覧をシリアルへ出力
   short buttonInc(short _data, short limit, short limit_data);
   void buttonOk(void);
   void goalAppeal(void);
 
-private:
-  unsigned char presetSelect(void);
 };
 
 extern MISC g_misc;

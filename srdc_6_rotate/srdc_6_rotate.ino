@@ -16,15 +16,16 @@
 #include "stepper.h"
 #include "run.h"
 
-// LEDはLOWで点灯する
+// LEDはHIGHで点灯する。LED0〜3は回路図のL_1〜L_4
 #define LED0 5
 #define LED1 13
-#define LED2 15
-#define LED3 16
+#define LED2 16
+#define LED3 15
 
-// SW2(GPIO35)は内部プルアップがないため、10kの外付けプルアップが必要
+// SW2(GPIO35)は基板にプルアップがないため、10kのプルアップを付けるまでUSE_SW2を0にして読まない
 #define SW1 33
 #define SW2 35
+#define USE_SW2 0
 
 // HIGHでモータ有効(LOWでドライバがSLEEP)
 #define MOTOR_EN 17
@@ -35,8 +36,7 @@ hw_timer_t * g_timer0 = NULL;
 
 portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
-//割り込み
-//目標値の更新周期1kHz
+// 1kHzのタイマ割り込み。controlInterrupt()で目標速度を更新する
 void IRAM_ATTR onTimer0(void)
 {
   portENTER_CRITICAL_ISR(&g_timer_mux);  //割り込み禁止
@@ -52,10 +52,10 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  digitalWrite(LED0, HIGH);
-  digitalWrite(LED1, HIGH);
-  digitalWrite(LED2, HIGH);
-  digitalWrite(LED3, HIGH);
+  digitalWrite(LED0, LOW);
+  digitalWrite(LED1, LOW);
+  digitalWrite(LED2, LOW);
+  digitalWrite(LED3, LOW);
 
   pinMode(SW1, INPUT_PULLUP);
   pinMode(SW2, INPUT);
@@ -75,7 +75,7 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  while (digitalRead(SW1) & digitalRead(SW2)) { // ボタンを押すまで待機
+  while ((digitalRead(SW1) == HIGH) && !(USE_SW2 && (digitalRead(SW2) == LOW))) { // ボタンを押すまで待機
     delay(1);
     continue;
   }

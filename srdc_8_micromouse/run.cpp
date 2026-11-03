@@ -24,7 +24,7 @@ RUN::RUN()
   turn_enable = false;
 }
 
-// 割り込みハンドラ
+// 1kHzの制御割り込み(onTimer0)から呼ばれ、RUN::interrupt()で速度と壁制御を更新する
 void controlInterrupt(void) { g_run.interrupt(); }
 
 void RUN::interrupt(void)
@@ -85,7 +85,7 @@ void RUN::counterClear(void) { stepperCounterClear(); }
 // 左右の速度[mm/s]をパルス周波数に変換して出力する
 void RUN::speedSet(double l_speed, double r_speed) { stepperHzSet(l_speed / pulse, r_speed / pulse); }
 
-// 指定速度を維持
+// 速度をl_speedに固定し、パルスカウンタを0にして等速で走り続ける
 void RUN::stay(float l_speed)
 {
   controlInterruptStop();
@@ -120,7 +120,8 @@ void RUN::stop(void)
   delay(300);
 }
 
-// 走行開始後、指定速度まで加速して直進
+// init_speedからmax_spまで加速して直進し、残りの距離が制動距離を切ったらfinish_speedまで減速する。
+// finish_speedがMIN_SPEEDなら止まり、それ以外は等速のまま終える
 void RUN::straight(int len, int init_speed, int max_sp, int finish_speed)
 {
   int obj_step;
@@ -537,7 +538,7 @@ void RUN::moveFixed(t_CW_CCW dir, int len, int spd)
   stop();
 }
 
-// 行き止まりUターン: (90度旋回->バック->前進)×2で180度回頭し、縦横の位置を中心へ補正する。
+// 行き止まりUターン: (90度旋回->バック->前進)×2で180度回転し、縦横の位置を中心へ補正する。
 // rotate(right,2)の代替で、前後の減速・加速は呼び出し側が行う
 void RUN::uTurn(t_local_direction dir)
 {

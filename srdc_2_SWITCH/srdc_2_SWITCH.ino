@@ -12,17 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// LEDはLOWで点灯する
+// LEDはHIGHで点灯する。LED0〜3は回路図のL_1〜L_4
 #define LED0 5
 #define LED1 13
-#define LED2 15
-#define LED3 16
+#define LED2 16
+#define LED3 15
 
-// SW1は内部プルアップを使う。SW2(GPIO35)は内部プルアップがないため、10kの外付けプルアップが必要
+// SW1は内部プルアップを使う。SW2(GPIO35)は内部プルアップがなく、基板にもプルアップがない。
+// 基板を直して3.3Vへの10kのプルアップを付けるまではUSE_SW2を0にしておき、SW2を読まない
 #define SW1 33
 #define SW2 35
+#define USE_SW2 0
 
 int g_state_1, g_state_2;
+
+// スイッチが押されている(=LOW)か。USE_SW2が0のあいだ、SW2は押されていないとみなす
+bool sw1Pressed(void) { return digitalRead(SW1) == LOW; }
+bool sw2Pressed(void) { return USE_SW2 && (digitalRead(SW2) == LOW); }
 
 void setup()
 {
@@ -31,10 +37,6 @@ void setup()
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
-  digitalWrite(LED0, HIGH);
-  digitalWrite(LED1, HIGH);
-  digitalWrite(LED2, HIGH);
-  digitalWrite(LED3, HIGH);
 
   pinMode(SW1, INPUT_PULLUP);
   pinMode(SW2, INPUT);
@@ -44,27 +46,27 @@ void setup()
 
 void loop()
 {
-  // いずれかのSWが押される(=LOW)まで待機
-  while (digitalRead(SW1) && digitalRead(SW2)) {
+  // いずれかのSWが押されるまで待機
+  while (!sw1Pressed() && !sw2Pressed()) {
     continue;
   }
 
-  // SWに応じたLEDを点灯・消灯 (stateをインクリメントし、奇数のとき点灯=LOW)
-  if (digitalRead(SW1) == 0) {
+  // SWに応じたLEDを点灯・消灯 (stateをインクリメントし、2進数最終bitの偶奇をLEDに出力)
+  if (sw1Pressed()) {
     ++g_state_1;
-    digitalWrite(LED0, (g_state_1 & 0x01) ? LOW : HIGH);
-    digitalWrite(LED1, (g_state_1 & 0x01) ? LOW : HIGH);
+    digitalWrite(LED0, g_state_1 & 0x01);
+    digitalWrite(LED1, g_state_1 & 0x01);
   }
-  if (digitalRead(SW2) == 0) {
+  if (sw2Pressed()) {
     ++g_state_2;
-    digitalWrite(LED2, (g_state_2 & 0x01) ? LOW : HIGH);
-    digitalWrite(LED3, (g_state_2 & 0x01) ? LOW : HIGH);
+    digitalWrite(LED2, g_state_2 & 0x01);
+    digitalWrite(LED3, g_state_2 & 0x01);
   }
 
   delay(30);  // チャタリング回避
 
   // SWが離れるまで待機
-  while (!(digitalRead(SW1) && digitalRead(SW2))) {
+  while (sw1Pressed() || sw2Pressed()) {
     continue;
   }
 

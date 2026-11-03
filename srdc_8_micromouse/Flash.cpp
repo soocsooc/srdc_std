@@ -31,11 +31,6 @@ typedef struct
 #define NO_CHECK 1.0f, 0.0f
 #define SPEED_RANGE MIN_SPEED, SPEED_SANITY_MAX
 #define ACCEL_RANGE 0.001f, ACCEL_SANITY_MAX
-#define PRESET_RANGE PRESET_PCT_MIN, PRESET_PCT_MAX
-
-static_assert(PRESET_NUM == 3, "param_table has preset1..3 keys");
-constexpr short kPresetSpeedInit[PRESET_NUM] = PRESET_SPEED_PCT_INIT;
-constexpr short kPresetAccelInit[PRESET_NUM] = PRESET_ACCEL_PCT_INIT;
 
 static const t_param_entry param_table[] = {
   {"ref_sen_r", PARAM_SHORT, &g_sensor.base.ref_r, REF_SEN_R_INIT, NO_CHECK},
@@ -75,12 +70,6 @@ static const t_param_entry param_table[] = {
   {"uturn_back_len", PARAM_SHORT, &g_run.uturn_back_len, UTURN_BACK_LEN_INIT, 1, SECTION},
   {"wall_return_len", PARAM_SHORT, &g_run.wall_return_len, WALL_RETURN_LEN_INIT, 1, SECTION},
   {"uturn_speed", PARAM_SHORT, &g_run.uturn_speed, UTURN_SPEED_INIT, SPEED_RANGE},
-  {"preset1_speed", PARAM_SHORT, &g_misc.preset_speed_pct[0], kPresetSpeedInit[0], PRESET_RANGE},
-  {"preset2_speed", PARAM_SHORT, &g_misc.preset_speed_pct[1], kPresetSpeedInit[1], PRESET_RANGE},
-  {"preset3_speed", PARAM_SHORT, &g_misc.preset_speed_pct[2], kPresetSpeedInit[2], PRESET_RANGE},
-  {"preset1_accel", PARAM_SHORT, &g_misc.preset_accel_pct[0], kPresetAccelInit[0], PRESET_RANGE},
-  {"preset2_accel", PARAM_SHORT, &g_misc.preset_accel_pct[1], kPresetAccelInit[1], PRESET_RANGE},
-  {"preset3_accel", PARAM_SHORT, &g_misc.preset_accel_pct[2], kPresetAccelInit[2], PRESET_RANGE},
 };
 static const int PARAM_COUNT = sizeof(param_table) / sizeof(param_table[0]);
 
@@ -147,7 +136,8 @@ void paramApply(void)
   g_run.slalomParamUpdate();
 }
 
-// paramSet()後の検証・反映・保存(Web/シリアル共通)
+// paramSet()で値を変えた後に呼ぶ。迷路の大きさとゴールを検証し、大きさが変わっていたら迷路情報を
+// 消す。派生値を作り直してFlashへ保存する(Web/シリアル共通)
 void paramCommit(short old_maze_x, short old_maze_y)
 {
   // 迷路の大きさが変わると外周の壁も変わるため、迷路情報を消去する(設計メモ §9)
@@ -232,7 +222,7 @@ void paramSerialPoll(void)
   }
 }
 
-// パラメータファイルを初期値で作成
+// 全パラメータを初期値に戻し、/parameters.txtへ書き込む
 void flashInit(void)
 {
   Serial.println("\n\r parameter init /parameters.txt");

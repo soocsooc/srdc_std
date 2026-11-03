@@ -17,15 +17,17 @@
 #include "run.h"
 #include "sensor.h"
 
-// LEDはLOWで点灯する
+// LEDはHIGHで点灯する。LED0〜3は回路図のL_1〜L_4
 #define LED0 5
 #define LED1 13
-#define LED2 15
-#define LED3 16
+#define LED2 16
+#define LED3 15
 
-// SW2(GPIO35)は内部プルアップがないため、10kの外付けプルアップが必要
+// SW2(GPIO35)は基板にプルアップがないため、10kのプルアップを付けるまでUSE_SW2を0にして読まない
 #define SW1 33
 #define SW2 35
+#define USE_SW2 0
+#define LONG_PRESS_MS 1000  // SW1をこの時間以上押したら長押し
 
 // HIGHでモータ有効(LOWでドライバがSLEEP)
 #define MOTOR_EN 17
@@ -37,8 +39,7 @@ hw_timer_t * g_timer0 = NULL;
 hw_timer_t * g_timer1 = NULL;
 portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
-//割り込み
-//目標値の更新周期1kHz
+// 1kHzのタイマ割り込み。controlInterrupt()で目標速度を更新する
 void IRAM_ATTR onTimer0(void) // モータ制御
 {
   portENTER_CRITICAL_ISR(&g_timer_mux);  //割り込み禁止
@@ -61,10 +62,10 @@ void setup()
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
 
-  digitalWrite(LED0, HIGH);
-  digitalWrite(LED1, HIGH);
-  digitalWrite(LED2, HIGH);
-  digitalWrite(LED3, HIGH);
+  digitalWrite(LED0, LOW);
+  digitalWrite(LED1, LOW);
+  digitalWrite(LED2, LOW);
+  digitalWrite(LED3, LOW);
 
   pinMode(SW1, INPUT_PULLUP);
   pinMode(SW2, INPUT);
@@ -98,10 +99,21 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  while (digitalRead(SW1) & digitalRead(SW2)) { // スイッチが押されるまで待機
+  while ((digitalRead(SW1) == HIGH) && !(USE_SW2 && (digitalRead(SW2) == LOW))) { // スイッチが押されるまで待機
     continue;
   }
-  if (digitalRead(SW1) == 0) { // SW1でセンサ値の表示(SW2で走行)
+  // SW1の短押しでセンサ値の表示、長押し(USE_SW2が1ならSW2)で走行
+  bool run = false;
+  if (USE_SW2 && (digitalRead(SW2) == LOW)) {
+    run = true;
+  } else {
+    unsigned long t0 = millis();
+    while (digitalRead(SW1) == LOW) {
+      continue;
+    }
+    run = !USE_SW2 && ((millis() - t0) >= LONG_PRESS_MS);
+  }
+  if (!run) {
     while (1) {
       Serial.printf("r_sen  is %d\n\r", g_sensor.sen_r.value);
       Serial.printf("f_sen  is %d\n\r", g_sensor.sen_f.value);

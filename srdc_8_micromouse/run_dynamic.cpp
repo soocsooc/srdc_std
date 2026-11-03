@@ -72,7 +72,8 @@ void RUN::alignStartPosition(void)
   moveFixed(MOT_FORWARD, wall_return_len, uturn_speed);
 }
 
-// 走行開始時の加速。後ろに壁がない開始(ゴールからの復路など)はalign=falseで呼ぶ(設計メモ §6)
+// 走行開始時の加速。alignがtrueなら後ろ壁に当てて区画中心に合わせてから、lenの間にfinish_speedまで
+// 加速する。後ろに壁がない開始(ゴールからの復路など)はalign=falseで呼ぶ(設計メモ §6)
 void RUN::startAccelerate(int len, int finish_speed, bool align)
 {
   if (align) alignStartPosition();

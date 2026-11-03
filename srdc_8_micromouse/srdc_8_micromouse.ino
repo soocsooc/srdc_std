@@ -40,13 +40,13 @@ void loop()
   ledSet(g_misc.mode_select);
   switch (switchGet()) {
     case SW_RM:
-      // SW1で次のモードへ移動(MODE_ADJUSTの次は1)
+      // 「次」(SW1の短押し)で次のモードへ移動(MODE_ADJUSTの次は1)
       g_misc.mode_select = g_misc.buttonInc(g_misc.mode_select, MODE_ADJUST, 1);
       break;
     case SW_CM:
-      // SW2で選択したモードを実行(走行モードはプリセットを選んでから)
+      // 「決定」(SW1の長押し、USE_SW2が1ならSW2)で選択したモードを実行
       g_misc.buttonOk();
-      g_misc.modeRun(g_misc.mode_select);
+      g_misc.modeExec(g_misc.mode_select);
       break;
   }
   delay(1);

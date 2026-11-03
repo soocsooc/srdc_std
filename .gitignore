@@ -66,3 +66,6 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# VS Code の設定(.vscode/compile_commands.json は tools/make_compile_db.py で作る)
+.vscode/

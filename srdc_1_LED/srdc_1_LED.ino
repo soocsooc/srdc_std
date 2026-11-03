@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// SRDC2026標準機体のLEDはアノードが3.3V側のため、LOWで点灯・HIGHで消灯する
+// SRDC2026標準機体のLEDはカソードがGND側のため、HIGHで点灯・LOWで消灯する
+// LED0〜3は回路図のL_1〜L_4
 #define LED0 5
 #define LED1 13
-#define LED2 15
-#define LED3 16
+#define LED2 16
+#define LED3 15
 
 void setup()
 {
@@ -30,14 +31,14 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  digitalWrite(LED0, LOW);  // 点灯
-  digitalWrite(LED1, LOW);
-  digitalWrite(LED2, LOW);
-  digitalWrite(LED3, LOW);
-  delay(500);
-  digitalWrite(LED0, HIGH);  // 消灯
+  digitalWrite(LED0, HIGH);
   digitalWrite(LED1, HIGH);
   digitalWrite(LED2, HIGH);
   digitalWrite(LED3, HIGH);
+  delay(500);
+  digitalWrite(LED0, LOW);
+  digitalWrite(LED1, LOW);
+  digitalWrite(LED2, LOW);
+  digitalWrite(LED3, LOW);
   delay(500);
 }

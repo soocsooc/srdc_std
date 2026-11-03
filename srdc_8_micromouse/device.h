@@ -16,24 +16,28 @@
 
 #include <Arduino.h>
 
-// SRDC2026標準機体(ESP32-DevKitC-32E)のピン定義。基板(10/29版)の配線に合わせてある
+// SRDC2026標準機体(ESP32-DevKitC-32E)のピン定義。回路図V5(11/3版)の配線に合わせてある
 
-// switchGet()の戻り値。SW1=次(SW_RM)、SW2=決定(SW_CM)。−1の操作はない
+// switchGet()の戻り値。SW_RM=次、SW_CM=決定。−1の操作はない
 #define SW_CM 2
 #define SW_RM 4
 
-// LEDはアノードが3.3V側のため、LOWで点灯する
+// LEDはカソードがGND側のため、HIGHで点灯する。LED0〜3は回路図のL_1〜L_4
 #define LED0 5
 #define LED1 13
-#define LED2 15
-#define LED3 16
-#define LED_ON LOW
-#define LED_OFF HIGH
+#define LED2 16
+#define LED3 15
+#define LED_ON HIGH
+#define LED_OFF LOW
 
-// SW1は内部プルアップを使う。SW2(GPIO35)は入力専用ピンで内部プルアップがないため、
-// 10kの外付けプルアップが必要
+// SW1は内部プルアップを使う。SW2(GPIO35)は入力専用ピンで内部プルアップがなく、基板にも
+// プルアップがないため、押していないときの値が定まらない。基板を直して3.3Vへの10kの
+// プルアップを付けるまでは、SW2を読まず、SW1の短押しを「次」、長押しを「決定」にする。
+// 基板を直したらUSE_SW2を1にすると、SW1が「次」、SW2が「決定」になる
 #define SW1 33
 #define SW2 35
+#define USE_SW2 0
+#define SW_LONG_PRESS_MS 1000  // SW1をこの時間以上押したら長押し(決定)
 
 // センサLED(HIGHで点灯)。前は1個で、前方の受光素子1個と組になる
 #define SLED_F 14
@@ -52,8 +56,8 @@
 #define MOTOR_EN 17
 #define CLOCK_R 19
 #define CLOCK_L 18
-#define CW_R 25
-#define CW_L 26
+#define CW_R 22
+#define CW_L 21
 // 前進時のCW/CCWピンの出力。モータの向きが逆なら、ここを反転する
 #define CW_R_FORWARD LOW
 #define CW_L_FORWARD LOW

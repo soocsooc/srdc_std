@@ -25,7 +25,7 @@ public:
   void adachiDynamic(char gx, char gy, char gx2, char gy2);
   // adachiDynamic()の旋回をslalomCell()にした版。詳細は設計メモ §3参照。
   void adachiSlalomDynamic(char gx, char gy, char gx2, char gy2);
-  // 区画中心で180度回頭する。前壁と左右どちらかの壁があればuTurn()、なければrotate()(設計メモ §5)
+  // 区画中心で180度回転する。前壁と左右どちらかの壁があればuTurn()、なければrotate()(設計メモ §5)
   void turnBack(bool wall_f, bool wall_r, bool wall_l);
 };
 

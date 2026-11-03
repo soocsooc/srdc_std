@@ -23,8 +23,8 @@ static void ledWallShow(bool wall_l, bool wall_f, bool wall_r)
   ledSet((wall_l ? 0b1000 : 0) | (wall_f ? 0b0110 : 0) | (wall_r ? 0b0001 : 0));
 }
 
-// uTurn(right)は左壁→前壁、uTurn(left)は右壁→前壁へ後ろから当てるので、当てる壁が無ければ
-// その場で回るだけにする(行き止まりでない区画で後ろを選んだとき、設計メモ §5)
+// 区画中心で180度回転する。前壁と左壁があればuTurn(right)、前壁と右壁があればuTurn(left)で壁に当てて
+// 位置を補正し、どちらでもなければその場でrotate(right, 2)する(設計メモ §5)
 void SEARCH::turnBack(bool wall_f, bool wall_r, bool wall_l)
 {
   if (wall_f && wall_l) {
@@ -111,7 +111,7 @@ void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
 }
 
 // adachiDynamic()と同じ骨格で、90度旋回を区画境界からのslalomCell()に置き換えた版(停止せず曲がる)。
-// 行き止まりはuTurn()で回頭する。詳細は設計メモ §4・§3参照。
+// 行き止まりはuTurn()で回転する。詳細は設計メモ §4・§3参照。
 void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
 {
   t_global_direction glob_nextdir;

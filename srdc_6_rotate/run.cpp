@@ -26,10 +26,10 @@ RUN::RUN()
   accel = 0.0;
 }
 
-// 割り込みハンドラ
+// 1kHzのタイマ割り込み(onTimer0)から呼ばれ、RUN::interrupt()で速度を更新する
 void controlInterrupt(void) { g_run.interrupt(); }
 
-// 割り込み処理
+// 1msごとに速度をaccelだけ変え、min_speed〜max_speedの範囲に収める
 void RUN::interrupt(void)
 {
 
@@ -43,16 +43,16 @@ void RUN::interrupt(void)
   }
 }
 
-// 方向設定
+// 左右のモータの回転方向を設定する
 void RUN::dirSet(t_CW_CCW dir_left, t_CW_CCW dir_right)
 {
   stepperDirSet(dir_left == MOT_FORWARD, dir_right == MOT_FORWARD);
 }
 
-// モータードライバのカウンタクリア
+// 走行パルスのカウンタを0にする
 void RUN::counterClear(void) { stepperCounterClear(); }
 
-// 左右の速度設定
+// 左右の速度[mm/s]をパルス周波数に変換して出力する
 void RUN::speedSet(double l_speed, double r_speed)
 {
   stepperHzSet(l_speed / PULSE, r_speed / PULSE);  // 速度[mm/s]をパルス周波数[Hz]に変換
@@ -67,7 +67,7 @@ void RUN::stepGet(void)
   step_lr_len = (int)((float)step_lr / 2.0 * PULSE);
 }
 
-// 停止
+// パルスの出力を止めてモータを止める
 void RUN::stop(void) { stepperStop(); }
 
 // 最小速度から設定速度まで加速 (走行距離[mm]、設定速度[mm/s])
@@ -150,7 +150,7 @@ void RUN::decelerate(int len, int init_speed)
   stop();
 }
 
-// 回転 (方向(left/right)、回転回数(90度単位))
+// その場でdirの向きへ90度×times回る。加速して回り、残りの角度が制動距離を切ったら減速して止まる
 void RUN::rotate(t_local_direction dir, int times)
 {
   int obj_step;

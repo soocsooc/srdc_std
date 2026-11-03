@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// LEDはLOWで点灯する
+// LEDはHIGHで点灯する。LED0〜3は回路図のL_1〜L_4
 #define LED0 5
 #define LED1 13
-#define LED2 15
-#define LED3 16
+#define LED2 16
+#define LED3 15
 
-// SW1=次のモード、SW2=決定。SW2(GPIO35)は10kの外付けプルアップが必要
+// SW1の短押し=次のモード、長押し=決定。SW2(GPIO35)は基板にプルアップがないため、
+// 基板を直して10kのプルアップを付けたらUSE_SW2を1にする(SW1=次、SW2=決定になる)
 #define SW1 33
 #define SW2 35
+#define USE_SW2 0
+#define LONG_PRESS_MS 1000
 
 #define BUZZER 23
 
@@ -31,10 +34,14 @@
 #define FREQ_D 587  //レ
 #define FREQ_E 659  //ミ
 
+#define SW_NEXT 1
+#define SW_OK 2
+
 char g_mode;
 
 void ledSet(char data);
 void modeExec(char mode);
+char switchGet(void);
 
 void setup()
 {
@@ -56,13 +63,10 @@ void setup()
 
 void loop()
 {
-  // SWが押されるまで待機
-  while (digitalRead(SW1) & digitalRead(SW2)) {
-    continue;
-  }
+  char sw = switchGet();
 
-  // SW1でmodeを1つ進める(15の次は1)、プッシュ時に音
-  if (digitalRead(SW1) == 0) {
+  // 「次」でmodeを1つ進め(15の次は1)、押したときに音を鳴らす
+  if (sw == SW_NEXT) {
     g_mode++;
     if (g_mode > 15) {
       g_mode = 1;
@@ -73,8 +77,8 @@ void loop()
     ledSet(g_mode);
   }
 
-  // SW2で効果音->消音->mode音
-  if (digitalRead(SW2) == 0) {
+  // 「決定」で効果音->消音->mode音
+  if (sw == SW_OK) {
     ledcWriteTone(BUZZER, INC_FREQ);
     delay(80);
     ledcWriteTone(BUZZER, DEC_FREQ);
@@ -83,21 +87,40 @@ void loop()
     delay(300);
     modeExec(g_mode);
   }
-
-  // SWを離すまで待機
-  while (!(digitalRead(SW1) & digitalRead(SW2))) {
-    continue;
-  }
-  delay(30);
 }
 
-// data(2進数4bit)の各bitに応じてLEDを点灯(LOW)・消灯(HIGH)する
+// スイッチが押されて離されるまで待ち、SW_NEXTかSW_OKを返す
+char switchGet(void)
+{
+  while (1) {
+    if (USE_SW2 && (digitalRead(SW2) == LOW)) {
+      delay(30);  // チャタリング回避
+      while (digitalRead(SW2) == LOW) {
+        continue;
+      }
+      delay(30);
+      return SW_OK;
+    }
+    if (digitalRead(SW1) == LOW) {
+      unsigned long t0 = millis();
+      delay(30);  // チャタリング回避
+      while (digitalRead(SW1) == LOW) {
+        continue;
+      }
+      unsigned long len = millis() - t0;
+      delay(30);
+      return (!USE_SW2 && (len >= LONG_PRESS_MS)) ? SW_OK : SW_NEXT;
+    }
+  }
+}
+
+// data(2進数4bit)の各bitに応じてLEDを点灯(HIGH)・消灯(LOW)する
 void ledSet(char data)
 {
-  digitalWrite(LED0, (data & 0x01) ? LOW : HIGH);
-  digitalWrite(LED1, (data & 0x02) ? LOW : HIGH);
-  digitalWrite(LED2, (data & 0x04) ? LOW : HIGH);
-  digitalWrite(LED3, (data & 0x08) ? LOW : HIGH);
+  digitalWrite(LED0, (data & 0x01) ? HIGH : LOW);
+  digitalWrite(LED1, (data & 0x02) ? HIGH : LOW);
+  digitalWrite(LED2, (data & 0x04) ? HIGH : LOW);
+  digitalWrite(LED3, (data & 0x08) ? HIGH : LOW);
 }
 
 // modeに応じた高さの音を1秒再生

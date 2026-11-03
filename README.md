@@ -8,26 +8,26 @@ SRDC2026 標準機体用の Arduino スケッチ集です。STEP1〜7 でハー�
 | --- | --- |
 | マイコン | ESP32-DevKitC-32E（無印 ESP32） |
 | モータドライバ | EIC4311（SLA7078 互換）。CLOCK と CW/CCW で駆動する |
-| LED | 4 個（GPIO 5, 13, 15, 16）。**LOW で点灯** |
+| LED | 4 個（GPIO 5, 13, 16, 15）。HIGH で点灯 |
 | スイッチ | SW1（GPIO33）、SW2（GPIO35） |
 | 壁センサ | 前・右・左の 3 組（前は 1 個） |
 | 電池 | LiPo 3 セル |
 
-**SW2 には外付けのプルアップ抵抗が必要です。** GPIO35 は入力専用ピンで、内部プルアップがありません。SW2 と 3.3V の間に 10kΩ を付けてください。付けないと、押していなくても押したと判定されることがあります。
+**今の基板では SW2 を使いません。** SW2 の GPIO35 は入力専用ピンで内部プルアップがなく、基板にもプルアップがないため、押していなくても押したと判定されることがあります。そのため、SW1 の短押しを「次」、長押し（1 秒以上）を「決定」にしています。基板を直して SW2 と 3.3V の間に 10kΩ を付けたら、各スケッチの `USE_SW2` を 1 にします。SW1 が「次」、SW2 が「決定」になります。
 
-ピンの一覧は [srdc_8_micromouse/STEP8_動作まとめ.md §2](srdc_8_micromouse/STEP8_動作まとめ.md) にあります。
+ピンは回路図 V5（11/3 版）に合わせてあります。一覧は [srdc_8_micromouse/STEP8_動作まとめ.md §2](srdc_8_micromouse/STEP8_動作まとめ.md) にあります。
 
 ## スケッチ
 
 | スケッチ | 内容 |
 | --- | --- |
 | `srdc_1_LED` | LED を点滅させる |
-| `srdc_2_SWITCH` | SW1 で LED0・1、SW2 で LED2・3 を点けたり消したりする |
-| `srdc_3_Buzzer` | SW1 でモード番号を進め、SW2 でモードごとの音を鳴らす |
+| `srdc_2_SWITCH` | SW1 で LED0・1 を点けたり消したりする（`USE_SW2` を 1 にすると、SW2 で LED2・3） |
+| `srdc_3_Buzzer` | 「次」でモード番号を進め、「決定」でモードごとの音を鳴らす |
 | `srdc_4_Sensor` | 壁センサと電池電圧をシリアルに表示する |
 | `srdc_5_Straight` | スイッチを押すと 2 区画直進する |
 | `srdc_6_rotate` | スイッチを押すと右 90°・左 90°・右 180°・左 180° と回る |
-| `srdc_7_P_control` | 横の壁を見ながら 4 区画直進する（SW2）。SW1 でセンサ値を表示する |
+| `srdc_7_P_control` | 「決定」で横の壁を見ながら 4 区画直進する。SW1 の短押しでセンサ値を表示する |
 | `srdc_8_micromouse` | 迷路を探索して最短経路を走る。使い方は [STEP8_動作まとめ.md](srdc_8_micromouse/STEP8_動作まとめ.md)、設計の理由は [設計メモ.md](srdc_8_micromouse/設計メモ.md) |
 
 STEP5〜7 のピンとタイヤ径などは、各スケッチの `pins_config.h` にまとめてあります。STEP8 では `device.h` と `parameter.h` です。
@@ -45,6 +45,8 @@ arduino-cli upload -p COM3 --profile esp32 srdc_8_micromouse
 ```
 
 `.ino` と `.h` はリポジトリの [.clang-format](.clang-format) で整形します。CI はスケッチのコンパイルと、clang-format による整形のチェックを行います。
+
+VS Code の clangd は `.vscode/compile_commands.json` を使ってヘッダを解決します。このファイルは Git で管理していないので、クローンした後やスケッチのファイルを増やした後に `python tools/make_compile_db.py` で作り直します。
 
 ## 実機で確認・調整が必要な値
 

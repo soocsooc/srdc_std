@@ -167,7 +167,7 @@ void ADJUST::slalomTurnCheck(t_local_direction dir)
   motorDisable();
 }
 
-// SW2を待って前センサを約1秒平均し、ベース値(Sensor ratio=100%相当)で返す。SW1ならfalse
+// 「決定」を待って前センサを約1秒平均し、ベース値(Sensor ratio=100%相当)で返す。「次」ならfalse
 static bool frontSensorSample(short * f)
 {
   const int samples = 100;
@@ -187,7 +187,7 @@ static bool frontSensorSample(short * f)
 }
 
 // 区画中央に置き、1区画先の前壁あり→なしで前センサを測り、測定値と平均(th_sen_f)を保存する。
-// LEDは前壁あり=0b0110、なし=0b1001。SW1で中止。詳細は設計メモ §7参照
+// LEDは前壁あり=0b0110、なし=0b1001。「次」で中止。詳細は設計メモ §7参照
 void ADJUST::frontThresholdCalib(void)
 {
   short f_wall, f_nowall;
@@ -213,7 +213,8 @@ void ADJUST::frontThresholdCalib(void)
   g_misc.buttonOk();
 }
 
-// 調整項目を選択するメニューを表示
+// 調整メニュー。LED3を点滅させながら「次」で番号を選び、「決定」でmodeExec()を実行する。
+// modeExec()が1を返したら(11を選んだら)走行モードの選択へ戻る
 void ADJUST::menu(void)
 {
   unsigned char l_mode = 1;
@@ -247,7 +248,7 @@ void ADJUST::menu(void)
   }
 }
 
-// modeExec()のcaseと対応させること。11はメニューを抜ける
+// 調整モードの一覧をシリアルへ出力する(USBシリアルのlist_a)。modeExec()のcaseと対応させること
 void ADJUST::modeListPrint(void)
 {
   static const char * const names[] = {

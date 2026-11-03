@@ -93,12 +93,6 @@
 // 内輪をMIN_SPEEDまで持ち上げるときに左右へ掛ける倍率の上限(inner_ratioが0付近のとき用、設計メモ §3)
 #define SLALOM_MIN_SPEED_SCALE_MAX 2.0
 
-// 速度・加速度のプリセット数と初期値[%](ベース値に掛ける、設計メモ §12)
-#define PRESET_NUM 3
-#define PRESET_SPEED_PCT_INIT {100, 90, 110}
-#define PRESET_ACCEL_PCT_INIT {100, 90, 110}
-#define PRESET_PCT_MIN 10
-#define PRESET_PCT_MAX 300
 
 #define INC_FREQ 3000
 #define DEC_FREQ 2000

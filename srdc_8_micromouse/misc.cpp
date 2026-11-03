@@ -69,62 +69,7 @@ void MISC::goalAppeal(void)  //ゴールしたことをアピールする
   motorEnable();
 }
 
-// プリセットを選ぶ。LED4の点滅中、LED1〜3の点灯位置が番号を示す(SW1で変更、SW2で決定)
-unsigned char MISC::presetSelect(void)
-{
-  unsigned char sel = (preset_select < PRESET_NUM) ? preset_select : 0;
-  bool blink = false;
-
-  while (1) {
-    const unsigned char sw = switchGet();
-    if (sw == SW_RM) {
-      sel = buttonInc(sel, PRESET_NUM - 1, 0);
-    } else if (sw == SW_CM) {
-      buttonOk();
-      return sel;
-    }
-    blink = !blink;
-    ledSet((1 << sel) | (blink ? 0b1000 : 0));
-    delay(100);
-  }
-}
-
-// 走行モードはプリセットを選び、速度・加速度をベース値×%にして実行する。終了後にベース値へ戻すので、
-// modeExec()が入れ子になっても二重に掛からない(設計メモ §12)
-void MISC::modeRun(int mode)
-{
-  if ((mode < 1) || (mode > MODE_RUN_MAX)) {
-    modeExec(mode);
-    return;
-  }
-
-  preset_select = presetSelect();
-  const long sp = preset_speed_pct[preset_select];
-  const long ap = preset_accel_pct[preset_select];
-
-  const short base_search_speed = g_run.search_speed;
-  const short base_max_speed = g_run.max_speed;
-  const short base_slalom_speed = g_run.slalom_speed;
-  const float base_search_accel = g_run.search_accel;
-  const float base_turn_accel = g_run.turn_accel;
-
-  g_run.search_speed = (short)constrain(base_search_speed * sp / 100, MIN_SPEED, SPEED_SANITY_MAX);
-  g_run.max_speed = (short)constrain(base_max_speed * sp / 100, MIN_SPEED, SPEED_SANITY_MAX);
-  g_run.slalom_speed = (short)constrain(base_slalom_speed * sp / 100, MIN_SPEED, SPEED_SANITY_MAX);
-  g_run.search_accel = base_search_accel * ap / 100.0f;
-  g_run.turn_accel = base_turn_accel * ap / 100.0f;
-  Serial.printf("preset %d: speed %ld%% accel %ld%%\r\n", preset_select + 1, sp, ap);
-
-  modeExec(mode);
-
-  g_run.search_speed = base_search_speed;
-  g_run.max_speed = base_max_speed;
-  g_run.slalom_speed = base_slalom_speed;
-  g_run.search_accel = base_search_accel;
-  g_run.turn_accel = base_turn_accel;
-}
-
-// modeExec()のcaseと対応させること
+// 走行モードの一覧をシリアルへ出力する(USBシリアルのlist_r)。modeExec()のcaseと対応させること
 void MISC::modeListPrint(void)
 {
   static const char * const names[] = {

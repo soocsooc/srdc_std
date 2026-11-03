@@ -62,7 +62,7 @@ void loop()
   delay(100);
 }
 
-// タイマ割り込み
+// 4kHzのタイマ割り込み。呼ばれるたびに前・右・左のセンサを1つずつ読み、左の回で電池電圧も測る
 void IRAM_ATTR onTimer1(void)
 {
   static char cnt = 0;

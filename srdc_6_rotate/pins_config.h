@@ -4,8 +4,8 @@
 // EIC4311(SLA7078互換)の駆動ピン
 #define CLOCK_R 19
 #define CLOCK_L 18
-#define CW_R 25
-#define CW_L 26
+#define CW_R 22
+#define CW_L 21
 // 前進時のCW/CCWピンの出力。モータの向きが逆なら、ここを反転する
 #define CW_R_FORWARD LOW
 #define CW_L_FORWARD LOW

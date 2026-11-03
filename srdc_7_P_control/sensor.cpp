@@ -34,10 +34,11 @@ SENSOR::SENSOR()
   sen_l.th_control = CONTH_SEN_L;
 }
 
-// 割り込みハンドラ
+// センサ用のタイマ割り込み(onTimer1)から呼ばれ、SENSOR::interrupt()でセンサを1つ処理する
 void sensorInterrupt(void) { g_sensor.interrupt(); }
 
-// 割り込み処理
+// 呼ばれるたびに前・右・左のセンサを1つずつ読み、壁の有無と壁制御用の誤差を更新する。
+// 左の回で電池電圧も測る
 void SENSOR::interrupt(void)
 {
   static char cnt = 0;

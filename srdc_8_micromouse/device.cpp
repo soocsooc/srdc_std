@@ -18,7 +18,7 @@ hw_timer_t * g_timer0 = NULL;
 
 portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
-// 走行制御タイマーの割り込みハンドラ (1kHz)
+// 1kHzの走行制御タイマー割り込み。controlInterrupt()で速度と壁制御を更新する
 void IRAM_ATTR onTimer0(void)
 {
   portENTER_CRITICAL_ISR(&g_timer_mux);
@@ -188,7 +188,7 @@ void deviceInit(void)
   ledSet(0);
 
   pinMode(SW1, INPUT_PULLUP);
-  pinMode(SW2, INPUT);  // 内部プルアップなし(外付けプルアップ前提)
+  pinMode(SW2, INPUT);  // 内部プルアップなし(USE_SW2が0のあいだは読まない)
 
   ledcAttach(BUZZER, 440, 10);
   ledcWrite(BUZZER, 1024);
@@ -233,7 +233,7 @@ void deviceInit(void)
   Serial.begin(115200);
 }
 
-// LEDを4ビットの値で点灯
+// dataの下位4ビットをLED0〜3に表示する(ビットが1なら点灯)
 void ledSet(unsigned char data)
 {
   digitalWrite(LED0, (data & 0x01) ? LED_ON : LED_OFF);
@@ -260,22 +260,33 @@ void motorDisable(void)
   digitalWrite(MOTOR_EN, LOW);  //Power OFF (SLEEP)
 }
 
-// 押されたスイッチを取得し、離されるまで待つ。SW1=SW_RM(次)、SW2=SW_CM(決定)
+// 押されたスイッチを取得し、離されるまで待つ。USE_SW2が1ならSW1=SW_RM(次)、SW2=SW_CM(決定)。
+// 0ならSW1の短押しがSW_RM、SW_LONG_PRESS_MS以上の長押しがSW_CM。長押しになった時点で短く鳴らす
 unsigned char switchGet(void)
 {
   unsigned char ret = 0;
   if (digitalRead(SW1) == LOW) {
+    const unsigned long t0 = millis();
+    bool long_press = false;
     do {
       delay(20);
+      if (!USE_SW2 && !long_press && (millis() - t0 >= SW_LONG_PRESS_MS)) {
+        long_press = true;
+        buzzerEnable(DEC_FREQ);
+        delay(30);
+        buzzerDisable();
+      }
     } while (digitalRead(SW1) == LOW);
-    ret |= SW_RM;
+    ret |= long_press ? SW_CM : SW_RM;
   }
+#if USE_SW2
   if (digitalRead(SW2) == LOW) {
     do {
       delay(20);
     } while (digitalRead(SW2) == LOW);
     ret |= SW_CM;
   }
+#endif
   return ret;
 }
 
@@ -296,5 +307,5 @@ unsigned short sensorGetR(void) { return sledRead(SLED_R, AD_R); }
 unsigned short sensorGetL(void) { return sledRead(SLED_L, AD_L); }
 unsigned short sensorGetF(void) { return sledRead(SLED_F, AD_F); }
 
-// 電池電圧[mV]。51kと10kの分圧(v3と同じ比)
+// 電池電圧[mV]を返す。51kと10kの分圧を戻して計算する
 short batteryVoltGet(void) { return (double)analogReadMilliVolts(AD_BATT) / 10.0 * (10.0 + 51.0); }

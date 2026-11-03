@@ -16,7 +16,8 @@
 
 SENSOR g_sensor;
 
-// センサ計測の入口。sensorTask(device.cpp)から1ms周期で4回呼ばれる(電池電圧処理1回+前/右/左)
+// sensorTask(device.cpp)から1ms周期で4回呼ばれ、SENSOR::interrupt()で電池電圧・前・右・左を
+// 1つずつ処理する
 void sensorInterrupt(void) { g_sensor.interrupt(); }
 
 static short senScale(short v, short pct) { return (short)(((long)v * pct + 50) / 100); }

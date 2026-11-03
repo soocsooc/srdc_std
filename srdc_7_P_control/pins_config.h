@@ -15,8 +15,8 @@
 // EIC4311(SLA7078互換)の駆動ピン
 #define CLOCK_R 19
 #define CLOCK_L 18
-#define CW_R 25
-#define CW_L 26
+#define CW_R 22
+#define CW_L 21
 // 前進時のCW/CCWピンの出力。モータの向きが逆なら、ここを反転する
 #define CW_R_FORWARD LOW
 #define CW_L_FORWARD LOW
@@ -29,7 +29,7 @@
 #define PULSE_PER_REV 400.0
 #define PULSE (TIRE_DIAMETER * PI / PULSE_PER_REV)
 
-//環境に合わせて変更する(標準機体では未校正。STEP7のSW1でセンサ値を表示して決める)
+//環境に合わせて変更する(標準機体では未校正。STEP7のSW1の短押しでセンサ値を表示して決める)
 //ここから
 #define REF_SEN_R 589
 #define REF_SEN_L 628

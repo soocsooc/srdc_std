@@ -65,7 +65,7 @@ static short webSenStable(unsigned char ch, short v)
 // --- トップページ HTML 生成 ----------------------------------------------------
 // セクションごとの関数に分割している(STEP8_動作まとめ.md §10参照)
 
-// DOCTYPE〜迷路マップ表示領域(プレースホルダ)まで。値の埋め込みなし。
+// トップページの先頭(DOCTYPEから迷路マップの表示領域まで)のHTMLを返す。値は埋め込まない
 static String htmlPageHead(void)
 {
   return R"HTML(<!DOCTYPE html>
@@ -108,7 +108,7 @@ static String htmlPageHead(void)
 )HTML";
 }
 
-// battery Value 表示 (id="voltage" をJSが定期更新)
+// 電池電圧の表示部分のHTMLを返す(id="voltage"をJSが定期更新)
 static String htmlBatterySection(void)
 {
   String html = R"HTML(<p><h2>battery Value</h2></p>
@@ -122,7 +122,7 @@ static String htmlBatterySection(void)
   return html;
 }
 
-// Sensor Value 表示 (id="left_value"等をJSが定期更新)
+// センサ値の表示部分のHTMLを返す(id="left_value"などをJSが定期更新)
 static String htmlSensorValueSection(void)
 {
   String html = R"HTML(<p><h2>Sensor Value</h2></p>
@@ -143,13 +143,14 @@ static String htmlSensorValueSection(void)
   return html;
 }
 
-// 入力欄1つ。nameはparameters.txtのキーと同じにする(保存時にparamSet()へそのまま渡すため)
+// nameがkey、初期値がvalueの入力欄1つのHTMLを返す。nameはparameters.txtのキーと同じにする
+// (保存時にparamSet()へそのまま渡すため)
 static String inputBox(const char * key, const String & value)
 {
   return String("<input name=\"") + key + "\" type=\"text\" size=\"10\" value=" + value + ">";
 }
 
-// 壁センサ Gain・基準値・しきい値(ベース値)と倍率の入力欄 + Save ボタン
+// 壁センサのGain・基準値・しきい値(ベース値)と倍率の入力欄、Saveボタンを含む部分のHTMLを返す
 static String htmlSensorParameterSection(void)
 {
   const t_sensor_base & b = g_sensor.base;
@@ -206,7 +207,7 @@ static String htmlSensorParameterSection(void)
   return html;
 }
 
-// タイヤ直径・トレッドの入力欄
+// タイヤ直径・トレッド幅の入力欄のHTMLを返す
 static String htmlTireParameterSection(void)
 {
   String html = R"HTML(<p><h2>Tire Parameter</h2></p>
@@ -224,7 +225,7 @@ static String htmlTireParameterSection(void)
   return html;
 }
 
-// 迷路の大きさ・ゴール座標の入力欄
+// 迷路の大きさ・ゴール座標の入力欄のHTMLを返す
 static String htmlGoalParameterSection(void)
 {
   String html = R"HTML(<p><h2>GOAL Parameter</h2></p>
@@ -252,7 +253,7 @@ static String htmlGoalParameterSection(void)
   return html;
 }
 
-// 加減速パラメータ(直進・rotate())の入力欄
+// 加減速パラメータ(直進・rotate())の入力欄のHTMLを返す
 static String htmlAccelParameterSection(void)
 {
   String html = R"HTML(<p><h2>Accel Parameter</h2></p>
@@ -270,7 +271,7 @@ static String htmlAccelParameterSection(void)
   return html;
 }
 
-// スラロームの速度・形状の入力欄と、計算した張り出しの表示
+// スラロームの速度・形状の入力欄と、計算した張り出しの表示のHTMLを返す
 static String htmlSlalomParameterSection(void)
 {
   String html = R"HTML(<p><h2>Slalom Parameter</h2></p>
@@ -297,7 +298,7 @@ static String htmlSlalomParameterSection(void)
   return html;
 }
 
-// 速度パラメータ(探索・最短・uTurn)の入力欄
+// 速度パラメータ(探索・最短・uTurn)の入力欄のHTMLを返す
 static String htmlSpeedParameterSection(void)
 {
   String html = R"HTML(<p><h2>Speed Parameter</h2></p>
@@ -324,35 +325,16 @@ static String htmlSpeedParameterSection(void)
   return html;
 }
 
-// 速度・加速度プリセット[%]の入力欄 + Save ボタン + フォーム閉じ
-static String htmlPresetSection(void)
+// Saveボタンとフォームの終わりのHTMLを返す
+static String htmlFormEnd(void)
 {
-  static const char * const speed_keys[PRESET_NUM] = {
-    "preset1_speed", "preset2_speed", "preset3_speed"};
-  static const char * const accel_keys[PRESET_NUM] = {
-    "preset1_accel", "preset2_accel", "preset3_accel"};
-  String html = R"HTML(<p><h2>Preset</h2></p>
-<p>走行モードの決定後に選ぶ。上の速度・加速度(Slalom speed含む)に%を掛けて走る</p>
-<table align="center">
-<tr><th>No</th><th>Speed %</th><th>Accel %</th></tr>
-)HTML";
-  for (int i = 0; i < PRESET_NUM; i++) {
-    html += "<tr><th>" + String(i + 1) + "</th><td>";
-    html += inputBox(speed_keys[i], String(g_misc.preset_speed_pct[i]));
-    html += "</td><td>";
-    html += inputBox(accel_keys[i], String(g_misc.preset_accel_pct[i]));
-    html += "</td></tr>\n";
-  }
-  html += R"HTML(</table>
-<br>
-<br>
-<input type="submit" value="Save">
+  return R"HTML(<input type="submit" value="Save">
 </form><br>
 )HTML";
-  return html;
 }
 
-// 走行モード・調整モードの番号と挙動の一覧(静的、値の埋め込みなし)。詳細はSTEP8_動作まとめ.md §4・§5参照。
+// 走行モード・調整モードの番号と動作の一覧のHTMLを返す(静的、値の埋め込みなし)。
+// 詳細はSTEP8_動作まとめ.md §4・§5参照。
 static String htmlModeSection(void)
 {
   return R"HTML(<hr>
@@ -380,14 +362,14 @@ static String htmlModeSection(void)
 <tr><td>7</td><td>連続旋回(S字)・旋回直後の直進・U字を一続きに確認</td></tr>
 <tr><td>8</td><td>モード2・3の到達判定閾値の実測診断。前壁への走行距離と前センサの値をシリアルへ出力</td></tr>
 <tr><td>9</td><td>単発のスラローム旋回の確認(2区画直進した区画で曲がる)。張り出しをシリアルへ出力</td></tr>
-<tr><td>10</td><td>前センサ閾値の校正。区画中央に置き、1区画先(次の区画の奥)の前壁あり→なしの順にSW2で測り、平均をFRONT Thresholdへ保存</td></tr>
+<tr><td>10</td><td>前センサ閾値の校正。区画中央に置き、1区画先(次の区画の奥)の前壁あり→なしの順に「決定」で測り、平均をFRONT Thresholdへ保存</td></tr>
 <tr><td>11〜</td><td>調整メニューを終了し走行モード選択へ戻る</td></tr>
 </table>
 </div>
 )HTML";
 }
 
-// 各パラメータの効果の説明文(静的、値の埋め込みなし)
+// 各パラメータの効果の説明のHTMLを返す(静的、値の埋め込みなし)
 static String htmlParameterNotes(void)
 {
   return R"HTML(<hr>
@@ -413,13 +395,13 @@ static String htmlParameterNotes(void)
 <li><b>Search speed</b>: 迷路探索時の巡航速度。大きいほど探索は速いが、壁センサの読み取りや姿勢制御が追いつかず衝突・誤判定のリスクが増える。モード4の旋回前後とモード2の探索では、半区画で止まり切れる速度(Search accel 1.5で約520mm/s)に自動で抑えられる。</li>
 <li><b>max speed</b>: 最短走行(モード4・5)で直線区間を走る最高速度。大きいほどタイムは縮むが、その分加速に必要な距離や、次のカーブ手前での減速が間に合うかの余裕が減る。</li>
 <li><b>Uturn back len</b> / <b>Wall return len</b> / <b>Uturn speed</b>: 行き止まりUターン(90度旋回→バック→前進×2)とモード2・3のスタート位置合わせでのバック距離・前進距離と速度。バックは壁に確実に当てるため前進より長くし、壁からの位置は前進距離で決まる。</li>
-<li><b>Preset</b>: 走行モードをSW2で決定した後、LED4の点滅中にSW1で選ぶ(LED1〜3の点灯位置が番号)。Search speed・max speed・Slalom speedにSpeed %、Search accel・Turn accelにAccel %を掛けて走る。</li>
 </ul>
 </div>
 )HTML";
 }
 
-// フォーム閉じ以降のクライアント側ポーリングスクリプト(静的、値の埋め込みなし)
+// フォームより後ろの、電池電圧・センサ値・迷路図を定期取得するクライアント側スクリプトを返す
+// (静的、値の埋め込みなし)
 static String htmlClientScript(void)
 {
   return R"HTML(</body>
@@ -501,7 +483,7 @@ static String buildTopPageHtml(void)
   html += htmlAccelParameterSection();
   html += htmlSlalomParameterSection();
   html += htmlSpeedParameterSection();
-  html += htmlPresetSection();
+  html += htmlFormEnd();
   html += htmlModeSection();
   html += htmlParameterNotes();
   html += htmlClientScript();
