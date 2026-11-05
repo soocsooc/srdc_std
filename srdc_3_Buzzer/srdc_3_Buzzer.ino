@@ -18,11 +18,11 @@
 #define LED2 16
 #define LED3 15
 
-// SW1の短押し=次のモード、長押し=決定。SW2(GPIO35)は基板にプルアップがないため、
-// 基板を直して10kのプルアップを付けたらUSE_SW2を1にする(SW1=次、SW2=決定になる)
+// SW1=次のモード、SW2=決定。SW2(GPIO35)は内部プルアップがないので、SW2をプルアップして
+// いないならUSE_SW2を0にする(SW2を読まず、SW1の短押し=次、長押し=決定になる)
 #define SW1 33
 #define SW2 35
-#define USE_SW2 0
+#define USE_SW2 1
 #define LONG_PRESS_MS 1000
 
 #define BUZZER 23

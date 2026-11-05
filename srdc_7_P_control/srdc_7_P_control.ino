@@ -23,10 +23,10 @@
 #define LED2 16
 #define LED3 15
 
-// SW2(GPIO35)は基板にプルアップがないため、10kのプルアップを付けるまでUSE_SW2を0にして読まない
+// SW2(GPIO35)は内部プルアップがない。SW2をプルアップしていないならUSE_SW2を0にする
 #define SW1 33
 #define SW2 35
-#define USE_SW2 0
+#define USE_SW2 1
 #define LONG_PRESS_MS 1000  // SW1をこの時間以上押したら長押し
 
 // HIGHでモータ有効(LOWでドライバがSLEEP)
@@ -102,7 +102,7 @@ void loop()
   while ((digitalRead(SW1) == HIGH) && !(USE_SW2 && (digitalRead(SW2) == LOW))) { // スイッチが押されるまで待機
     continue;
   }
-  // SW1の短押しでセンサ値の表示、長押し(USE_SW2が1ならSW2)で走行
+  // SW1でセンサ値の表示、SW2(USE_SW2が0ならSW1の長押し)で走行
   bool run = false;
   if (USE_SW2 && (digitalRead(SW2) == LOW)) {
     run = true;

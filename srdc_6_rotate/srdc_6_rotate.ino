@@ -22,10 +22,10 @@
 #define LED2 16
 #define LED3 15
 
-// SW2(GPIO35)は基板にプルアップがないため、10kのプルアップを付けるまでUSE_SW2を0にして読まない
+// SW2(GPIO35)は内部プルアップがない。SW2をプルアップしていないならUSE_SW2を0にする
 #define SW1 33
 #define SW2 35
-#define USE_SW2 0
+#define USE_SW2 1
 
 // HIGHでモータ有効(LOWでドライバがSLEEP)
 #define MOTOR_EN 17

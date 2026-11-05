@@ -18,11 +18,11 @@
 #define LED2 16
 #define LED3 15
 
-// SW1は内部プルアップを使う。SW2(GPIO35)は内部プルアップがなく、基板にもプルアップがない。
-// 基板を直して3.3Vへの10kのプルアップを付けるまではUSE_SW2を0にしておき、SW2を読まない
+// SW1は内部プルアップを使う。SW2(GPIO35)は内部プルアップがないので、
+// SW2をプルアップしていないならUSE_SW2を0にする(SW2を読まない)
 #define SW1 33
 #define SW2 35
-#define USE_SW2 0
+#define USE_SW2 1
 
 int g_state_1, g_state_2;
 

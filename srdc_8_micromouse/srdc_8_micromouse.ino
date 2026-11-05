@@ -44,7 +44,7 @@ void loop()
       g_misc.mode_select = g_misc.buttonInc(g_misc.mode_select, MODE_ADJUST, 1);
       break;
     case SW_CM:
-      // 「決定」(SW1の長押し、USE_SW2が1ならSW2)で選択したモードを実行
+      // 「決定」(SW2、USE_SW2が0ならSW1の長押し)で選択したモードを実行
       g_misc.buttonOk();
       g_misc.modeExec(g_misc.mode_select);
       break;

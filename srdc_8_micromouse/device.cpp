@@ -188,7 +188,7 @@ void deviceInit(void)
   ledSet(0);
 
   pinMode(SW1, INPUT_PULLUP);
-  pinMode(SW2, INPUT);  // 内部プルアップなし(USE_SW2が0のあいだは読まない)
+  pinMode(SW2, INPUT);  // 内部プルアップなし
 
   ledcAttach(BUZZER, 440, 10);
   ledcWrite(BUZZER, 1024);
