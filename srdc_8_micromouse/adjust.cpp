@@ -31,6 +31,14 @@ void ADJUST::adcView(void)
     Serial.printf(
       "reject F/R/L\t%lu %lu %lu\r\n", g_sensor.sample_reject[0], g_sensor.sample_reject[1],
       g_sensor.sample_reject[2]);
+    // SLED点灯窓[us]の最大値 (前/右/左)。左3つは前回表示から、max()は起動からの最大。
+    // 区間最大を0に戻す間にsensorTaskが書いた1サンプルは失うことがあるが、確認用なので許容する
+    Serial.printf(
+      "on_us F/R/L\t%u %u %u  max(%u %u %u)\r\n", g_sensor.sled_on_us_max[0],
+      g_sensor.sled_on_us_max[1], g_sensor.sled_on_us_max[2], g_sensor.sled_on_us_max_all[0],
+      g_sensor.sled_on_us_max_all[1], g_sensor.sled_on_us_max_all[2]);
+    for (int i = 0; i < 3; i++) g_sensor.sled_on_us_max[i] = 0;
+    Serial.printf("core timer0/sensor\t%d %d\r\n", g_core_timer0, g_core_sensor);
     Serial.printf("\n\r");
     delay(100);
     Serial.printf("\x1b[2J");

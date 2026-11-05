@@ -18,9 +18,14 @@ hw_timer_t * g_timer0 = NULL;
 
 portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
+// 実行中のコア番号(調整モード6で表示)。センサタスクとタイマー割り込みが同じコアかを確認する
+volatile int g_core_timer0 = -1;
+volatile int g_core_sensor = -1;
+
 // 1kHzの走行制御タイマー割り込み。controlInterrupt()で速度と壁制御を更新する
 void IRAM_ATTR onTimer0(void)
 {
+  g_core_timer0 = xPortGetCoreID();
   portENTER_CRITICAL_ISR(&g_timer_mux);
   controlInterrupt();
   portEXIT_CRITICAL_ISR(&g_timer_mux);
@@ -43,6 +48,7 @@ static volatile bool g_sensor_paused = false;  // タスクが停止点に到達
 static void sensorTask(void * arg)
 {
   (void)arg;
+  g_core_sensor = xPortGetCoreID();
   TickType_t last = xTaskGetTickCount();
   for (;;) {
     if (g_sensor_run) {
@@ -292,7 +298,8 @@ unsigned char switchGet(void)
 
 // SLED点灯 -> 整定待ち -> analogRead。点灯窓がSLED_WINDOW_MAX_USを超えて伸びたら
 // SENSOR_SAMPLE_BADを返し、呼び出し側で棄却する(STEP8_動作まとめ.md §7参照)
-static unsigned short sledRead(uint8_t sled_pin, uint8_t adc_pin)
+// 点灯窓の最大値はch(0=前 1=右 2=左)ごとにg_sensor.sled_on_us_max(_all)へ記録する
+static unsigned short sledRead(uint8_t sled_pin, uint8_t adc_pin, unsigned char ch)
 {
   digitalWrite(sled_pin, HIGH);
   uint32_t t0 = micros();
@@ -300,12 +307,16 @@ static unsigned short sledRead(uint8_t sled_pin, uint8_t adc_pin)
   unsigned short tmp = analogRead(adc_pin);
   uint32_t on_us = micros() - t0;
   digitalWrite(sled_pin, LOW);
+
+  const unsigned short us = (on_us > 0xFFFF) ? 0xFFFF : (unsigned short)on_us;
+  if (us > g_sensor.sled_on_us_max[ch]) g_sensor.sled_on_us_max[ch] = us;
+  if (us > g_sensor.sled_on_us_max_all[ch]) g_sensor.sled_on_us_max_all[ch] = us;
   return (on_us > SLED_WINDOW_MAX_US) ? SENSOR_SAMPLE_BAD : tmp;
 }
 
-unsigned short sensorGetR(void) { return sledRead(SLED_R, AD_R); }
-unsigned short sensorGetL(void) { return sledRead(SLED_L, AD_L); }
-unsigned short sensorGetF(void) { return sledRead(SLED_F, AD_F); }
+unsigned short sensorGetR(void) { return sledRead(SLED_R, AD_R, 1); }
+unsigned short sensorGetL(void) { return sledRead(SLED_L, AD_L, 2); }
+unsigned short sensorGetF(void) { return sledRead(SLED_F, AD_F, 0); }
 
 // 電池電圧[mV]を返す。51kと10kの分圧を戻して計算する
 short batteryVoltGet(void) { return (double)analogReadMilliVolts(AD_BATT) / 10.0 * (10.0 + 51.0); }

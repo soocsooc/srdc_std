@@ -54,6 +54,10 @@ public:
   // SLED点灯窓が伸びて棄却したサンプル数 (ch: 0=前 1=右 2=左)。
   // SLED_WINDOW_MAX_US のチューニング用。
   volatile unsigned long sample_reject[3];
+  // SLED点灯窓[us]の最大値 (ch: 0=前 1=右 2=左)。割り込みによる読み取りの遅れの確認用。
+  // sled_on_us_maxは調整モード6の表示ごとに0へ戻す区間最大、sled_on_us_max_allは起動からの最大
+  volatile unsigned short sled_on_us_max[3];
+  volatile unsigned short sled_on_us_max_all[3];
   void interrupt(void);
   void applyRatio(void);  // base×ratio_pctを判定用の値へ反映する
 };

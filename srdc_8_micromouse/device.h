@@ -78,6 +78,8 @@ unsigned short sensorGetR(void);
 unsigned short sensorGetL(void);
 unsigned short sensorGetF(void);
 short batteryVoltGet(void);
+extern volatile int g_core_timer0;  // onTimer0が動いたコア(未実行なら-1)
+extern volatile int g_core_sensor;  // sensorTaskが動いているコア(未起動なら-1)
 
 // ステッピングモータのパルス生成(device.cpp)。カウンタは前進方向を正とする符号付き
 void stepperDirSet(bool forward_l, bool forward_r);
