@@ -18,7 +18,6 @@
 #define PICO_COMMON_H_
 
 #include <Arduino.h>
-
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
@@ -26,6 +25,8 @@
 
 #include "SPIFFS.h"
 
+// 依存関係の順に並べているため、clang-formatで並べ替えない
+// clang-format off
 #include "parameter.h"      // 各種パラメータ定義(マクロのみ)
 #include "device.h"         // ピン定義 + デバイス制御関数
 #include "map_manager.h"    // 迷路/方向の型定義(t_local_direction 等)
@@ -37,5 +38,6 @@
 #include "search.h"         // 探索走行
 #include "flash.h"          // SPIFFS 読み書き(Flash.cpp)
 #include "web.h"            // WebServer(webserver.cpp)
+// clang-format on
 
 #endif  // PICO_COMMON_H_

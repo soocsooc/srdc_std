@@ -25,10 +25,7 @@ typedef struct
   bool enable;
 } t_control;
 
-typedef enum {
-  MOT_FORWARD = 1,
-  MOT_BACK = 2
-} t_CW_CCW;
+typedef enum { MOT_FORWARD = 1, MOT_BACK = 2 } t_CW_CCW;
 
 class RUN
 {
@@ -49,12 +46,12 @@ public:
   float slalom_inner_ratio;
   float slalom_outer_gain;
   float slalom_ramp_len;
-  float slalom_offset;    // 90度旋回の前後の張り出し[mm](slalomParamUpdate()で計算)
-  float slalom_ramp_th;   // fを0→1へ上げる間に曲がる角度[rad](slalomParamUpdate()で計算)
-  float slalom_tail;      // 直前のslalom()で外輪がs_totalを超えて走った距離[mm](確認用)
-  short uturn_back_len;   // uTurn()のバック距離[mm]
+  float slalom_offset;  // 90度旋回の前後の張り出し[mm](slalomParamUpdate()で計算)
+  float slalom_ramp_th;  // fを0→1へ上げる間に曲がる角度[rad](slalomParamUpdate()で計算)
+  float slalom_tail;  // 直前のslalom()で外輪がs_totalを超えて走った距離[mm](確認用)
+  short uturn_back_len;  // uTurn()のバック距離[mm]
   short wall_return_len;  // 壁に当てた後、区画中心へ戻る前進距離[mm](uTurn()・走行開始時)
-  short uturn_speed;      // uTurn()のバック/前進の速度[mm/s]
+  short uturn_speed;  // uTurn()のバック/前進の速度[mm/s]
   t_control con_wall;
 
   float tire_diameter;
@@ -88,7 +85,7 @@ public:
 private:
   int step_lr_len, step_lr;
   int step_l, step_r;
-  volatile double turn_f;     // 旋回の強さ(0〜1)。interrupt()が外輪・内輪の速度に反映する
+  volatile double turn_f;  // 旋回の強さ(0〜1)。interrupt()が外輪・内輪の速度に反映する
   volatile bool turn_enable;  // trueの間、interrupt()がturn_fで左右速度に差をつける
   int turn_sign;              // +1:左旋回方向, -1:右旋回方向
   void dirSet(t_CW_CCW dir_left, t_CW_CCW dir_right);
@@ -99,7 +96,7 @@ private:
   void stop(void);
   void moveFixed(t_CW_CCW dir, int len, int spd);
   double slalomRampAngle(double s_end);  // fを上げる区間で外輪が0→s_end[mm]走る間の旋回角[rad]
-  double slalomLength(double obj_th);    // obj_th[rad]曲がるスラロームの外輪の走行距離[mm]
+  double slalomLength(double obj_th);  // obj_th[rad]曲がるスラロームの外輪の走行距離[mm]
 };
 
 extern RUN g_run;

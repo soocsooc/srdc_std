@@ -17,8 +17,8 @@
 // 各パラメータの初期値
 // タイヤ径・トレッド幅・センサ値は調整メニュー(モード7)とWeb調整で校正
 
-#define TIRE_DIAMETER_INIT (48.0)	// タイヤ径[mm]、直進距離に影響
-#define TREAD_WIDTH_INIT (65.0)		// トレッド幅[mm]、旋回角度に影響
+#define TIRE_DIAMETER_INIT (48.0)  // タイヤ径[mm]、直進距離に影響
+#define TREAD_WIDTH_INIT (65.0)    // トレッド幅[mm]、旋回角度に影響
 
 // モータ1回転あたりのパルス数
 // EIC4311(SLA7078互換)をM2=H・M1/M3=Lで使う前提の仮の値のため、実機で1回転させて確認
@@ -72,17 +72,17 @@
 #define GOAL_X2_INIT 3
 #define GOAL_Y2_INIT 3
 
-#define HALF_SECTION 90	// 半区画[mm]
-#define SECTION 180		// 1区画[mm]
+#define HALF_SECTION 90  // 半区画[mm]
+#define SECTION 180      // 1区画[mm]
 
 // ---- 走行 ----
 
-#define CON_WALL_KP_INIT 0.3	// 壁制御の比例ゲイン
-#define SEARCH_ACCEL_INIT 1.5	// 直進の加速度[m/s^2]
-#define TURN_ACCEL_INIT 0.4		// 超信地旋回の加速度[m/s^2]
-#define SEARCH_SPEED_INIT 600	// 探索の速度[mm/s]
-#define MAX_SPEED_INIT 800		// 最短走行の最高速度[mm/s]
-#define MIN_SPEED 30					// 最低速度[mm/s]
+#define CON_WALL_KP_INIT 0.3   // 壁制御の比例ゲイン
+#define SEARCH_ACCEL_INIT 1.5  // 直進の加速度[m/s^2]
+#define TURN_ACCEL_INIT 0.4    // 超信地旋回の加速度[m/s^2]
+#define SEARCH_SPEED_INIT 600  // 探索の速度[mm/s]
+#define MAX_SPEED_INIT 800     // 最短走行の最高速度[mm/s]
+#define MIN_SPEED 30           // 最低速度[mm/s]
 
 // スラロームの旋回中の速度[mm/s](外輪の基準)。旋回の軌跡は速度によらない(設計メモ §3)
 #define SLALOM_SPEED_INIT 400
@@ -110,8 +110,8 @@
 #define UTURN_SPEED_INIT 100
 
 // 保存値の範囲チェックの上限。範囲外なら初期値に戻す(設計メモ §12)
-#define SPEED_SANITY_MAX 3000		// 速度の上限[mm/s](下限はMIN_SPEED)
-#define ACCEL_SANITY_MAX 100.0	// 加速度の上限[m/s^2]
+#define SPEED_SANITY_MAX 3000   // 速度の上限[mm/s](下限はMIN_SPEED)
+#define ACCEL_SANITY_MAX 100.0  // 加速度の上限[m/s^2]
 
 // 旋回のタイムアウト[ms]。旋回が終わらないときに止める(設計メモ §8)
 #define TURN_TIMEOUT_MS 3000

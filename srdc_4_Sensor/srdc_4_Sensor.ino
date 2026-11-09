@@ -64,12 +64,12 @@ void loop()
 void IRAM_ATTR onTimer1(void)
 {
   static char cnt = 0;
-  portENTER_CRITICAL_ISR(&g_timer_mux); // 他からの割り込みの禁止
-  switch (cnt) {  // センサを順番に読む
+  portENTER_CRITICAL_ISR(&g_timer_mux);  // 他からの割り込みの禁止
+  switch (cnt) {                         // センサを順番に読む
     case 0:
       digitalWrite(SLED_F, HIGH);  // LED点灯
       for (int i = 0; i < 300; i++) {
-        asm("nop \n");              // 受光の出力が出るまで待つ
+        asm("nop \n");  // 受光の出力が出るまで待つ
       }
       f_sen = analogRead(AD_F);
       digitalWrite(SLED_F, LOW);  // LED消灯
@@ -89,7 +89,8 @@ void IRAM_ATTR onTimer1(void)
       }
       l_sen = analogRead(AD_L);
       digitalWrite(SLED_L, LOW);  // LED消灯
-      vdd = (double)analogReadMilliVolts(AD_BATT) / 10.0 * (10.0 + 51.0); // 電池電圧[mV]。51kと10kの分圧から計算する
+      vdd = (double)analogReadMilliVolts(AD_BATT) / 10.0 *
+            (10.0 + 51.0);  // 電池電圧[mV]。51kと10kの分圧から計算する
       break;
     default:
       Serial.printf("error\n\r");

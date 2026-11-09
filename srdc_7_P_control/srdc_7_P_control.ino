@@ -13,9 +13,9 @@
 // limitations under the License.
 
 #include "pins_config.h"
-#include "stepper.h"
 #include "run.h"
 #include "sensor.h"
+#include "stepper.h"
 
 // LEDはHIGHで点灯する。LED0〜3は回路図のL_1〜L_4
 #define LED0 5
@@ -98,7 +98,8 @@ void setup()
 
 void loop()
 {
-  while ((digitalRead(SW1) == HIGH) && !(USE_SW2 && (digitalRead(SW2) == LOW))) { // スイッチが押されるまで待機
+  while ((digitalRead(SW1) == HIGH) &&
+         !(USE_SW2 && (digitalRead(SW2) == LOW))) {  // スイッチが押されるまで待機
     continue;
   }
   // SW1でセンサ値の表示、SW2(USE_SW2が0ならSW1の長押し)で走行
@@ -123,9 +124,9 @@ void loop()
   }
   digitalWrite(MOTOR_EN, HIGH);  // 励磁ON
   delay(1000);
-  g_run.accelerate(90, 350);		// 0.5区画加速
-  g_run.oneStep(180 * 3, 350);	// 3区画前進
-  g_run.decelerate(90, 350);		// 0.5区画減速
+  g_run.accelerate(90, 350);    // 0.5区画加速
+  g_run.oneStep(180 * 3, 350);  // 3区画前進
+  g_run.decelerate(90, 350);    // 0.5区画減速
   delay(1000);
   digitalWrite(MOTOR_EN, LOW);  // 励磁OFF
 }

@@ -68,7 +68,7 @@ public:
 
 private:
   unsigned short steps_map[MAZESIZE_MAX][MAZESIZE_MAX];  //歩数マップ
-  t_wall wall[MAZESIZE_MAX][MAZESIZE_MAX];               //壁の情報を格納する構造体配列
+  t_wall wall[MAZESIZE_MAX][MAZESIZE_MAX];  //壁の情報を格納する構造体配列
 
   void stepMapSet(
     unsigned char posX, unsigned char posY, t_global_direction l_global_dir, int * little,

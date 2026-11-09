@@ -54,7 +54,7 @@ void setup()
   pinMode(SW2, INPUT);
 
   ledcAttach(BUZZER, 440, 10);  // Pin, 周波数[Hz](440~4000), PWM分解能[bit](2^bit-1, 最大値: 14)
-  ledcWrite(BUZZER, 1024);      // Pin, pwm_duty(0~1023(2^10-1), LOW(0) or HIGH(1024) -> Mute)
+  ledcWrite(BUZZER, 1024);  // Pin, pwm_duty(0~1023(2^10-1), LOW(0) or HIGH(1024) -> Mute)
 
   g_mode = 1;
   ledSet(g_mode);

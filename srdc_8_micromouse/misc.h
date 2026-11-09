@@ -28,7 +28,6 @@ public:
   short buttonInc(short _data, short limit, short limit_data);
   void buttonOk(void);
   void goalAppeal(void);
-
 };
 
 extern MISC g_misc;
