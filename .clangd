@@ -6,3 +6,9 @@ CompileFlags:
     - -fstrict-volatile-bitfields
     - -fno-tree-switch-conversion
     - -freorder-blocks
+Diagnostics:
+  Includes:
+    # STEP8 の pico_common.h は、各 .cpp が読むヘッダをまとめるだけのヘッダなので、
+    # 「直接使われていない」という判定から外す
+    IgnoreHeader:
+      - pico_common\.h
