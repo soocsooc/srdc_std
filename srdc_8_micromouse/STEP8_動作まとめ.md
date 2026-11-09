@@ -13,10 +13,10 @@ STEP1〜7 は LED・スイッチ・ブザー・センサ・モータ・壁の P 
 | `srdc_8_micromouse.ino` | `setup()`／`loop()`。初期化とモード選択 |
 | `device.cpp`／`device.h` | ピン定義、タイマー、センサタスク、モータのパルス生成、LED・ブザー・スイッチ・センサ・電池電圧 |
 | `run.cpp`／`run.h` | 走行制御（1kHz の速度更新、壁の P 制御、加減速、超信地旋回、スラローム旋回） |
-| `run_dynamic.cpp` | 前壁で止まる直進 `oneStepDynamic()`、スタート位置合わせ |
+| `run_dynamic.cpp` | 前壁で区画境界を判定する直進 `oneStepDynamic()`、スタート位置合わせ |
 | `sensor.cpp`／`sensor.h` | 壁センサの平滑化、壁の判定、P 制御用の誤差、低電圧の警告 |
-| `search.cpp`／`search.h` | 左手法、足立法とそのスラローム版 |
-| `search_dynamic.cpp` | 前壁で止まる足立法（モード 2・3）、後ろへの回転 `turnBack()` |
+| `search.cpp`／`search.h` | 左手法（モード 1） |
+| `search_dynamic.cpp` | 前壁で区画境界を判定する足立法（モード 2・3）、後ろへの回転 `turnBack()` |
 | `fast.cpp`／`fast.h` | 最短走行とそのスラローム版 |
 | `map_manager.cpp`／`map_manager.h` | 壁情報、歩数マップ、次に進む方向の決定 |
 | `Flash.cpp`／`flash.h` | 迷路情報とパラメータの保存（SPIFFS）、USB シリアルからのパラメータ設定 |
@@ -112,7 +112,7 @@ rotate(right, 2)
 mapWrite()                         // 迷路情報を保存
 ```
 
-探索関数の中では、区画境界ごとに `wallSet()` で壁を記録し、`nextDirGet()` が返す方向へ進みます。
+探索関数の中では区画境界ごとに `wallSet()` で壁を記録し、`nextDirGet()` が返す方向へ進みます。
 
 - 前：`oneStepDynamic()` で、前壁が見えるか 1 区画進むまで走る
 - 右・左：モード 2 は半区画減速 → `rotate()` → 半区画加速、モード 3 は `slalomCell()`
@@ -193,7 +193,7 @@ mapWrite()
 | `straight(len, init, max, finish)` | 加速し、残りの距離が制動距離を切ったら減速する。`finish` が `MIN_SPEED` なら止まり、それ以外は等速のまま終える。壁の P 制御あり |
 | `oneStep(len, init)` | 加減速なしで `len` 進む |
 | `decelerate(len, init)` | 減速して止まる |
-| `oneStepDynamic(max_len, init, th, debug_log)` | 等速で進み、前センサの値が `th` を超えるか `max_len` に達したら止まる（[設計メモ §4](設計メモ.md)） |
+| `oneStepDynamic(max_len, init, th, debug_log)` | 等速で進み、前センサの値が `th` を超えるか `max_len` に達したら、等速のまま終える（[設計メモ §4](設計メモ.md)） |
 | `rotate(dir, times)` | その場で 90° × `times` 回る。止まった状態から呼び、止まって終わる |
 | `slalom(dir, angle)`／`slalomCell(dir)` | 止まらずに曲がる（[設計メモ §3](設計メモ.md)） |
 | `uTurn(dir)` | 90° 旋回 → バック → 前進を 2 回して、壁に当てながら 180° 回る（[設計メモ §6](設計メモ.md)） |
@@ -300,7 +300,7 @@ Wi-Fi の送信で電源が一瞬下がると、ブラウンアウト（`E BOD`�
   - `Slalom Parameter`：`Slalom speed`・`Slalom inner ratio`・`Slalom outer gain`・`Slalom ramp len` と、計算した `Slalom offset`
   - `GOAL Parameter`：迷路の大きさ（`MAZE SIZE`）とゴールの対角 2 座標（`AXIS`／`AXIS2`）。迷路の大きさを変えて保存すると迷路情報を消去します
 - 迷路図（`Maze Map`）、走行モード・調整モードの一覧、各パラメータの効果の目安も表示します
-- センサ値の表示はリクエストごとに直近 5 個のメディアンを返します。Wi-Fi の影響で残る大きめの外れ値を表示から除くためで、制御に使う値は変えていません
+- センサ値の表示には、リクエストごとに直近 5 個のメディアンを使います。Wi-Fi の影響で残る大きめの外れ値を表示から除くためで、制御に使う値は変えていません
 - ルータにつなぐ場合は `AP_MODE` をコメントアウトして SSID とパスワードを書き換え、割り当てられた IP アドレスをシリアルモニタで確認します
 
 ---
@@ -366,13 +366,13 @@ Web ページの最下部にも同じ内容を表示しています。
 | `SEN_F_WALL_INIT`／`SEN_F_NOWALL_INIT` | 150／56 | 調整モード 10 の測定値（記録用） |
 | `TH_SEN_F_APPROACH_INIT` | 145 | モード 2 の到達しきい値（前センサの値） |
 | `TH_SEN_F_APPROACH_SLALOM_INIT` | 70 | モード 3 の到達しきい値（前センサの値） |
-| `TH_SEN_R/L_SLALOM_INIT` | `TH_SEN_R/L_INIT` と同じ | モード 3 の側壁しきい値 |
+| （`th_sen_r/l_slalom` の初期値） | `TH_SEN_R/L_INIT` と同じ | モード 3 の側壁しきい値 |
 | `SEN_RATIO_INIT` | 100 | センサのベース値に掛ける倍率 [%] |
 | `MAZESIZE_X/Y_INIT` | 4／4 | 迷路の大きさ [区画] |
 | `GOAL_X/Y_INIT`／`GOAL_X2/Y2_INIT` | 3, 3／3, 3 | ゴール区画（対角 2 座標） |
 | `CON_WALL_KP_INIT` | 0.3 | 壁の P 制御のゲイン |
-| `SEARCH_ACCEL_INIT` | 1.5 | 直進の加速度 |
-| `TURN_ACCEL_INIT` | 0.4 | `rotate()` の加速度 |
+| `SEARCH_ACCEL_INIT` | 1.5 | 直進の加速度 [m/s²] |
+| `TURN_ACCEL_INIT` | 0.4 | `rotate()` の加速度 [m/s²] |
 | `SEARCH_SPEED_INIT` | 600 | 探索速度 [mm/s] |
 | `MAX_SPEED_INIT` | 800 | 最短走行の最高速度 [mm/s] |
 | `SLALOM_SPEED_INIT` | 400 | スラローム旋回中の速度 [mm/s] |

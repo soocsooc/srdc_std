@@ -50,7 +50,8 @@
 #define SEN_RATIO_MIN 10
 #define SEN_RATIO_MAX 500
 
-// LED点灯からAD変換までの待ち時間[us]。センサ値が変化しきってから読み、値のばらつきを抑える
+// LED点灯からAD変換までの待ち時間[us]。受光の出力は点灯直後の減衰波形なので、傾きの緩い所で読み、
+// 読むタイミングの揺れによる値のばらつきを抑える
 #define SLED_SETTLE_US 32
 // センサ値の平滑化の係数a。value = (value*a + 新しい値)/(a+1)
 #define SEN_IIR_A 3

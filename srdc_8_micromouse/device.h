@@ -18,7 +18,7 @@
 
 // SRDC2026標準機体(ESP32-DevKitC-32E)のピン定義。回路図V5(11/3版)の配線に合わせてある
 
-// switchGet()の戻り値。SW_RM=次、SW_CM=決定。−1の操作はない
+// switchGet()の戻り値。SW_RM=次、SW_CM=決定(値を減らす操作はない)
 #define SW_CM 2
 #define SW_RM 4
 
@@ -43,7 +43,7 @@
 #define SLED_R 4
 #define SLED_L 27
 
-// 受光素子(すべてADC1)。前・右・左の対応は仮置きのため、実機で確認すること
+// 受光素子(すべてADC1)。前・右・左の対応は仮のため、実機で確認すること
 #define AD_F 36  // S1
 #define AD_R 39  // S3
 #define AD_L 34  // S4
@@ -61,7 +61,7 @@
 #define CW_R_FORWARD LOW
 #define CW_L_FORWARD LOW
 
-// device.cpp で定義される関数群(旧 .ino 連結時の自動プロトタイプ生成の代替)
+// device.cppの関数
 // onTimer0/isrR/isrL は device.cpp 内でのみ使用するためここには宣言しない
 void controlInterruptStart(void);
 void controlInterruptStop(void);

@@ -34,9 +34,9 @@ void IRAM_ATTR onTimer0(void)
 void controlInterruptStart(void) { timerStart(g_timer0); }
 void controlInterruptStop(void) { timerStop(g_timer0); }
 
-// --- センサ計測タスク (core1固定) -------------------------------------------
-// WiFi(core0)と分離し、起床直後の1回目はSLEDを使わない処理に充てる(sensor.cppのcnt==0)。
-// 経緯はSTEP8_動作まとめ.md §7参照
+// --- センサ計測タスク(core1) ------------------------------------------------
+// WiFi(core0)とは別のコアで動かす。タスクが起きた直後は読むタイミングが揺れるため、1回目は
+// SLEDを使わない電池電圧の処理にする(sensor.cppのcnt==0、STEP8_動作まとめ.md §7)
 #define SENSOR_TASK_CORE 1
 #define SENSOR_TASK_PRIORITY 20  // loopTask(1)/AsyncTCP(<=10)より上、WiFi内部より下
 #define SENSOR_TASK_STACK 4096
@@ -76,7 +76,7 @@ void sensorInterruptStart(void)
 void sensorInterruptStop(void)
 {
   // Flash 書き込み等の前に呼ばれる。進行中の 1 サイクル完了を待って停止する。
-  // Flash書き込み中はキャッシュが止まるため、パルス生成のタイマーも止める(v3のPWMInterruptStop相当)
+  // Flash書き込み中はキャッシュが止まるため、パルス生成のタイマーも止める
   g_sensor_run = false;
   for (int i = 0; i < 10 && !g_sensor_paused; i++) delay(1);
   stepperTimerStop();
@@ -231,7 +231,7 @@ void deviceInit(void)
   timerAlarm(g_timer3, STEP_TIMER_HZ / STEP_HZ_MIN, true, 0);
   timerStart(g_timer3);
 
-  // センサ計測は core1 固定タスクで実行 (旧 onTimer1 の置き換え)
+  // センサ計測はcore1のタスクで実行する
   xTaskCreatePinnedToCore(
     sensorTask, "sensorTask", SENSOR_TASK_STACK, NULL, SENSOR_TASK_PRIORITY, &g_sensor_task,
     SENSOR_TASK_CORE);
@@ -296,9 +296,9 @@ unsigned char switchGet(void)
   return ret;
 }
 
-// SLED点灯 -> 整定待ち -> analogRead。点灯窓がSLED_WINDOW_MAX_USを超えて伸びたら
-// SENSOR_SAMPLE_BADを返し、呼び出し側で棄却する(STEP8_動作まとめ.md §7参照)
-// 点灯窓の最大値はch(0=前 1=右 2=左)ごとにg_sensor.sled_on_us_max(_all)へ記録する
+// SLEDを点灯し、SLED_SETTLE_US待ってからanalogRead()する。点灯からAD変換が終わるまでが
+// SLED_WINDOW_MAX_USを超えたらSENSOR_SAMPLE_BADを返し、呼び出し側で捨てる(STEP8_動作まとめ.md §7)
+// その時間の最大値はch(0=前 1=右 2=左)ごとにg_sensor.sled_on_us_max(_all)へ記録する
 static unsigned short sledRead(uint8_t sled_pin, uint8_t adc_pin, unsigned char ch)
 {
   digitalWrite(sled_pin, HIGH);

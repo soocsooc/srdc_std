@@ -27,12 +27,12 @@ void ADJUST::adcView(void)
     Serial.printf("f_sen        is\t%d   \r\n", g_sensor.sen_f.value);
     Serial.printf("l_sen        is\t%d   \r\n", g_sensor.sen_l.value);
     Serial.printf("VDD          is\t%d mV\r\n", g_sensor.battery_value);
-    // SLED点灯窓が伸びて棄却したサンプルの累計 (前/右/左)。WiFi接続中に増える。
+    // SLED_WINDOW_MAX_USを超えて捨てた読み取りの累計(前/右/左)。WiFi接続中に増える
     Serial.printf(
       "reject F/R/L\t%lu %lu %lu\r\n", g_sensor.sample_reject[0], g_sensor.sample_reject[1],
       g_sensor.sample_reject[2]);
-    // SLED点灯窓[us]の最大値 (前/右/左)。左3つは前回表示から、max()は起動からの最大。
-    // 区間最大を0に戻す間にsensorTaskが書いた1サンプルは失うことがあるが、確認用なので許容する
+    // LED点灯からAD変換が終わるまでの時間[us]の最大値(前/右/左)。左3つは前回の表示から、max()は
+    // 起動からの最大。0に戻す間にsensorTaskが書いた値を1つ失うことがあるが、確認用なので気にしない
     Serial.printf(
       "on_us F/R/L\t%u %u %u  max(%u %u %u)\r\n", g_sensor.sled_on_us_max[0],
       g_sensor.sled_on_us_max[1], g_sensor.sled_on_us_max[2], g_sensor.sled_on_us_max_all[0],
@@ -132,7 +132,7 @@ void ADJUST::slalomSequenceCheck(void)
   motorDisable();
 }
 
-// 到達判定閾値の実測用。センサ停止を無効化(INT_MAX)して壁へ向けて走り、走行距離と前センサ値を
+// th_approachを決めるための測定。センサでは止まらないようにして(th=INT_MAX)壁へ向けて走り、走行距離と前センサ値を
 // Serialへ出力する。スイッチで即停止できる。詳細は設計メモ §4参照。
 void ADJUST::straightSensorDiag(float section_check)	// 最大走行区画数(壁の手前で止まる値にすること)
 {
@@ -304,7 +304,7 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
 			straightCheck(3);	// 3区画前進で直径を調整、目標より手前だったら直径を小さく
       break;
     case 6:
-      // 調整モード1のadcView版: シリアルモニタでセンサ値/電池電圧を確認 (いずれかのスイッチで調整メニューへ戻る)
+      // シリアルモニタでセンサ値と電池電圧を確認する(調整モード1のシリアル版)。いずれかのスイッチで調整メニューへ戻る
       buzzerEnable(INC_FREQ);
       delay(30);
       buzzerDisable();

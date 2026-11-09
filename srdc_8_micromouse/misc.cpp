@@ -40,7 +40,7 @@ void MISC::buttonOk(void)
 }
 
 // ゴール到達をLEDで通知し、探索した地図を保存
-void MISC::goalAppeal(void)  //ゴールしたことをアピールする
+void MISC::goalAppeal(void)
 {
   unsigned char led_data;
 

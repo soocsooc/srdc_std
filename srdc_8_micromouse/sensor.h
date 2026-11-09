@@ -23,7 +23,7 @@ typedef struct
   short error;
   short ref;
   short th_wall;
-  // モード3専用の側方壁判定しきい値(sen_r/sen_lのみ使用)。詳細は設計メモ §5参照。
+  // モード3の横壁の閾値(sen_r/sen_lだけで使う、設計メモ §5)
   short th_wall_slalom;
   bool is_wall;
   bool is_control;
@@ -45,16 +45,15 @@ class SENSOR
 public:
   volatile t_sensor sen_r, sen_l, sen_f;
   volatile short battery_value;
-  // oneStepDynamic()の前壁到達判定閾値(前センサの値、モード2用/モード3用)。詳細は設計メモ §4参照。
+  // oneStepDynamic()で前壁が近づいたと判断する前センサの閾値(モード2用/モード3用、設計メモ §4)
   short th_approach;
   short th_approach_slalom;
   t_sensor_base base;
   short ratio_pct;  // baseに掛ける倍率[%]
-  // SLED点灯窓が伸びて棄却したサンプル数 (ch: 0=前 1=右 2=左)。
-  // SLED_WINDOW_MAX_US のチューニング用。
+  // SLED_WINDOW_MAX_USを超えて捨てた読み取りの回数(ch: 0=前 1=右 2=左)。SLED_WINDOW_MAX_USの調整用
   volatile unsigned long sample_reject[3];
-  // SLED点灯窓[us]の最大値 (ch: 0=前 1=右 2=左)。割り込みによる読み取りの遅れの確認用。
-  // sled_on_us_maxは調整モード6の表示ごとに0へ戻す区間最大、sled_on_us_max_allは起動からの最大
+  // LED点灯からAD変換が終わるまでの時間[us]の最大値(ch: 0=前 1=右 2=左)。割り込みで読み取りが
+  // 遅れていないかの確認用。sled_on_us_maxは調整モード6で表示するたびに0へ戻し、sled_on_us_max_allは起動からの最大
   volatile unsigned short sled_on_us_max[3];
   volatile unsigned short sled_on_us_max_all[3];
   void interrupt(void);

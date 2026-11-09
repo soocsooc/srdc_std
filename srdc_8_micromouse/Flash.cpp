@@ -17,7 +17,7 @@
 typedef enum { PARAM_SHORT, PARAM_FLOAT, PARAM_DOUBLE } t_param_type;
 
 // /parameters.txtの1行(キーと値)。値がmin〜maxの外ならinitへ戻す(min>maxなら範囲チェックなし)。
-// 範囲チェックの由来は 設計メモ §12参照。
+// 範囲チェックの理由は設計メモ §12
 typedef struct
 {
   const char * key;
@@ -128,7 +128,7 @@ bool paramSet(const String & key, const String & value)
   return false;
 }
 
-// パラメータから決まる値(パルス長・センサ倍率・スラロームの張り出し)を作り直す
+// パラメータから決まる値(1パルスの距離・センサの判定値・スラロームの張り出し)を作り直す
 void paramApply(void)
 {
   g_run.pulse = g_run.tire_diameter * PI / PULSE_PER_REV;
@@ -137,7 +137,7 @@ void paramApply(void)
 }
 
 // paramSet()で値を変えた後に呼ぶ。迷路の大きさとゴールを検証し、大きさが変わっていたら迷路情報を
-// 消す。派生値を作り直してFlashへ保存する(Web/シリアル共通)
+// 消す。パラメータから決まる値を作り直してFlashへ保存する(Web/シリアル共通)
 void paramCommit(short old_maze_x, short old_maze_y)
 {
   // 迷路の大きさが変わると外周の壁も変わるため、迷路情報を消去する(設計メモ §9)

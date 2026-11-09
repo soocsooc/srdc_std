@@ -321,8 +321,8 @@ t_local_direction MapManager::nextDirGet(
   }
 
   if (steps_map[mypos.x][mypos.y] == 65535) {
-    // 到達不能を示す点滅。接触不良による誤判定もあるため、モータを止めてスイッチで抜けられる
-    // ようにする(設計メモ §8)。脱出済みなら再度止めずに即座に返す(設計メモ §8)
+    // ゴールへ行けないことを点滅で知らせる。接触不良による誤判定もあるため、モータを止めて
+    // スイッチで抜けられるようにする。抜けた後は止めずにすぐ返す(設計メモ §8)
     while (!unreachable && (switchGet() == 0)) {
       motorDisable();
       ledSet(0x0a);

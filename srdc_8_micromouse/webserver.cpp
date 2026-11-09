@@ -26,7 +26,7 @@ const char * ssid = "使用しているルータのSSID";
 const char * password = "ルータのパスワード";
 #endif
 
-// web表示専用の安定化。リクエストごとに.valueを5個貯めてメディアンを返す(STEP8_動作まとめ.md §10)。
+// Web表示用の平滑化。リクエストごとに.valueを5個ためてメディアンを返す(STEP8_動作まとめ.md §10)。
 // ch: 0=L 1=R 2=F
 #define WEB_SEN_MED_N 5
 
@@ -59,7 +59,8 @@ static short webSenStable(unsigned char ch, short v)
   return s[n / 2];  // メディアン
 }
 
-// WiFi TX電流バーストによるブラウンアウト対策で送信出力を下げる。詳細はSTEP8_動作まとめ.md §7参照。
+// WiFiの送信で電源電圧が下がり、ブラウンアウト(リセット)が起きるのを防ぐため送信出力を下げる
+// (STEP8_動作まとめ.md §7)
 #define WEB_WIFI_TX_POWER WIFI_POWER_8_5dBm
 
 // --- トップページ HTML 生成 ----------------------------------------------------

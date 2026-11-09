@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// 共通インクルードヘッダ。各 .cpp はこれだけを include すればよく、順序に依存のある
-// include をここで一元管理する
+// 共通のインクルード。各.cppはこれだけをincludeする。順序に依存するincludeをここにまとめる
 
 #ifndef PICO_COMMON_H_
 #define PICO_COMMON_H_
