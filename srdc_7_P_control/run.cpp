@@ -183,6 +183,7 @@ void RUN::rotate(t_local_direction dir, int times)
   accel = 1.5;
   max_speed = 350.0;
   speed = min_speed = MIN_SPEED;
+  counterClear();
   obj_step = (int)(TREAD_WIDTH * PI / 4.0 * (float)times * 2.0 / PULSE);
 
   switch (dir) {

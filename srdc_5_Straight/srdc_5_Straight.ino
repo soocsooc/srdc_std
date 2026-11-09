@@ -13,8 +13,8 @@
 // limitations under the License.
 
 #include "pins_config.h"
-#include "stepper.h"
 #include "run.h"
+#include "stepper.h"
 
 // LEDはHIGHで点灯する。LED0〜3は回路図のL_1〜L_4
 #define LED0 5
@@ -30,7 +30,7 @@
 // HIGHでモータ有効(LOWでドライバがSLEEP)
 #define MOTOR_EN 17
 
-// 駆動ピン・タイヤ径・PULSE・MIN_SPEED は pins_config.h に集約
+// 駆動ピン・タイヤ径・PULSE・MIN_SPEEDはpins_config.hにまとめてある
 
 hw_timer_t * g_timer0 = NULL;
 
@@ -46,7 +46,6 @@ void IRAM_ATTR onTimer0(void)
 
 void setup()
 {
-  // put your setup code here, to run once:
   pinMode(LED0, OUTPUT);
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -60,7 +59,7 @@ void setup()
   pinMode(SW1, INPUT_PULLUP);
   pinMode(SW2, INPUT);
 
-  //motor disable
+  // モータを無効にする
   pinMode(MOTOR_EN, OUTPUT);
   digitalWrite(MOTOR_EN, LOW);
 
@@ -74,19 +73,19 @@ void setup()
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
-  while ((digitalRead(SW1) == HIGH) && !(USE_SW2 && (digitalRead(SW2) == LOW))) { // ボタンを押すまで待機
+  while ((digitalRead(SW1) == HIGH) &&
+         !(USE_SW2 && (digitalRead(SW2) == LOW))) {  // ボタンを押すまで待機
     continue;
   }
   digitalWrite(MOTOR_EN, HIGH);  // 励磁ON
   delay(1000);
   digitalWrite(LED0, HIGH);
-  g_run.accelerate(90, 350);	// 0.5区画加速
+  g_run.accelerate(90, 350);  // 0.5区画加速
   digitalWrite(LED1, HIGH);
   digitalWrite(LED2, HIGH);
-  g_run.oneStep(180, 350);		// 1区画前進
+  g_run.oneStep(180, 350);  // 1区画前進
   digitalWrite(LED3, HIGH);
-  g_run.decelerate(90, 350);	// 0.5区画減速
+  g_run.decelerate(90, 350);  // 0.5区画減速
   digitalWrite(LED0, LOW);
   digitalWrite(LED1, LOW);
   digitalWrite(LED2, LOW);

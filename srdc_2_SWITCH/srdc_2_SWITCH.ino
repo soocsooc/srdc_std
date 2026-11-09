@@ -32,7 +32,6 @@ bool sw2Pressed(void) { return USE_SW2 && (digitalRead(SW2) == LOW); }
 
 void setup()
 {
-  // put your setup code here, to run once:
   pinMode(LED0, OUTPUT);
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -51,7 +50,7 @@ void loop()
     continue;
   }
 
-  // SWに応じたLEDを点灯・消灯 (stateをインクリメントし、2進数最終bitの偶奇をLEDに出力)
+  // 押されたSWに対応するLEDの点灯・消灯を、押すたびに切り替える
   if (sw1Pressed()) {
     ++g_state_1;
     digitalWrite(LED0, g_state_1 & 0x01);

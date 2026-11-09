@@ -17,7 +17,7 @@
 typedef enum { PARAM_SHORT, PARAM_FLOAT, PARAM_DOUBLE } t_param_type;
 
 // /parameters.txtの1行(キーと値)。値がmin〜maxの外ならinitへ戻す(min>maxなら範囲チェックなし)。
-// 範囲チェックの由来は 設計メモ §12参照。
+// 範囲チェックの理由は設計メモ §12
 typedef struct
 {
   const char * key;
@@ -44,8 +44,8 @@ static const t_param_entry param_table[] = {
    NO_CHECK},
   {"th_sen_f_approach_slalom", PARAM_SHORT, &g_sensor.base.th_approach_slalom,
    TH_SEN_F_APPROACH_SLALOM_INIT, NO_CHECK},
-  {"th_sen_r_slalom", PARAM_SHORT, &g_sensor.base.th_r_slalom, TH_SEN_R_SLALOM_INIT, NO_CHECK},
-  {"th_sen_l_slalom", PARAM_SHORT, &g_sensor.base.th_l_slalom, TH_SEN_L_SLALOM_INIT, NO_CHECK},
+  {"th_sen_r_slalom", PARAM_SHORT, &g_sensor.base.th_r_slalom, TH_SEN_R_INIT, NO_CHECK},
+  {"th_sen_l_slalom", PARAM_SHORT, &g_sensor.base.th_l_slalom, TH_SEN_L_INIT, NO_CHECK},
   {"sen_ratio", PARAM_SHORT, &g_sensor.ratio_pct, SEN_RATIO_INIT, SEN_RATIO_MIN, SEN_RATIO_MAX},
   {"maze_x", PARAM_SHORT, &g_map.maze_x, MAZESIZE_X_INIT, NO_CHECK},
   {"maze_y", PARAM_SHORT, &g_map.maze_y, MAZESIZE_Y_INIT, NO_CHECK},
@@ -128,7 +128,7 @@ bool paramSet(const String & key, const String & value)
   return false;
 }
 
-// パラメータから決まる値(パルス長・センサ倍率・スラロームの張り出し)を作り直す
+// パラメータから決まる値(1パルスの距離・センサの判定値・スラロームの張り出し)を作り直す
 void paramApply(void)
 {
   g_run.pulse = g_run.tire_diameter * PI / PULSE_PER_REV;
@@ -137,7 +137,7 @@ void paramApply(void)
 }
 
 // paramSet()で値を変えた後に呼ぶ。迷路の大きさとゴールを検証し、大きさが変わっていたら迷路情報を
-// 消す。派生値を作り直してFlashへ保存する(Web/シリアル共通)
+// 消す。パラメータから決まる値を作り直してFlashへ保存する(Web/シリアル共通)
 void paramCommit(short old_maze_x, short old_maze_y)
 {
   // 迷路の大きさが変わると外周の壁も変わるため、迷路情報を消去する(設計メモ §9)

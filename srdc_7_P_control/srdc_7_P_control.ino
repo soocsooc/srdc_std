@@ -13,9 +13,9 @@
 // limitations under the License.
 
 #include "pins_config.h"
-#include "stepper.h"
 #include "run.h"
 #include "sensor.h"
+#include "stepper.h"
 
 // LEDはHIGHで点灯する。LED0〜3は回路図のL_1〜L_4
 #define LED0 5
@@ -32,22 +32,23 @@
 // HIGHでモータ有効(LOWでドライバがSLEEP)
 #define MOTOR_EN 17
 
-// ADピン・SLEDピン・駆動ピン・タイヤ径・PULSE・MIN_SPEED および
-// 環境調整パラメータ(REF_SEN/TH_SEN/CON_WALL_KP 等)は pins_config.h に集約
+// ADピン・SLEDピン・駆動ピン・タイヤ径・PULSE・MIN_SPEEDと、環境に合わせて変える
+// パラメータ(REF_SEN/TH_SEN/CON_WALL_KPなど)はpins_config.hにまとめてある
 
 hw_timer_t * g_timer0 = NULL;
 hw_timer_t * g_timer1 = NULL;
 portMUX_TYPE g_timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
 // 1kHzのタイマ割り込み。controlInterrupt()で目標速度を更新する
-void IRAM_ATTR onTimer0(void) // モータ制御
+void IRAM_ATTR onTimer0(void)
 {
   portENTER_CRITICAL_ISR(&g_timer_mux);  //割り込み禁止
   controlInterrupt();
   portEXIT_CRITICAL_ISR(&g_timer_mux);  //割り込み許可
 }
 
-void IRAM_ATTR onTimer1(void) // センサ制御
+// 4kHzのタイマ割り込み。sensorInterrupt()でセンサを1つ読む
+void IRAM_ATTR onTimer1(void)
 {
   portENTER_CRITICAL_ISR(&g_timer_mux);  //割り込み禁止
   sensorInterrupt();
@@ -56,7 +57,6 @@ void IRAM_ATTR onTimer1(void) // センサ制御
 
 void setup()
 {
-  // put your setup code here, to run once:
   pinMode(LED0, OUTPUT);
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -70,7 +70,7 @@ void setup()
   pinMode(SW1, INPUT_PULLUP);
   pinMode(SW2, INPUT);
 
-  //motor disable
+  // モータを無効にする
   pinMode(MOTOR_EN, OUTPUT);
   digitalWrite(MOTOR_EN, LOW);
 
@@ -98,8 +98,8 @@ void setup()
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
-  while ((digitalRead(SW1) == HIGH) && !(USE_SW2 && (digitalRead(SW2) == LOW))) { // スイッチが押されるまで待機
+  while ((digitalRead(SW1) == HIGH) &&
+         !(USE_SW2 && (digitalRead(SW2) == LOW))) {  // スイッチが押されるまで待機
     continue;
   }
   // SW1でセンサ値の表示、SW2(USE_SW2が0ならSW1の長押し)で走行
@@ -124,9 +124,9 @@ void loop()
   }
   digitalWrite(MOTOR_EN, HIGH);  // 励磁ON
   delay(1000);
-  g_run.accelerate(90, 350);		// 0.5区画加速
-  g_run.oneStep(180 * 3, 350);	// 3区画前進
-  g_run.decelerate(90, 350);		// 0.5区画減速
+  g_run.accelerate(90, 350);    // 0.5区画加速
+  g_run.oneStep(180 * 3, 350);  // 3区画前進
+  g_run.decelerate(90, 350);    // 0.5区画減速
   delay(1000);
   digitalWrite(MOTOR_EN, LOW);  // 励磁OFF
 }

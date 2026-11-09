@@ -105,13 +105,8 @@ void RUN::stepGet(void)
   step_lr_len = (int)((float)step_lr / 2.0 * pulse);
 }
 
-// 左右の走行パルス・走行距離を符号付きで個別に取得(スラロームの並進量・回転量の分離用)
-void RUN::stepGetLR(void)
-{
-  stepperCounterGet(&step_l, &step_r);
-  step_l_len = (int)((float)step_l * pulse);
-  step_r_len = (int)((float)step_r * pulse);
-}
+// 左右の走行パルスを符号付きで個別に取得(スラロームの並進量・回転量の分離用)
+void RUN::stepGetLR(void) { stepperCounterGet(&step_l, &step_r); }
 
 // モーターを停止し、機械が止まるまで待機
 void RUN::stop(void)
@@ -337,8 +332,7 @@ void RUN::rotate(t_local_direction dir, int times)
 
   stop();
 
-  // 基板の接触不良等でstep_lr_lenが進まなくなり回転が終わらない場合のフェイルセーフ。
-  // 詳細は設計メモ §8参照
+  // 基板の接触不良などでstep_lr_lenが進まず、回転が終わらないときに止める(設計メモ §8)
   if (timed_out) {
     buzzerEnable(400);
     delay(200);
@@ -362,7 +356,7 @@ static double slalomTurnRate(double f, double inner_ratio, double outer_gain)
   return (outer - inner) / outer;
 }
 
-// 入口ランプ(f=max(F_MIN, s/ramp_len))で外輪が0→s_end(≦ramp_len)走る間の旋回角[rad]。
+// fを上げる区間(f=max(F_MIN, s/ramp_len))で外輪が0→s_end(≦ramp_len)走る間の旋回角[rad]。
 // 旋回開始時にも呼ぶため、f=s/ramp_lenの区間は解析的に積分する
 double RUN::slalomRampAngle(double s_end)
 {
@@ -381,7 +375,7 @@ double RUN::slalomRampAngle(double s_end)
 }
 
 // obj_th[rad]曲がるときの外輪の走行距離[mm]。台形なら旋回角が距離の一次式になるので直接求め、
-// 入口と出口のランプだけで曲がりきる三角形なら二分法で求める(設計メモ §3)
+// fを上げ下げする区間だけで曲がりきる三角形なら二分法で求める(設計メモ §3)
 double RUN::slalomLength(double obj_th)
 {
   const double len = slalom_ramp_len;
@@ -471,8 +465,8 @@ void RUN::slalomCell(t_local_direction dir)
   if (pre > 0) oneStep(pre, (int)speed);
 }
 
-// slalom形状パラメータを範囲内に収め、90度旋回の張り出しslalom_offsetをslalomProfile()と同じ
-// プロファイルの数値積分で求める(設計メモ §3)
+// スラロームの形のパラメータを範囲内に収め、90度旋回の張り出しslalom_offsetを、slalomProfile()の
+// fを数値積分して求める(設計メモ §3)
 void RUN::slalomParamUpdate(void)
 {
   if ((slalom_inner_ratio < 0.0f) || (slalom_inner_ratio > SLALOM_INNER_RATIO_MAX)) {
@@ -539,7 +533,7 @@ void RUN::moveFixed(t_CW_CCW dir, int len, int spd)
 }
 
 // 行き止まりUターン: (90度旋回->バック->前進)×2で180度回転し、縦横の位置を中心へ補正する。
-// rotate(right,2)の代替で、前後の減速・加速は呼び出し側が行う
+// rotate(right,2)の代わりに使う。前後の減速・加速は呼び出し側が行う
 void RUN::uTurn(t_local_direction dir)
 {
   rotate(dir, 1);

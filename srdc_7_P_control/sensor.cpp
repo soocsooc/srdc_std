@@ -21,7 +21,7 @@ SENSOR g_sensor;
 
 // SENSORクラスのコンストラクタの定義
 SENSOR::SENSOR()
-{  //コンストラクタ
+{
   sen_r.ref = REF_SEN_R;
   sen_l.ref = REF_SEN_L;
 
@@ -29,9 +29,6 @@ SENSOR::SENSOR()
   sen_l.th_wall = TH_SEN_L;
 
   sen_f.th_wall = TH_SEN_F;
-
-  sen_r.th_control = CONTH_SEN_R;
-  sen_l.th_control = CONTH_SEN_L;
 }
 
 // センサ用のタイマ割り込み(onTimer1)から呼ばれ、SENSOR::interrupt()でセンサを1つ処理する
@@ -60,15 +57,12 @@ void SENSOR::interrupt(void)
       }
       sen_r.value = analogRead(AD_R);
       digitalWrite(SLED_R, LOW);  //LED消灯
-      if (sen_r.value > sen_r.th_wall) {	// 右壁検知
+      if (sen_r.value > sen_r.th_wall) {	// 右壁があればP制御にも使う
         sen_r.is_wall = true;
-      } else {
-        sen_r.is_wall = false;
-      }
-      if (sen_r.value > sen_r.th_control) {	// 右制御判定
         sen_r.error = sen_r.value - sen_r.ref; // 右壁誤差 = センサー値 - 右壁基準値
         sen_r.is_control = true;
       } else {
+        sen_r.is_wall = false;
         sen_r.error = 0;
         sen_r.is_control = false;
       }
@@ -80,15 +74,12 @@ void SENSOR::interrupt(void)
       }
       sen_l.value = analogRead(AD_L);
       digitalWrite(SLED_L, LOW);  //LED消灯
-      if (sen_l.value > sen_l.th_wall) {	// 左壁検知
+      if (sen_l.value > sen_l.th_wall) {	// 左壁があればP制御にも使う
         sen_l.is_wall = true;
-      } else {
-        sen_l.is_wall = false;
-      }
-      if (sen_l.value > sen_l.th_control) {	// 左制御判定
         sen_l.error = sen_l.value - sen_l.ref; // 左壁誤差 = センサー値 - 左壁基準値
         sen_l.is_control = true;
       } else {
+        sen_l.is_wall = false;
         sen_l.error = 0;
         sen_l.is_control = false;
       }

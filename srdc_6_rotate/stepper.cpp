@@ -38,7 +38,7 @@ static inline void IRAM_ATTR clockPulse(uint8_t pin)
   digitalWrite(pin, LOW);
 }
 
-// Rモータの周期数割り込み。次の割り込みまでの時間を、現在の周波数から設定し直す
+// 右モータのパルス出力の割り込み。次の割り込みまでの時間を、現在の周波数から設定し直す
 static void IRAM_ATTR isrR(void)
 {
   portENTER_CRITICAL_ISR(&g_stepper_mux);
@@ -50,7 +50,7 @@ static void IRAM_ATTR isrR(void)
   portEXIT_CRITICAL_ISR(&g_stepper_mux);
 }
 
-// Lモータの周期数割り込み
+// 左モータのパルス出力の割り込み
 static void IRAM_ATTR isrL(void)
 {
   portENTER_CRITICAL_ISR(&g_stepper_mux);

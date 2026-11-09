@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// 既存のsearch.cpp(距離カウント方式)とは別に、センサ閾値主導の到達判定(run_dynamic.cpp)を
-// 使う探索走行を試すための新規ファイル。search.cpp自体は無変更。詳細は設計メモ §4参照。
+// oneStepDynamic()(run_dynamic.cpp)で区画境界への到達を判定する探索走行(設計メモ §4)
 
 #include "pico_common.h"
 
-// デバッグ用: 認識した壁情報をLEDへ表示する(左:0b1000, 前:0b0110, 右:0b0001の論理和)。
+// デバッグ用。判定した壁をLEDに表示する(左:0b1000, 前:0b0110, 右:0b0001の論理和)
 static void ledWallShow(bool wall_l, bool wall_f, bool wall_r)
 {
   ledSet((wall_l ? 0b1000 : 0) | (wall_f ? 0b0110 : 0) | (wall_r ? 0b0001 : 0));
@@ -57,8 +56,8 @@ void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
       g_run.rotate(right, 2);
       break;
     case loca_dir_error:
-      // 壁情報の破損等でゴール到達不能と判定(motorDisable()はnextDirGet()内で実行済み)。
-      // 詳細は設計メモ §8参照
+      // 壁情報の誤りなどでゴールへ行けないと判定した。motorDisable()はnextDirGet()の中で実行済み
+      // (設計メモ §8)
       return;
   }
 
@@ -96,7 +95,7 @@ void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
         g_run.accelerate(HALF_SECTION, cruise_speed);
         break;
       case loca_dir_error:
-        // motorDisable()はnextDirGet()内で実行済み。詳細は設計メモ §8参照
+        // motorDisable()はnextDirGet()の中で実行済み(設計メモ §8)
         return;
     }
 
@@ -110,8 +109,8 @@ void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
   g_run.decelerate(HALF_SECTION + start_short, cruise_speed);
 }
 
-// adachiDynamic()と同じ骨格で、90度旋回を区画境界からのslalomCell()に置き換えた版(停止せず曲がる)。
-// 行き止まりはuTurn()で回転する。詳細は設計メモ §4・§3参照。
+// adachiDynamic()の90度旋回を、区画境界からのslalomCell()に置き換えた版(止まらずに曲がる)。
+// 行き止まりはuTurn()で回転する(設計メモ §4・§3)
 void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
 {
   t_global_direction glob_nextdir;
@@ -130,8 +129,8 @@ void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
       g_run.rotate(right, 2);
       break;
     case loca_dir_error:
-      // 壁情報の破損等でゴール到達不能と判定(motorDisable()はnextDirGet()内で実行済み)。
-      // 詳細は設計メモ §8参照
+      // 壁情報の誤りなどでゴールへ行けないと判定した。motorDisable()はnextDirGet()の中で実行済み
+      // (設計メモ §8)
       return;
   }
 
@@ -170,7 +169,7 @@ void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
         g_run.accelerate(HALF_SECTION, g_run.search_speed);
         break;
       case loca_dir_error:
-        // motorDisable()はnextDirGet()内で実行済み。詳細は設計メモ §8参照
+        // motorDisable()はnextDirGet()の中で実行済み(設計メモ §8)
         return;
     }
 

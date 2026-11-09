@@ -25,10 +25,7 @@ typedef struct
   bool enable;
 } t_control;
 
-typedef enum {
-  MOT_FORWARD = 1,
-  MOT_BACK = 2
-} t_CW_CCW;
+typedef enum { MOT_FORWARD = 1, MOT_BACK = 2 } t_CW_CCW;
 
 class RUN
 {
@@ -43,18 +40,18 @@ public:
   float search_accel;
   short search_speed;
   short max_speed;
-  short slalom_speed;  // slalom()の旋回中の並進速度(外輪の基準速度)
+  short slalom_speed;  // slalom()の旋回中の速度[mm/s](外輪の基準)
   float turn_accel;
-  // slalom()の旋回形状(設計メモ §3)。内輪の最低速度比、外輪の増速率、fを0→1にする外輪の走行距離[mm]
+  // slalom()の旋回の形(設計メモ §3)。内輪の最低速度比、外輪の増速率、fを0→1にする外輪の走行距離[mm]
   float slalom_inner_ratio;
   float slalom_outer_gain;
   float slalom_ramp_len;
-  float slalom_offset;    // 90度旋回の前後の張り出し[mm](slalomParamUpdate()で計算)
-  float slalom_ramp_th;   // fの入口ランプで曲がる角度[rad](slalomParamUpdate()で計算)
-  float slalom_tail;      // 直前のslalom()で外輪がs_totalを超えて走った距離[mm](確認用)
-  short uturn_back_len;   // uTurn()のバック距離[mm]
+  float slalom_offset;  // 90度旋回の前後の張り出し[mm](slalomParamUpdate()で計算)
+  float slalom_ramp_th;  // fを0→1へ上げる間に曲がる角度[rad](slalomParamUpdate()で計算)
+  float slalom_tail;  // 直前のslalom()で外輪がs_totalを超えて走った距離[mm](確認用)
+  short uturn_back_len;  // uTurn()のバック距離[mm]
   short wall_return_len;  // 壁に当てた後、区画中心へ戻る前進距離[mm](uTurn()・走行開始時)
-  short uturn_speed;      // uTurn()のバック/前進の速度[mm/s]
+  short uturn_speed;  // uTurn()のバック/前進の速度[mm/s]
   t_control con_wall;
 
   float tire_diameter;
@@ -73,23 +70,22 @@ public:
   void slalom(t_local_direction dir, float angle);
   // 区画境界から次の区画境界までを1動作で90度曲がる(区画中心の前後slalom_offsetで旋回、設計メモ §3)
   void slalomCell(t_local_direction dir);
-  // slalom形状パラメータの範囲チェックとslalom_offsetの再計算
+  // スラロームの形のパラメータの範囲チェックとslalom_offsetの再計算
   void slalomParamUpdate(void);
   void uTurn(t_local_direction dir);
-  // 前センサの値がthを超えたら到達とする版のoneStep()(距離は安全上限)。
-  // debug_log=trueで実測ログを出し、スイッチで中断できる(中断したらtrue)。
-  // 詳細は設計メモ §4参照
+  // 前センサの値がthを超えたら区画境界に着いたとみなすoneStep()。max_lenは距離の上限。
+  // debug_log=trueでログを出し、スイッチで中断できる(中断したらtrue、設計メモ §4)
   bool oneStepDynamic(int max_len, int init_speed, int th, bool debug_log = false);
-  // スタート位置を固定するための初期動作: 後ろ壁に押し付けてからwall_return_len前進する。
-  // uTurn()と同じuturn_back_len/wall_return_len/uturn_speedを流用する。詳細は設計メモ §6参照。
+  // 走行開始時に位置を合わせる。後ろの壁に当ててからwall_return_len前進する。
+  // uTurn()と同じuturn_back_len/wall_return_len/uturn_speedを使う(設計メモ §6)
   void alignStartPosition(void);
   // 走行開始時の加速。align=trueなら先にalignStartPosition()で区画中心へ合わせる(設計メモ §6)
   void startAccelerate(int len, int finish_speed, bool align = true);
 
 private:
   int step_lr_len, step_lr;
-  int step_l, step_r, step_l_len, step_r_len;
-  volatile double turn_f;     // 旋回の強さ(0〜1)。interrupt()が外輪・内輪の速度に反映する
+  int step_l, step_r;
+  volatile double turn_f;  // 旋回の強さ(0〜1)。interrupt()が外輪・内輪の速度に反映する
   volatile bool turn_enable;  // trueの間、interrupt()がturn_fで左右速度に差をつける
   int turn_sign;              // +1:左旋回方向, -1:右旋回方向
   void dirSet(t_CW_CCW dir_left, t_CW_CCW dir_right);
@@ -99,8 +95,8 @@ private:
   void stay(float l_speed);
   void stop(void);
   void moveFixed(t_CW_CCW dir, int len, int spd);
-  double slalomRampAngle(double s_end);  // fの入口ランプで外輪が0→s_end[mm]走る間の旋回角[rad]
-  double slalomLength(double obj_th);    // obj_th[rad]曲がるスラロームの外輪の走行距離[mm]
+  double slalomRampAngle(double s_end);  // fを上げる区間で外輪が0→s_end[mm]走る間の旋回角[rad]
+  double slalomLength(double obj_th);  // obj_th[rad]曲がるスラロームの外輪の走行距離[mm]
 };
 
 extern RUN g_run;

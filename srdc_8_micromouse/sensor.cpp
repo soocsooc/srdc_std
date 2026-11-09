@@ -30,9 +30,7 @@ void SENSOR::applyRatio(void)
   sen_r.ref = senScale(base.ref_r, p);
   sen_l.ref = senScale(base.ref_l, p);
   sen_r.th_wall = senScale(base.th_r, p);
-  sen_r.th_control = sen_r.th_wall;
   sen_l.th_wall = senScale(base.th_l, p);
-  sen_l.th_control = sen_l.th_wall;
   sen_f.th_wall = senScale(base.th_f, p);
   sen_r.th_wall_slalom = senScale(base.th_r_slalom, p);
   sen_l.th_wall_slalom = senScale(base.th_l_slalom, p);
@@ -41,8 +39,8 @@ void SENSOR::applyRatio(void)
 }
 
 // --- センサ値の平滑化 ------------------------------------------------------
-// 1パルス1リード(捨て読みは信号を潰すため禁止)で、senMedian3(スパイク除去)->senFilter(IIR、
-// 時定数≒3ms)の2段で処理する。ch: 0=前 1=右 2=左
+// LEDの1回の点灯で1回だけ読む(捨て読みを入れると信号が小さくなるため入れない)。senMedian3()で
+// 突発的な値を除き、senFilter()(IIR、時定数約3ms)で平滑化する。ch: 0=前 1=右 2=左
 
 static short g_raw_hist[3][3];
 static unsigned char g_raw_pos[3];
@@ -67,11 +65,11 @@ static short senMedian3(unsigned char ch, unsigned short raw)
 
 static inline short senFilter(short prev, short in)
 {
-  if (prev == 0) return in;  // 起動直後は即収束
+  if (prev == 0) return in;  // 起動直後は読み取り値をそのまま使う
   return (short)(((int)prev * SEN_IIR_A + (int)in) / (SEN_IIR_A + 1));
 }
 
-// 生読み値 -> メディアン -> IIR。SENSOR_SAMPLE_BADはメディアン履歴にもIIRにも入れず前回値を維持する
+// 読み取り値をメディアン、IIRの順に通す。SENSOR_SAMPLE_BADはどちらにも入れず前回値を使う
 static inline short senProcess(unsigned char ch, short prev, unsigned short raw)
 {
   if (raw == SENSOR_SAMPLE_BAD) {
@@ -81,8 +79,8 @@ static inline short senProcess(unsigned char ch, short prev, unsigned short raw)
   return senFilter(prev, senMedian3(ch, raw));
 }
 
-// センサを順番に読み取り、壁判定と壁制御用誤差を更新する。起床直後のジッタを避けるため、
-// SLEDを使う読み取りはcnt==1以降に置くこと(STEP8_動作まとめ.md §7参照)
+// センサを順番に読み取り、壁判定と壁制御用誤差を更新する。タスクが起きた直後は読むタイミングが
+// 揺れるため、SLEDを使う読み取りはcnt==1以降に置く(STEP8_GUIDE.md §7)
 void SENSOR::interrupt(void)
 {
   static char cnt = 0;
@@ -92,8 +90,8 @@ void SENSOR::interrupt(void)
   switch (cnt) {
     case 0:
       battery_value = batteryVoltGet();
-      // WiFi TX 電流バーストでレールが一瞬落ちると電池ADCも一時的に下がる。
-      // 単発では鳴らさず、BATT_LOW_ALARM_MS ミリ秒連続で低下したときだけ警報。
+      // WiFiの送信で電源電圧が一瞬下がると、電池電圧の読み取り値も下がる。
+      // そのため、BATT_LOW_ALARM_MS[ms]続けて下回ったときだけブザーを鳴らす
       if (battery_value < BATT_MIN) {
         if (batt_low_cnt < BATT_LOW_ALARM_MS) batt_low_cnt++;
       } else {
@@ -110,15 +108,13 @@ void SENSOR::interrupt(void)
       break;
     case 2:
       sen_r.value = senProcess(1, sen_r.value, sensorGetR());
+      // 壁ありのときだけP制御に使う
       if (sen_r.value > sen_r.th_wall) {
         sen_r.is_wall = true;
-      } else {
-        sen_r.is_wall = false;
-      }
-      if (sen_r.value > sen_r.th_control) {
         sen_r.error = sen_r.value - sen_r.ref;
         sen_r.is_control = true;
       } else {
+        sen_r.is_wall = false;
         sen_r.error = 0;
         sen_r.is_control = false;
       }
@@ -127,13 +123,10 @@ void SENSOR::interrupt(void)
       sen_l.value = senProcess(2, sen_l.value, sensorGetL());
       if (sen_l.value > sen_l.th_wall) {
         sen_l.is_wall = true;
-      } else {
-        sen_l.is_wall = false;
-      }
-      if (sen_l.value > sen_l.th_control) {
         sen_l.error = sen_l.value - sen_l.ref;
         sen_l.is_control = true;
       } else {
+        sen_l.is_wall = false;
         sen_l.error = 0;
         sen_l.is_control = false;
       }

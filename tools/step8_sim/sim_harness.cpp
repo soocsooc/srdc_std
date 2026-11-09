@@ -427,8 +427,8 @@ int main(int argc, char ** argv)
     printf("goal (%d,%d)-(%d,%d) is invalid for %dx%d\n", GX, GY, GX2, GY2, W, H);
     return 1;
   }
-  g_sensor.sen_r.th_wall_slalom = TH_SEN_R_SLALOM_INIT;
-  g_sensor.sen_l.th_wall_slalom = TH_SEN_L_SLALOM_INIT;
+  g_sensor.sen_r.th_wall_slalom = TH_SEN_R_INIT;
+  g_sensor.sen_l.th_wall_slalom = TH_SEN_L_INIT;
 
   // 探索モードのあと、その地図で最短モードを走らせる(最短モードの帰りの探索で地図が変わるので毎回戻す)
   const int search_modes[] = {2, 3}, fast_modes[] = {4, 5};

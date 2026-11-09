@@ -11,16 +11,18 @@ on:
 
 jobs:
   arduino-lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: arduino/arduino-lint-action@v2
         with:
           recursive: true
           compliance: specification
+          # tools/step8_sim(PC用シミュレータ)をライブラリとして検査しないよう、スケッチだけを対象にする
+          project-type: sketch
   clang-format:
     needs: arduino-lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       # 各スケッチファイルの.ino、.hファイルに対してclang-formatによる整形が必要か判定する

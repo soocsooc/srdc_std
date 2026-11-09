@@ -20,11 +20,9 @@
 typedef struct
 {
   short value;
-  short p_value;
   short error;
   short ref;
   short th_wall;
-  short th_control;
   bool is_wall;
   bool is_control;
 } t_sensor;

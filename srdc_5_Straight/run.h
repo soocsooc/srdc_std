@@ -15,10 +15,7 @@
 #ifndef SRC_RUN_H_
 #define SRC_RUN_H_
 
-typedef enum {
-  MOT_FORWARD = 1,
-  MOT_BACK = 2
-} t_CW_CCW;
+typedef enum { MOT_FORWARD = 1, MOT_BACK = 2 } t_CW_CCW;
 
 class RUN
 {
@@ -46,6 +43,6 @@ private:
 
 extern RUN g_run;
 
-#endif /* SRC_RUN_H_ */
-
 void controlInterrupt(void);
+
+#endif /* SRC_RUN_H_ */

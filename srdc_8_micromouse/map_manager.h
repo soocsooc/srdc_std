@@ -49,7 +49,7 @@ public:
   short maze_x, maze_y;  // 迷路の大きさ[区画](Web UIで変更可、設計メモ §9)
   // ゴール区画(長方形の対角2座標)。1区画のときは2座標を同じにする(設計メモ §9)
   short goal_mx, goal_my, goal_mx2, goal_my2;
-  // ゴール到達不能でスイッチ脱出した。modeExec()が復路以降を中断するのに使う(設計メモ §8)
+  // ゴールへ行けないと判定し、スイッチで抜けたときtrue。modeExec()が復路以降を中断するのに使う(設計メモ §8)
   bool unreachable;
 
   void axisUpdate(void);
@@ -68,7 +68,7 @@ public:
 
 private:
   unsigned short steps_map[MAZESIZE_MAX][MAZESIZE_MAX];  //歩数マップ
-  t_wall wall[MAZESIZE_MAX][MAZESIZE_MAX];               //壁の情報を格納する構造体配列
+  t_wall wall[MAZESIZE_MAX][MAZESIZE_MAX];  //壁の情報を格納する構造体配列
 
   void stepMapSet(
     unsigned char posX, unsigned char posY, t_global_direction l_global_dir, int * little,

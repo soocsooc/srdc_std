@@ -21,9 +21,9 @@ class SEARCH
 {
 public:
   void lefthandGetWall(char gx, char gy, char gx2, char gy2);
-  // 足立法。前進は前壁が見えたら区画境界とみなすoneStepDynamic()。詳細は設計メモ §4参照。
+  // 足立法。前進にはoneStepDynamic()を使い、前壁が見えたら区画境界とみなす(設計メモ §4)
   void adachiDynamic(char gx, char gy, char gx2, char gy2);
-  // adachiDynamic()の旋回をslalomCell()にした版。詳細は設計メモ §3参照。
+  // adachiDynamic()の旋回をslalomCell()にした版(設計メモ §3)
   void adachiSlalomDynamic(char gx, char gy, char gx2, char gy2);
   // 区画中心で180度回転する。前壁と左右どちらかの壁があればuTurn()、なければrotate()(設計メモ §5)
   void turnBack(bool wall_f, bool wall_r, bool wall_l);

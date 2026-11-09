@@ -16,7 +16,7 @@ env:
 
 jobs:
   compile-sketches:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: arduino/compile-sketches@v1
@@ -54,7 +54,7 @@ jobs:
   report:
     needs: compile-sketches  # Wait for the compile job to finish to get the data for the report
     if: github.event_name == 'pull_request' # Only run the job when the workflow is triggered by a pull request
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       # This step is needed to get the size data produced by the compile jobs
       - name: Download sketches reports artifact

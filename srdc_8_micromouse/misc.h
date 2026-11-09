@@ -15,8 +15,7 @@
 #ifndef SRC_MISC_H_
 #define SRC_MISC_H_
 
-// 走行モードは1〜MODE_RUN_MAX、MODE_ADJUSTで調整メニュー。「次」で1つ進め、MODE_ADJUSTの次は1
-#define MODE_RUN_MAX 5
+// 走行モードは1〜5、MODE_ADJUSTで調整メニュー。「次」で1つ進め、MODE_ADJUSTの次は1
 #define MODE_ERASE_MAP 6
 #define MODE_ADJUST 7
 
@@ -29,7 +28,6 @@ public:
   short buttonInc(short _data, short limit, short limit_data);
   void buttonOk(void);
   void goalAppeal(void);
-
 };
 
 extern MISC g_misc;

@@ -36,8 +36,8 @@ void FAST::run(short gx, short gy, short gx2, short gy2)
       g_run.rotate(right, 2);
       break;
     case loca_dir_error:
-      // 壁情報の破損等でゴール到達不能と判定(motorDisable()はnextDir2Get()内で実行済み)。
-      // 詳細は設計メモ §8参照
+      // 壁情報の誤りなどでゴールへ行けないと判定。motorDisable()はnextDir2Get()の中で実行済み
+      // (設計メモ §8)
       return;
     default:
       break;
@@ -75,7 +75,7 @@ void FAST::run(short gx, short gy, short gx2, short gy2)
         g_run.accelerate(HALF_SECTION, turn_speed);
         break;
       case loca_dir_error:
-        // motorDisable()はnextDir2Get()内で実行済み。詳細は設計メモ §8参照
+        // motorDisable()はnextDir2Get()の中で実行済み(設計メモ §8)
         return;
       default:
         break;
@@ -112,8 +112,8 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
       g_run.rotate(right, 2);
       break;
     case loca_dir_error:
-      // 壁情報の破損等でゴール到達不能と判定(motorDisable()はnextDir2Get()内で実行済み)。
-      // 詳細は設計メモ §8参照
+      // 壁情報の誤りなどでゴールへ行けないと判定。motorDisable()はnextDir2Get()の中で実行済み
+      // (設計メモ §8)
       return;
     default:
       break;
@@ -140,7 +140,7 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
         g_run.slalomCell(dir);
         break;
       case rear:
-        // 既知壁のみの経路では通常発生しない想定(設計メモ §11)
+        // 既知の壁だけの経路では通常は起きない(設計メモ §11)
         if (straight_count > 0) {
           g_run.straight(straight_count * SECTION, g_run.speed, g_run.max_speed, stop_speed);
           straight_count = 0;
@@ -151,7 +151,7 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
         g_run.accelerate(HALF_SECTION, g_run.slalom_speed);
         break;
       case loca_dir_error:
-        // motorDisable()はnextDir2Get()内で実行済み。詳細は設計メモ §8参照
+        // motorDisable()はnextDir2Get()の中で実行済み(設計メモ §8)
         return;
       default:
         break;

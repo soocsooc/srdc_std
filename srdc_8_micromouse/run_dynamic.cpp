@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// 距離カウント方式の既存走行(run.cpp)とは別に、センサ閾値主導の到達判定を試すための新規
-// ファイル。既存のoneStep()/straight()等は無変更。詳細は設計メモ §4参照。
+// 前センサの値で区画境界への到達を判定する走行(設計メモ §4)。距離で判定する走行はrun.cpp
 
 #include "pico_common.h"
 
-// 前センサの値がthを超えるか、max_lenに達したら止まる版のoneStep()(設計メモ §4)。
-// debug_log=trueで実測ログを出力し、スイッチで即stop()できる(設計メモ §4)。中断したらtrueを返す
+// 前センサの値がthを超えるか、max_lenに達したら終えるoneStep()(設計メモ §4)。
+// debug_log=trueでログを出し、スイッチですぐstop()できる。中断したらtrueを返す
 bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
 {
   int obj_step;
@@ -49,10 +48,10 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
       break;
     }
     if (step_lr > obj_step) {
-      break;  // 距離の安全上限フォールバック(壁が無い区画等)
+      break;  // 前壁がない区画などでは距離の上限で終える
     }
     if (f > th) {
-      break;  // 前方センサ閾値主導の到達判定
+      break;  // 前センサの値で到達を判定
     }
   }
 
@@ -64,8 +63,8 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
   return aborted;
 }
 
-// スタート位置を固定するための初期動作: 後ろ壁に押し付けてから前進する。
-// uTurn()と同じuturn_back_len/wall_return_len/uturn_speedを流用する。詳細は設計メモ §6参照。
+// 走行開始時に位置を合わせる。後ろの壁に当ててから前進する。
+// uTurn()と同じuturn_back_len/wall_return_len/uturn_speedを使う(設計メモ §6)
 void RUN::alignStartPosition(void)
 {
   moveFixed(MOT_BACK, uturn_back_len, uturn_speed);

@@ -21,21 +21,10 @@ typedef struct
 {
   double control;
   double error;
-  double p_error;
-  double diff;
-  double sum;
-  double sum_max;
   double kp;
-  double fkp;
-  double kd;
-  double ki;
-  bool enable;
 } t_control;
 
-typedef enum {
-  MOT_FORWARD = 1,
-  MOT_BACK = 2
-} t_CW_CCW;
+typedef enum { MOT_FORWARD = 1, MOT_BACK = 2 } t_CW_CCW;
 
 class RUN
 {
