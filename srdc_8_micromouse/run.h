@@ -88,7 +88,7 @@ public:
 
 private:
   int step_lr_len, step_lr;
-  int step_l, step_r, step_l_len, step_r_len;
+  int step_l, step_r;
   volatile double turn_f;     // 旋回の強さ(0〜1)。interrupt()が外輪・内輪の速度に反映する
   volatile bool turn_enable;  // trueの間、interrupt()がturn_fで左右速度に差をつける
   int turn_sign;              // +1:左旋回方向, -1:右旋回方向

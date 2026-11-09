@@ -223,7 +223,7 @@ mapWrite()
 | 3 | 左センサ（`sen_l`） |
 
 - 前センサ：値が `th_wall` を超えれば前壁あり（[設計メモ §7](設計メモ.md)）
-- 横センサ：値が `th_wall` を超えれば壁あり、`th_control` を超えれば P 制御に使い、`error = value − ref` とします
+- 横センサ：値が `th_wall` を超えれば壁ありとして P 制御にも使い、`error = value − ref` とします
 
 ### センサ LED の点灯と読み取り
 

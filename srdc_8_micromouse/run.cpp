@@ -105,13 +105,8 @@ void RUN::stepGet(void)
   step_lr_len = (int)((float)step_lr / 2.0 * pulse);
 }
 
-// 左右の走行パルス・走行距離を符号付きで個別に取得(スラロームの並進量・回転量の分離用)
-void RUN::stepGetLR(void)
-{
-  stepperCounterGet(&step_l, &step_r);
-  step_l_len = (int)((float)step_l * pulse);
-  step_r_len = (int)((float)step_r * pulse);
-}
+// 左右の走行パルスを符号付きで個別に取得(スラロームの並進量・回転量の分離用)
+void RUN::stepGetLR(void) { stepperCounterGet(&step_l, &step_r); }
 
 // モーターを停止し、機械が止まるまで待機
 void RUN::stop(void)

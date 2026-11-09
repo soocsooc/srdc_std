@@ -23,7 +23,6 @@ typedef struct
   short error;
   short ref;
   short th_wall;
-  short th_control;
   // モード3専用の側方壁判定しきい値(sen_r/sen_lのみ使用)。詳細は設計メモ §5参照。
   short th_wall_slalom;
   bool is_wall;

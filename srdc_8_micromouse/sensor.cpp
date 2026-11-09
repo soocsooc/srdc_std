@@ -30,9 +30,7 @@ void SENSOR::applyRatio(void)
   sen_r.ref = senScale(base.ref_r, p);
   sen_l.ref = senScale(base.ref_l, p);
   sen_r.th_wall = senScale(base.th_r, p);
-  sen_r.th_control = sen_r.th_wall;
   sen_l.th_wall = senScale(base.th_l, p);
-  sen_l.th_control = sen_l.th_wall;
   sen_f.th_wall = senScale(base.th_f, p);
   sen_r.th_wall_slalom = senScale(base.th_r_slalom, p);
   sen_l.th_wall_slalom = senScale(base.th_l_slalom, p);
@@ -110,15 +108,13 @@ void SENSOR::interrupt(void)
       break;
     case 2:
       sen_r.value = senProcess(1, sen_r.value, sensorGetR());
+      // 壁ありのときだけP制御に使う
       if (sen_r.value > sen_r.th_wall) {
         sen_r.is_wall = true;
-      } else {
-        sen_r.is_wall = false;
-      }
-      if (sen_r.value > sen_r.th_control) {
         sen_r.error = sen_r.value - sen_r.ref;
         sen_r.is_control = true;
       } else {
+        sen_r.is_wall = false;
         sen_r.error = 0;
         sen_r.is_control = false;
       }
@@ -127,13 +123,10 @@ void SENSOR::interrupt(void)
       sen_l.value = senProcess(2, sen_l.value, sensorGetL());
       if (sen_l.value > sen_l.th_wall) {
         sen_l.is_wall = true;
-      } else {
-        sen_l.is_wall = false;
-      }
-      if (sen_l.value > sen_l.th_control) {
         sen_l.error = sen_l.value - sen_l.ref;
         sen_l.is_control = true;
       } else {
+        sen_l.is_wall = false;
         sen_l.error = 0;
         sen_l.is_control = false;
       }
