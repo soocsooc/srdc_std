@@ -19,6 +19,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      # ESP32のプラットフォームとツールチェーン(~/.arduino15)をキャッシュし、
+      # ダウンロード元(GitHub Releases)の障害でビルドが失敗しないようにする。
+      # プラットフォームのバージョンを変えたら、キーの esp32-3.3.11 も合わせて変える
+      - name: Cache Arduino platforms
+        uses: actions/cache@v4
+        with:
+          path: ~/.arduino15
+          key: arduino15-${{ runner.os }}-esp32-3.3.11
       - uses: arduino/compile-sketches@v1
         with:
           enable-deltas-report: true
