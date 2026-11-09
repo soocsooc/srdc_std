@@ -36,7 +36,7 @@ void controlInterruptStop(void) { timerStop(g_timer0); }
 
 // --- センサ計測タスク(core1) ------------------------------------------------
 // WiFi(core0)とは別のコアで動かす。タスクが起きた直後は読むタイミングが揺れるため、1回目は
-// SLEDを使わない電池電圧の処理にする(sensor.cppのcnt==0、STEP8_動作まとめ.md §7)
+// SLEDを使わない電池電圧の処理にする(sensor.cppのcnt==0、STEP8_GUIDE.md §7)
 #define SENSOR_TASK_CORE 1
 #define SENSOR_TASK_PRIORITY 20  // loopTask(1)/AsyncTCP(<=10)より上、WiFi内部より下
 #define SENSOR_TASK_STACK 4096
@@ -297,7 +297,7 @@ unsigned char switchGet(void)
 }
 
 // SLEDを点灯し、SLED_SETTLE_US待ってからanalogRead()する。点灯からAD変換が終わるまでが
-// SLED_WINDOW_MAX_USを超えたらSENSOR_SAMPLE_BADを返し、呼び出し側で捨てる(STEP8_動作まとめ.md §7)
+// SLED_WINDOW_MAX_USを超えたらSENSOR_SAMPLE_BADを返し、呼び出し側で捨てる(STEP8_GUIDE.md §7)
 // その時間の最大値はch(0=前 1=右 2=左)ごとにg_sensor.sled_on_us_max(_all)へ記録する
 static unsigned short sledRead(uint8_t sled_pin, uint8_t adc_pin, unsigned char ch)
 {

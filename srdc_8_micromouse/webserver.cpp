@@ -26,7 +26,7 @@ const char * ssid = "使用しているルータのSSID";
 const char * password = "ルータのパスワード";
 #endif
 
-// Web表示用の平滑化。リクエストごとに.valueを5個ためてメディアンを返す(STEP8_動作まとめ.md §10)。
+// Web表示用の平滑化。リクエストごとに.valueを5個ためてメディアンを返す(STEP8_GUIDE.md §10)。
 // ch: 0=L 1=R 2=F
 #define WEB_SEN_MED_N 5
 
@@ -60,11 +60,11 @@ static short webSenStable(unsigned char ch, short v)
 }
 
 // WiFiの送信で電源電圧が下がり、ブラウンアウト(リセット)が起きるのを防ぐため送信出力を下げる
-// (STEP8_動作まとめ.md §7)
+// (STEP8_GUIDE.md §7)
 #define WEB_WIFI_TX_POWER WIFI_POWER_8_5dBm
 
 // --- トップページ HTML 生成 ----------------------------------------------------
-// セクションごとの関数に分割している(STEP8_動作まとめ.md §10参照)
+// セクションごとの関数に分割している(STEP8_GUIDE.md §10参照)
 
 // トップページの先頭(DOCTYPEから迷路マップの表示領域まで)のHTMLを返す。値は埋め込まない
 static String htmlPageHead(void)
@@ -335,7 +335,7 @@ static String htmlFormEnd(void)
 }
 
 // 走行モード・調整モードの番号と動作の一覧のHTMLを返す(静的、値の埋め込みなし)。
-// 詳細はSTEP8_動作まとめ.md §4・§5参照。
+// 詳細はSTEP8_GUIDE.md §4・§5参照。
 static String htmlModeSection(void)
 {
   return R"HTML(<hr>

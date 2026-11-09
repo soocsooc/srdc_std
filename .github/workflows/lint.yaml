@@ -18,6 +18,8 @@ jobs:
         with:
           recursive: true
           compliance: specification
+          # tools/step8_sim(PC用シミュレータ)をライブラリとして検査しないよう、スケッチだけを対象にする
+          project-type: sketch
   clang-format:
     needs: arduino-lint
     runs-on: ubuntu-latest

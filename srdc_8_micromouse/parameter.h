@@ -56,7 +56,7 @@
 // センサ値の平滑化の係数a。value = (value*a + 新しい値)/(a+1)
 #define SEN_IIR_A 3
 // LED点灯からAD変換が終わるまでの許容時間[us]。超えた読み取り値は捨てて前回値を使う
-// (STEP8_動作まとめ.md §7)
+// (STEP8_GUIDE.md §7)
 #define SLED_WINDOW_MAX_US 200
 // 捨てる読み取り値を表す値。analogRead()は0〜4095なので重ならない
 #define SENSOR_SAMPLE_BAD 0xFFFF

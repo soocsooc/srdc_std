@@ -146,7 +146,7 @@ void ADJUST::straightSensorDiag(float section_check)	// 最大走行区画数(�
 }
 
 // 前壁が見えるまで直進し、区画中心で止まる(Pゲイン調整用)。モード2と同じくth_approachで
-// 区画境界とみなしてdecelerate(HALF_SECTION)する。走行中はログを出し、スイッチで即停止できる(STEP8_動作まとめ.md §5)
+// 区画境界とみなしてdecelerate(HALF_SECTION)する。走行中はログを出し、スイッチで即停止できる(STEP8_GUIDE.md §5)
 void ADJUST::straightToWallCheck(void)
 {
   const int cruise_speed = g_run.stoppableSpeed(HALF_SECTION);  // 半区画で止まり切れる速度
@@ -318,7 +318,7 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
       slalomSequenceCheck();	// 連続旋回・行き止まりUターンを含めた一連の動作を確認
       break;
     case 8:
-      // th_approach決定用。壁まで580mmの環境で余裕を取った値(STEP8_動作まとめ.md §5参照)。
+      // th_approach決定用。壁まで580mmの環境で余裕を取った値(STEP8_GUIDE.md §5参照)。
       // 壁の距離を変えたらここも変更する
       straightSensorDiag(2.2);
       break;

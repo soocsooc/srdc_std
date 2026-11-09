@@ -80,7 +80,7 @@ static inline short senProcess(unsigned char ch, short prev, unsigned short raw)
 }
 
 // センサを順番に読み取り、壁判定と壁制御用誤差を更新する。タスクが起きた直後は読むタイミングが
-// 揺れるため、SLEDを使う読み取りはcnt==1以降に置く(STEP8_動作まとめ.md §7)
+// 揺れるため、SLEDを使う読み取りはcnt==1以降に置く(STEP8_GUIDE.md §7)
 void SENSOR::interrupt(void)
 {
   static char cnt = 0;
