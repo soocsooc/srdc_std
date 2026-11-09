@@ -45,7 +45,6 @@ char switchGet(void);
 
 void setup()
 {
-  // put your setup code here, to run once:
   pinMode(LED0, OUTPUT);
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);

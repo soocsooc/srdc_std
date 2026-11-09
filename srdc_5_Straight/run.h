@@ -46,6 +46,6 @@ private:
 
 extern RUN g_run;
 
-#endif /* SRC_RUN_H_ */
-
 void controlInterrupt(void);
+
+#endif /* SRC_RUN_H_ */

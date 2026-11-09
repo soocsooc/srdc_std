@@ -38,9 +38,6 @@
 #define TH_SEN_L 215
 #define TH_SEN_F 103
 
-#define CONTH_SEN_R TH_SEN_R
-#define CONTH_SEN_L TH_SEN_L
-
 #define CON_WALL_KP (0.5)
 //ここまで
 
