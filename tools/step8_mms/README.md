@@ -37,7 +37,7 @@
    | Build Command | 下のコマンド |
    | Run Command | `build/step8_mms.exe 2 4 5` |
 
-   Build Command（1 行で入力します）:
+   Build Command は次のとおりです（1 行で入力します）。
 
    ```text
    g++ -O2 -std=gnu++17 -w -include tools/step8_sim/sim_shim.h -I tools/step8_sim -I srdc_8_micromouse tools/step8_mms/mms_harness.cpp srdc_8_micromouse/map_manager.cpp srdc_8_micromouse/search.cpp srdc_8_micromouse/search_dynamic.cpp srdc_8_micromouse/fast.cpp srdc_8_micromouse/misc.cpp -o build/step8_mms.exe
@@ -136,17 +136,17 @@ mms のソース（`src/Stats.cpp`、`src/Window.cpp`）で確かめた数え方
 
 - 距離の単位は半区画です。`moveForward` も `moveForwardHalf` も半区画の数で数えます。たとえば `best-run-distance 139` は約 69.5 区画です。
 - 旋回は 90° を 1 回と数えます。180° の旋回は 2 回です。
-- 最良の走行（best-run）は、スタートを出てから中央の区画に着くまでの 1 回分です。
+- 最良の走行（best-run）はスタートを出てから中央の区画に着くまでの 1 回分です。
 - 実効距離は、1 回の移動コマンドで進む半区画の数を d とすると、d が 3 以上のとき d ÷ 2 + 1、それ以外は d です。リセットすると、次の走行に 15 が足されます。
 - `score` は「最良の走行の旋回数 + 最良の走行の実効距離 + 0.1 ×（全体の旋回数 + 全体の実効距離）」で、小さいほど良い値です。
 
-ハーネスは `RUN` の関数 1 回につき移動コマンドを 1 回送るので、実効距離と `score` は、アルゴリズムだけでなく動作の分け方でも変わります。たとえば最短走行の `straight()` は直線をまとめて 1 回で送るので、実効距離が小さくなります。探索の方法を比べるときは `best-run-turns` と `best-run-distance` を見ます。
+ハーネスは `RUN` の関数 1 回につき移動コマンドを 1 回送るので、実効距離と `score` はアルゴリズムだけでなく動作の分け方でも変わります。たとえば最短走行の `straight()` は直線をまとめて 1 回で送るので、実効距離が小さくなります。探索の方法を比べるときは `best-run-turns` と `best-run-distance` を見ます。
 
 mms の「Reset」を押すと、マウスをスタートへ戻し、地図を消して最初のモードからやり直します。走行の途中で押しても同じです。
 
 ## エディタ
 
-VS Code の clangd は、リポジトリ直下の `.clangd` の設定で、`tools/step8_*` の下のファイルを PC の g++（MinGW）向けとして解析します。スケッチ用の `.vscode/compile_commands.json` は ESP32 向けなので、これらのファイルには使いません。
+VS Code の clangd はリポジトリ直下の `.clangd` の設定で、`tools/step8_*` の下のファイルを PC の g++（MinGW）向けとして解析します。スケッチ用の `.vscode/compile_commands.json` は ESP32 向けなので、これらのファイルには使いません。
 
 ## 扱わないこと
 
