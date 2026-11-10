@@ -2,6 +2,8 @@
 // マイクロマウスシミュレーター mms(https://github.com/mackorone/mms)の上で動かす。
 // RUN の動作は「真の位置[mm]と向きを動かし、mms のマウスを最も近い半区画の格子点へ動かす」に置き換え、
 // 壁センサーの値は mms に問い合わせる。使い方は README.md 参照
+#include <algorithm>
+#include <cctype>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -115,6 +117,99 @@ static struct
   long calls, call_limit;
 } pose;
 
+// モードの比較用に、往路(モード開始からゴールの区画に初めて入るまで)を記録する
+struct OutboundLog
+{
+  bool active;     // 往路の途中
+  long mm;         // 走った距離[mm]
+  int pivot;       // 超信地旋回(rotate・uTurn)の回数。90度を 1 回と数える
+  int slalom;      // slalomCell() の回数
+  long est_ms;     // fastPathMake() の推定時間[ms](Serial の "est." から読む)。なければ -1
+  std::vector<int> route;  // fastPathMake() の経路が通る区画(x*MAZESIZE_MAX+y)。最短走行だけ
+};
+static OutboundLog g_out;
+
+static bool inGoalCell(int cx, int cy)
+{
+  return (cx >= min(GX, GX2)) && (cx <= max(GX, GX2)) && (cy >= min(GY, GY2)) &&
+         (cy <= max(GY, GY2));
+}
+static bool inGoal(int x_mm, int y_mm) { return inGoalCell(x_mm / SECTION, y_mm / SECTION); }
+
+// ---- 最短走行の経路の色付け ----
+// モード 4 はオレンジ、モード 5 は水色。全モードの後の重ね表示では、両方が通る区画を黄色にする。
+// ゴールの区画は濃い緑のまま変えない
+static const char ROUTE_COLOR_4 = 'o', ROUTE_COLOR_5 = 'c', ROUTE_COLOR_BOTH = 'y';
+static int g_cur_mode;                // 実行中のモード
+static std::vector<int> g_route_drawn;  // いま色を付けている区画
+static bool g_show_route = true;
+
+static void routeClear(void)
+{
+  for (int c : g_route_drawn) mmsSend("clearColor %d %d", c / MAZESIZE_MAX, c % MAZESIZE_MAX);
+  g_route_drawn.clear();
+}
+static void routeColorCell(int c, char color)
+{
+  const int x = c / MAZESIZE_MAX, y = c % MAZESIZE_MAX;
+  if (inGoalCell(x, y)) return;
+  mmsSend("setColor %d %d %c", x, y, color);
+  g_route_drawn.push_back(c);
+}
+static void routeDraw(const std::vector<int> & route, char color)
+{
+  routeClear();
+  for (int c : route) routeColorCell(c, color);
+}
+
+// 経路の列 "NNEE..."(先頭は走り出すときの向き、以降は区画へ入るたびの向き)を、スタート区画から
+// たどって通る区画の並びにする
+static std::vector<int> routeFromDirs(const char * dirs)
+{
+  static const char NAME[] = "NESW";
+  static const int RX[4] = {0, 1, 0, -1}, RY[4] = {1, 0, -1, 0};
+  std::vector<int> route;
+  int x = 0, y = 0;
+  route.push_back(x * MAZESIZE_MAX + y);
+  for (const char * p = dirs; *p; p++) {
+    const char * d = strchr(NAME, *p);
+    if (!d || !*d) break;
+    x += RX[d - NAME];
+    y += RY[d - NAME];
+    if ((x < 0) || (x >= W) || (y < 0) || (y >= H)) break;
+    route.push_back(x * MAZESIZE_MAX + y);
+  }
+  return route;
+}
+
+// fast.cpp が走り出すときに Serial へ出す 2 行を読む
+//   "fast path (pivot|slalom): turn N ms, est. M ms" → 推定時間
+//   "fast path (len): NNEE..."                       → 経路(区画に色を付ける)
+static void serialHook(const char * s)
+{
+  const char * p = strstr(s, "est. ");
+  if (p && strstr(s, "fast path")) g_out.est_ms = atol(p + 5);
+  const char * q = strstr(s, "fast path (");
+  if (q && isdigit((unsigned char)q[11])) {
+    const char * r = strstr(q, "): ");
+    if (!r) return;
+    std::string dirs(r + 3);
+    while (!dirs.empty() && !strchr("NESW", dirs.back())) dirs.pop_back();  // 改行を除く
+    g_out.route = routeFromDirs(dirs.c_str());
+    if (g_show_route) routeDraw(g_out.route, (g_cur_mode == 4) ? ROUTE_COLOR_4 : ROUTE_COLOR_5);
+  }
+}
+
+// 全モードの後に、最後に走ったモード 4 と 5 の経路を重ねて塗る
+static void routeOverlay(const std::vector<int> & r4, const std::vector<int> & r5)
+{
+  routeClear();
+  for (int c : r4)
+    routeColorCell(c, (std::find(r5.begin(), r5.end(), c) != r5.end()) ? ROUTE_COLOR_BOTH : ROUTE_COLOR_4);
+  for (int c : r5)
+    if (std::find(r4.begin(), r4.end(), c) == r4.end()) routeColorCell(c, ROUTE_COLOR_5);
+}
+
 static int cellX(void) { return pose.hx / 2; }
 static int cellY(void) { return pose.hy / 2; }
 
@@ -160,13 +255,25 @@ static void mmsSync(void)
 static void forward(int len)
 {
   if (len < 0) simFail("negative length");
+  // 往路なら、ゴールの区画に入るまでの距離を 1mm 単位で数える
+  for (int s = 1; g_out.active && (s <= len); s++) {
+    g_out.mm++;
+    if (inGoal(pose.x + DX[pose.dir] * s, pose.y + DY[pose.dir] * s)) g_out.active = false;
+  }
   pose.x += DX[pose.dir] * len;
   pose.y += DY[pose.dir] * len;
   mmsSync();
 }
-static void turnBy(int k)
+// slalom=true は slalomCell() の旋回(往路の記録で超信地旋回と分けて数える)
+static void turnBy(int k, bool slalom = false)
 {
   if (!atCenter()) simFail("turn off-center");
+  if (g_out.active) {
+    if (slalom)
+      g_out.slalom++;
+    else
+      g_out.pivot += (k < 0) ? -k : k;
+  }
   for (int i = 0; i < ((k < 0) ? -k : k); i++) mmsQuery(k > 0 ? "turnRight" : "turnLeft");
   pose.dir = (pose.dir + k + 4) & 3;
 }
@@ -237,6 +344,7 @@ static char drawn[MAZESIZE_MAX][MAZESIZE_MAX][4];
 static void drawReset(void)
 {
   memset(drawn, _UNKNOWN, sizeof drawn);
+  g_route_drawn.clear();  // 色は clearAllColor で消えるので、記録だけ消す
   stepsReset();
   mmsSend("clearAllColor");
   mmsSend("clearAllText");
@@ -336,7 +444,7 @@ void RUN::slalomCell(t_local_direction dir)
 {
   callBegin(dir == right ? "slalomCell R" : "slalomCell L", 0);
   forward(HALF_SECTION);
-  turnBy(dir == right ? 1 : -1);
+  turnBy(dir == right ? 1 : -1, true);
   forward(HALF_SECTION);
   sensorUpdate();
 }
@@ -370,10 +478,23 @@ static void poseInit(void)
   pose.call_limit = 40L * W * H + 200;
 }
 
+// 1 モード分の結果(最後に比較表として出す)
+struct ModeResult
+{
+  int mode;
+  bool ok;
+  OutboundLog out;
+  bool reached;  // ゴールの区画に入った
+};
+static std::vector<ModeResult> g_results;
+
 static bool runMode(int mode)
 {
   pose.calls = 0;
   sensorUpdate();
+  g_out = OutboundLog{true, 0, 0, 0, -1, {}};
+  g_cur_mode = mode;
+  routeClear();  // 前のモードの経路を消す。最短走行なら走り出すときに自分の経路を塗る
   fprintf(stderr, "mode %d start\n", mode);
   std::string why;
   try {
@@ -397,12 +518,35 @@ static bool runMode(int mode)
       why = buf;
     }
   }
+  const bool reached = !g_out.active;
+  g_out.active = false;
+  g_results.push_back(ModeResult{mode, why.empty(), g_out, reached});
   if (!why.empty()) {
     fprintf(stderr, "mode %d FAIL: %s\n", mode, why.c_str());
     return false;
   }
   fprintf(stderr, "mode %d ok (%ld RUN calls)\n", mode, pose.calls);
   return true;
+}
+
+// 各モードの往路(スタートからゴールの区画に入るまで)を表にする
+static void printSummary(void)
+{
+  fprintf(stderr, "outbound (start -> goal):\n");
+  fprintf(stderr, "  mode  result  cells  turns  pivot  slalom  est.ms\n");
+  for (const ModeResult & r : g_results) {
+    char est[16] = "-";
+    if (r.out.est_ms >= 0) snprintf(est, sizeof est, "%ld", r.out.est_ms);
+    if (!r.reached) {
+      fprintf(
+        stderr, "  %4d  %-6s  %5s  %5s  %5s  %6s  %6s\n", r.mode, r.ok ? "ok" : "FAIL", "-", "-",
+        "-", "-", est);
+      continue;
+    }
+    fprintf(
+      stderr, "  %4d  %-6s  %5.1f  %5d  %5d  %6d  %6s\n", r.mode, r.ok ? "ok" : "FAIL",
+      r.out.mm / (double)SECTION, r.out.pivot + r.out.slalom, r.out.pivot, r.out.slalom, est);
+  }
 }
 
 static void printStats(void)
@@ -421,10 +565,12 @@ static void usage(void)
 {
   fprintf(
     stderr,
-    "usage: step8_mms [モード ...] [-g x y x2 y2] [-nosteps] [-v]\n"
-    "  モード  順に実行する modeExec() の番号(既定: 2 4)。2/3 は探索、4/5 は最短走行\n"
+    "usage: step8_mms [モード ...] [-g x y x2 y2] [-carry] [-nosteps] [-noroute] [-v]\n"
+    "  モード  順に実行する modeExec() の番号(既定: 2 4 5)。2/3 は探索、4/5 は最短走行\n"
     "  -g     ゴール区画(既定: 迷路の大きさが parameter.h と同じなら GOAL_*_INIT、違えば中央)\n"
+    "  -carry 最短走行の復路で増えた地図を次のモードへ引き継ぐ(既定は直前の探索の地図で比べる)\n"
     "  -nosteps 歩数マップを表示しない\n"
+    "  -noroute 最短走行の経路に色を付けない\n"
     "  -v     RUN の呼び出しと Serial の出力をログに出す\n");
 }
 
@@ -438,12 +584,17 @@ int main(int argc, char ** argv)
 
   std::vector<int> modes;
   int gset = 0, g[4] = {0, 0, 0, 0};
+  bool carry = false;
   for (int i = 1; i < argc; i++) {
     const std::string a = argv[i];
     if (a == "-v")
       g_sim_verbose = true;
     else if (a == "-nosteps")
       g_show_steps = false;
+    else if (a == "-noroute")
+      g_show_route = false;
+    else if (a == "-carry")
+      carry = true;
     else if ((a == "-g") && (i + 4 < argc)) {
       for (int k = 0; k < 4; k++) g[k] = atoi(argv[++i]);
       gset = 1;
@@ -453,7 +604,7 @@ int main(int argc, char ** argv)
     } else
       modes.push_back(atoi(a.c_str()));
   }
-  if (modes.empty()) modes = {2, 4};
+  if (modes.empty()) modes = {2, 4, 5};
 
   W = atoi(mmsQuery("mazeWidth").c_str());
   H = atoi(mmsQuery("mazeHeight").c_str());
@@ -483,7 +634,8 @@ int main(int argc, char ** argv)
   g_sensor.sen_l.th_wall_slalom = TH_SEN_L_INIT;
   fprintf(stderr, "maze %dx%d, goal (%d,%d)-(%d,%d), modes", W, H, GX, GY, GX2, GY2);
   for (int m : modes) fprintf(stderr, " %d", m);
-  fprintf(stderr, "\n");
+  fprintf(stderr, carry ? ", map carried over\n" : ", fast runs use the last search map\n");
+  Serial.hook = serialHook;
 
   // リセットボタンが押されたら、地図を消して最初のモードからやり直す
   for (;;) {
@@ -491,10 +643,36 @@ int main(int argc, char ** argv)
       poseInit();
       mapErase();
       drawReset();
+      g_results.clear();
+      // 最短走行(4/5)は復路の探索で地図が増えるので、既定では直前の探索が終わった時点の地図に
+      // 戻してから走らせ、同じ地図で比べる
+      static unsigned char search_map[16][16];
+      bool have_search_map = false;
       bool ok = true;
-      for (int m : modes)
-        if (ok) ok = runMode(m);
+      for (int m : modes) {
+        if (!ok) break;
+        const bool fast = (m == 4) || (m == 5);
+        if (fast && !carry && have_search_map) memcpy(flash_map, search_map, sizeof flash_map);
+        ok = runMode(m);
+        if (!fast) {
+          memcpy(search_map, flash_map, sizeof flash_map);
+          have_search_map = true;
+        }
+      }
       fprintf(stderr, ok ? "all modes ok\n" : "stopped\n");
+      printSummary();
+      // 最後に走ったモード 4 と 5 の経路を重ねて塗る
+      {
+        const std::vector<int> *r4 = nullptr, *r5 = nullptr;
+        for (const ModeResult & r : g_results) {
+          if ((r.mode == 4) && !r.out.route.empty()) r4 = &r.out.route;
+          if ((r.mode == 5) && !r.out.route.empty()) r5 = &r.out.route;
+        }
+        if (g_show_route && r4 && r5) {
+          routeOverlay(*r4, *r5);
+          fprintf(stderr, "route colors: orange = mode 4 only, cyan = mode 5 only, yellow = both\n");
+        }
+      }
       printStats();
       fprintf(stderr, "press Reset in mms to run again\n");
       while (!mmsBool("wasReset")) usleep(200 * 1000);
