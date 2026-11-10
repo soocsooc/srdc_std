@@ -18,6 +18,12 @@ jobs:
   compile-sketches:
     runs-on: ubuntu-24.04
     steps:
+      # ESP32 3.3.x のツールチェーンは大きく、ランナーのディスクが足りなくなるため、
+      # ビルドで使わないツール(.NET・Android SDK・GHC・CodeQL)を消して空きを作る
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
       - uses: actions/checkout@v4
       # ESP32のプラットフォームとツールチェーン(~/.arduino15)をキャッシュし、
       # ダウンロード元(GitHub Releases)の障害でビルドが失敗しないようにする。
