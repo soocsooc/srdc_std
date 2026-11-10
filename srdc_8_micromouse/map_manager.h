@@ -40,6 +40,15 @@ typedef struct
   t_global_direction dir;
 } t_position;
 
+// 最短走行の経路探索(ダイクストラ法)の重み。各動作の所要時間[us](設計メモ §11)
+typedef struct
+{
+  uint32_t straight[MAZESIZE_MAX];  // k区画直進して旋回へつなぐ時間。k=0は0
+  uint32_t goal[MAZESIZE_MAX];  // k区画直進してゴール区画の中心で止まるまでの時間
+  uint32_t turn;                // 90度旋回1回(区画境界から次の区画境界まで)
+  uint32_t rotate[3];           // 走行開始時の向き合わせ(0/90/180度)
+} t_path_cost;
+
 class MapManager
 {
 public:
@@ -56,7 +65,15 @@ public:
   void nextDir(t_local_direction dir);
   // 目標は(x,y)-(x2,y2)の長方形。スタートへ戻るときは(0,0,0,0)
   t_local_direction nextDirGet(char x, char y, char x2, char y2, t_global_direction * dir);
-  t_local_direction nextDir2Get(short x, short y, short x2, short y2, t_global_direction * dir);
+  // 壁がないと確定した辺(NOWALL)だけを通り、costの合計時間が最小になる経路を現在位置から作る。
+  // 到達できなければfalse。total_usに推定時間を返す(設計メモ §11)
+  bool fastPathMake(
+    short x, short y, short x2, short y2, const t_path_cost & cost, uint32_t * total_us);
+  // fastPathMake()で作った経路の次の方向。区画へ入るたびに呼ぶ(nextDirGet()と同じ戻り値)
+  t_local_direction fastPathNext(t_global_direction * dir);
+  void fastPathPrint(void);  // 経路をSerialへ出す
+  // ゴールへ行けないことを点滅で知らせ、スイッチで抜けるまで待つ(設計メモ §8)
+  void unreachableWait(void);
   bool posIn(short x, short y, short x2, short y2);  // 現在位置が長方形内か
   void mazeSizeValidate(void);  // 迷路の大きさが範囲外なら初期値へ戻す
   void goalValidate(void);  // ゴール座標が迷路外・スタートを含むなら初期値へ戻す
@@ -69,13 +86,16 @@ public:
 private:
   unsigned short steps_map[MAZESIZE_MAX][MAZESIZE_MAX];  //歩数マップ
   t_wall wall[MAZESIZE_MAX][MAZESIZE_MAX];  //壁の情報を格納する構造体配列
+  // fastPathMake()の経路。区画へ入るたびに進む向き(東西南北)の列で、先頭は走行開始時の向き。
+  // 同じ区画を別の向きで2回通ることもあるので、長さの上限は状態の数(区画数×4)+1
+  unsigned char fast_path[MAZESIZE_MAX * MAZESIZE_MAX * 4 + 1];
+  short fast_path_len, fast_path_idx;
 
   void stepMapSet(
     unsigned char posX, unsigned char posY, t_global_direction l_global_dir, int * little,
     t_global_direction * now_dir, int * priority);
   t_local_direction nextGdir(t_global_direction * p_global_dir);
   void searchMapMake(int x, int y, int x2, int y2);
-  void map2Make(int x, int y, int x2, int y2);
   void stepMapInit(int x, int y, int x2, int y2);
   int priorityGet(unsigned char x, unsigned char y, t_global_direction dir);
 };

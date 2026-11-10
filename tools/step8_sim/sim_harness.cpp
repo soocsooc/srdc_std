@@ -170,9 +170,17 @@ RUN::RUN()
   search_speed = SEARCH_SPEED_INIT;
   max_speed = MAX_SPEED_INIT;
   slalom_speed = SLALOM_SPEED_INIT;
+  // 最短走行の経路探索の重み(fast.cppのcostMake())に使う
+  search_accel = SEARCH_ACCEL_INIT;
+  turn_accel = TURN_ACCEL_INIT;
+  tread_width = TREAD_WIDTH_INIT;
   speed = 0;
 }
-int RUN::stoppableSpeed(int) { return search_speed; }
+int RUN::stoppableSpeed(int len)
+{
+  const float v_stop = sqrt(MIN_SPEED * MIN_SPEED + 2.0 * 1000.0 * search_accel * len);
+  return (int)min((float)search_speed, v_stop);
+}
 void RUN::straight(int len, int, int, int finish_speed)
 {
   callBegin("straight", len);

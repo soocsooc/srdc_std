@@ -21,6 +21,7 @@ inline typename std::common_type<A, B>::type max(A a, B b)
 {
   return (a < b) ? b : a;
 }
+#define PI 3.1415926535897932384626433832795
 #define constrain(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
 extern unsigned long g_sim_ms;  // delay() で進む仮想時刻[ms]
