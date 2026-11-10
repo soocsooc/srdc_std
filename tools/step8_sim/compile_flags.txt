@@ -1,4 +1,0 @@
--xc++
--std=gnu++17
--I.
--I../../srdc_8_micromouse

@@ -112,7 +112,7 @@ void RUN::stepGetLR(void) { stepperCounterGet(&step_l, &step_r); }
 void RUN::stop(void)
 {
   stepperStop();
-  delay(300);
+  delay(STOP_WAIT_MS);
 }
 
 // init_speedからmax_spまで加速して直進し、残りの距離が制動距離を切ったらfinish_speedまで減速する。

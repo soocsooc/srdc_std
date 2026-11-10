@@ -321,60 +321,7 @@ t_local_direction MapManager::nextDirGet(
   }
 
   if (steps_map[mypos.x][mypos.y] == 65535) {
-    // ゴールへ行けないことを点滅で知らせる。接触不良による誤判定もあるため、モータを止めて
-    // スイッチで抜けられるようにする。抜けた後は止めずにすぐ返す(設計メモ §8)
-    while (!unreachable && (switchGet() == 0)) {
-      motorDisable();
-      ledSet(0x0a);
-      delay(500);
-      ledSet(0x05);
-      delay(500);
-    }
-    unreachable = true;
-    return loca_dir_error;
-  } else {
-    return nextGdir(p_global_dir);
-  }
-
-  return front;
-}
-
-t_local_direction MapManager::nextDir2Get(
-  short x, short y, short x2, short y2, t_global_direction * p_global_dir)
-{
-  int little, priority;
-
-  map2Make(x, y, x2, y2);
-  little = 65535;
-
-  priority = 0;
-
-  if ((wall[mypos.x][mypos.y].north == NOWALL) && ((mypos.y + 1) < maze_y)) {
-    stepMapSet(mypos.x, mypos.y + 1, north, &little, p_global_dir, &priority);
-  }
-
-  if ((wall[mypos.x][mypos.y].east == NOWALL) && ((mypos.x + 1) < maze_x)) {
-    stepMapSet(mypos.x + 1, mypos.y, east, &little, p_global_dir, &priority);
-  }
-
-  if ((wall[mypos.x][mypos.y].south == NOWALL) && (mypos.y > 0)) {
-    stepMapSet(mypos.x, mypos.y - 1, south, &little, p_global_dir, &priority);
-  }
-
-  if ((wall[mypos.x][mypos.y].west == NOWALL) && (mypos.x > 0)) {
-    stepMapSet(mypos.x - 1, mypos.y, west, &little, p_global_dir, &priority);
-  }
-
-  if (steps_map[mypos.x][mypos.y] == 65535) {  //Goalにいけない
-    // モータを止めてスイッチで抜けられるようにする(詳細は設計メモ §8参照、nextDirGet()と同じ)
-    while (!unreachable && (switchGet() == 0)) {
-      motorDisable();
-      ledSet(0x0a);
-      delay(500);
-      ledSet(0x05);
-      delay(500);
-    }
-    unreachable = true;
+    unreachableWait();
     return loca_dir_error;
   } else {
     return nextGdir(p_global_dir);
@@ -478,44 +425,6 @@ void MapManager::searchMapMake(int x, int y, int x2, int y2)
   } while (change_flag == true);
 }
 
-void MapManager::map2Make(int x, int y, int x2, int y2)
-{
-  bool change_flag;
-
-  stepMapInit(x, y, x2, y2);
-
-  do {
-    change_flag = false;
-    for (int i = 0; i < maze_x; i++) {
-      for (int j = 0; j < maze_y; j++) {
-        if (steps_map[i][j] == 65535) continue;
-        if (
-          (j < (maze_y - 1)) && (wall[i][j].north == NOWALL) &&
-          (steps_map[i][j + 1] == 65535)) {
-          steps_map[i][j + 1] = steps_map[i][j] + 1;
-          change_flag = true;
-        }
-
-        if (
-          (i < (maze_x - 1)) && (wall[i][j].east == NOWALL) && (steps_map[i + 1][j] == 65535)) {
-          steps_map[i + 1][j] = steps_map[i][j] + 1;
-          change_flag = true;
-        }
-
-        if ((j > 0) && (wall[i][j].south == NOWALL) && (steps_map[i][j - 1] == 65535)) {
-          steps_map[i][j - 1] = steps_map[i][j] + 1;
-          change_flag = true;
-        }
-
-        if ((i > 0) && (wall[i][j].west == NOWALL) && (steps_map[i - 1][j] == 65535)) {
-          steps_map[i - 1][j] = steps_map[i][j] + 1;
-          change_flag = true;
-        }
-      }
-    }
-  } while (change_flag == true);
-}
-
 int MapManager::priorityGet(unsigned char x, unsigned char y, t_global_direction dir)
 {
   int priority;
@@ -539,4 +448,176 @@ int MapManager::priorityGet(unsigned char x, unsigned char y, t_global_direction
   }
 
   return priority;
+}
+
+// ゴールへ行けないことを点滅で知らせる。接触不良による誤判定もあるため、モータを止めて
+// スイッチで抜けられるようにする。抜けた後は止めずにすぐ返す(設計メモ §8)
+void MapManager::unreachableWait(void)
+{
+  while (!unreachable && (switchGet() == 0)) {
+    motorDisable();
+    ledSet(0x0a);
+    delay(500);
+    ledSet(0x05);
+    delay(500);
+  }
+  unreachable = true;
+}
+
+// ---- 最短走行の経路探索(ダイクストラ法、設計メモ §11) ----
+// 状態は「区画(x,y)へ向きdirで区画境界から入ったところ」。番号は (x*MAZESIZE_MAX + y)*4 + dir
+// 状態から状態へは「k区画直進 → 左右どちらかへ90度旋回」の1動作で移る。旋回した先の区画へ入った状態が次の状態
+
+#define PATH_NODE_MAX (MAZESIZE_MAX * MAZESIZE_MAX * 4)
+#define PATH_NO_PREV 0xFFFF
+
+static const signed char dir_dx[4] = {0, 1, 0, -1};  // north, east, south, west
+static const signed char dir_dy[4] = {1, 0, -1, 0};
+
+static uint32_t path_dist[PATH_NODE_MAX];  // 始点からの時間[us]
+static uint16_t path_prev[PATH_NODE_MAX];  // 直前の状態。始点はPATH_NO_PREV
+static bool path_done[PATH_NODE_MAX];      // 時間が確定したか
+
+static inline int pathNode(int x, int y, int dir) { return (x * MAZESIZE_MAX + y) * 4 + dir; }
+
+bool MapManager::fastPathMake(
+  short x, short y, short x2, short y2, const t_path_cost & cost, uint32_t * total_us)
+{
+  const short gx_min = min(x, x2), gx_max = max(x, x2);
+  const short gy_min = min(y, y2), gy_max = max(y, y2);
+  auto inGoal = [&](int cx, int cy) {
+    return (cx >= gx_min) && (cx <= gx_max) && (cy >= gy_min) && (cy <= gy_max);
+  };
+  auto inMaze = [&](int cx, int cy) {
+    return (cx >= 0) && (cx < maze_x) && (cy >= 0) && (cy < maze_y);
+  };
+  auto passable = [&](int cx, int cy, int dir) {
+    return wallDataGet(cx, cy, (t_global_direction)dir) == NOWALL;
+  };
+
+  fast_path_len = fast_path_idx = 0;
+  *total_us = 0;
+  if (inGoal(mypos.x, mypos.y)) return true;  // すでにゴールの中にいる
+
+  for (int i = 0; i < PATH_NODE_MAX; i++) {
+    path_dist[i] = UINT32_MAX;
+    path_prev[i] = PATH_NO_PREV;
+    path_done[i] = false;
+  }
+
+  // 始点：区画の中心で静止した状態から、向きを合わせて隣の区画へ入る
+  for (int d = 0; d < 4; d++) {
+    const int nx = mypos.x + dir_dx[d], ny = mypos.y + dir_dy[d];
+    if (!inMaze(nx, ny) || !passable(mypos.x, mypos.y, d)) continue;
+    const int times = (d - (int)mypos.dir + 4) % 4;  // 右回りに何回90度回るか
+    path_dist[pathNode(nx, ny, d)] = cost.rotate[(times == 3) ? 1 : times];
+  }
+
+  uint32_t best = UINT32_MAX;
+  int best_node = -1, best_k = 0;
+  const int node_num = maze_x * MAZESIZE_MAX * 4;  // x<maze_xの範囲だけ見ればよい
+
+  // 優先度付きキューは使わず、毎回すべての状態から時間が最小のものを探す(状態は最大1024個)
+  while (1) {
+    int u = -1;
+    uint32_t du = UINT32_MAX;
+    for (int i = 0; i < node_num; i++) {
+      if (!path_done[i] && (path_dist[i] < du)) {
+        du = path_dist[i];
+        u = i;
+      }
+    }
+    if ((u < 0) || (du >= best)) break;  // 残りの状態からは今の最良より速くならない
+    path_done[u] = true;
+
+    const int ux = (u / 4) / MAZESIZE_MAX, uy = (u / 4) % MAZESIZE_MAX, h = u % 4;
+    if (inGoal(ux, uy)) {  // 入った直後にゴール。止まるだけ
+      if (du + cost.goal[0] < best) {
+        best = du + cost.goal[0];
+        best_node = u;
+        best_k = 0;
+      }
+      continue;
+    }
+
+    // k区画直進した先の区画(ex,ey)で旋回する。直進の途中でゴールに入ったらそこで止まる
+    int ex = ux, ey = uy;
+    for (int k = 0; k < MAZESIZE_MAX; k++) {
+      if (k > 0) {
+        if (!passable(ex, ey, h)) break;
+        ex += dir_dx[h];
+        ey += dir_dy[h];
+        if (!inMaze(ex, ey)) break;
+        if (inGoal(ex, ey)) {
+          if (du + cost.goal[k] < best) {
+            best = du + cost.goal[k];
+            best_node = u;
+            best_k = k;
+          }
+          break;
+        }
+      }
+      for (int t = 1; t <= 3; t += 2) {  // 右(h+1)と左(h+3)
+        const int nh = (h + t) % 4;
+        const int nx = ex + dir_dx[nh], ny = ey + dir_dy[nh];
+        if (!inMaze(nx, ny) || !passable(ex, ey, nh)) continue;
+        const int v = pathNode(nx, ny, nh);
+        const uint32_t dv = du + cost.straight[k] + cost.turn;
+        if (!path_done[v] && (dv < path_dist[v])) {
+          path_dist[v] = dv;
+          path_prev[v] = (uint16_t)u;
+        }
+      }
+    }
+  }
+
+  if (best_node < 0) return false;
+  *total_us = best;
+
+  // 終点から始点へたどり、区画ごとの方向を逆順に積む
+  int len = 0;
+  const int bh = best_node % 4;
+  for (int i = 0; i < best_k; i++) fast_path[len++] = bh;  // 最後の直進
+  int v = best_node;
+  while (path_prev[v] != PATH_NO_PREV) {
+    const int u = path_prev[v];
+    const int ux = (u / 4) / MAZESIZE_MAX, uy = (u / 4) % MAZESIZE_MAX, h = u % 4;
+    const int vx = (v / 4) / MAZESIZE_MAX, vy = (v / 4) % MAZESIZE_MAX, nh = v % 4;
+    // 旋回した区画(vの1つ手前)までの直進区画数
+    const int ex = vx - dir_dx[nh], ey = vy - dir_dy[nh];
+    const int k = abs(ex - ux) + abs(ey - uy);
+    if (len + k + 2 > (int)sizeof(fast_path)) return false;  // 通常は起きない
+    fast_path[len++] = nh;  // 旋回した区画では新しい向きで出る
+    for (int i = 0; i < k; i++) fast_path[len++] = h;
+    v = u;
+  }
+  fast_path[len++] = v % 4;  // 走行開始時の向き
+  for (int i = 0, j = len - 1; i < j; i++, j--) {
+    const unsigned char tmp = fast_path[i];
+    fast_path[i] = fast_path[j];
+    fast_path[j] = tmp;
+  }
+  fast_path_len = len;
+  return true;
+}
+
+t_local_direction MapManager::fastPathNext(t_global_direction * p_global_dir)
+{
+  if (fast_path_idx >= fast_path_len) {
+    // 経路の列が尽きた。経路の作り方に誤りがなければ起きない
+    Serial.printf("fast path exhausted at (%d,%d)\r\n", mypos.x, mypos.y);
+    unreachableWait();
+    return loca_dir_error;
+  }
+  *p_global_dir = (t_global_direction)fast_path[fast_path_idx++];
+  return nextGdir(p_global_dir);
+}
+
+void MapManager::fastPathPrint(void)
+{
+  static const char name[4] = {'N', 'E', 'S', 'W'};
+  static char buf[sizeof(fast_path) + 1];
+  for (int i = 0; i < fast_path_len; i++) buf[i] = name[fast_path[i]];
+  buf[fast_path_len] = '\0';
+  Serial.printf("fast path (%d): %s\r\n", fast_path_len, buf);
 }

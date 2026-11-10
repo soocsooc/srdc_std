@@ -12,3 +12,16 @@ Diagnostics:
     # 「直接使われていない」という判定から外す
     IgnoreHeader:
       - pico_common\.h
+---
+# tools/step8_sim・tools/step8_mms は PC の g++ でビルドするので、ESP32 のコンパイルデータベースを使わず、
+# 各フォルダの compile_flags.txt と同じ設定で解析する(パスはファイルのあるフォルダから見た相対)
+If:
+  PathMatch: tools/step8_.*
+CompileFlags:
+  CompilationDatabase: None
+  Add:
+    - --target=x86_64-w64-mingw32
+    - -xc++
+    - -std=gnu++17
+    - -I../step8_sim
+    - -I../../srdc_8_micromouse

@@ -21,6 +21,7 @@ inline typename std::common_type<A, B>::type max(A a, B b)
 {
   return (a < b) ? b : a;
 }
+#define PI 3.1415926535897932384626433832795
 #define constrain(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
 extern unsigned long g_sim_ms;  // delay() で進む仮想時刻[ms]
@@ -47,13 +48,19 @@ public:
 class SimSerial
 {
 public:
+  // printf() の出力を 1 回ごとに受け取る関数。ハーネスが Serial の値を読むのに使う(nullptr なら使わない)
+  void (*hook)(const char * s) = nullptr;
+
   int printf(const char * fmt, ...)
   {
-    if (!g_sim_verbose) return 0;
+    if (!g_sim_verbose && !hook) return 0;
+    char buf[2048];
     va_list ap;
     va_start(ap, fmt);
-    const int n = vprintf(fmt, ap);
+    const int n = vsnprintf(buf, sizeof buf, fmt, ap);
     va_end(ap);
+    if (hook) hook(buf);
+    if (g_sim_verbose) fputs(buf, stdout);
     return n;
   }
   void print(const char * s)
