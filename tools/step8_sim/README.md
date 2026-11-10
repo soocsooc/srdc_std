@@ -2,6 +2,8 @@
 
 `srdc_8_micromouse` の迷路ロジックを、実機の `.cpp` を書き換えずに PC の g++ でコンパイルし、ランダムな迷路で探索走行と最短走行を確かめるツールです。対象は `map_manager.cpp`、`search.cpp`、`search_dynamic.cpp`、`fast.cpp`、`misc.cpp` で、`MISC::modeExec()` も実機のものを使います。
 
+走る様子や歩数マップを画面で見たいときは、同じ迷路ロジックをシミュレーター mms の上で動かす [tools/step8_mms](../step8_mms/README.md) を使います。`sim_shim.h`、`Arduino.h`、`FS.h` は step8_mms と共有しているので、変えたら両方をビルドし直して確かめます。
+
 ## 仕組み
 
 - `sim_shim.h` を `-include` で各 `.cpp` の先頭に読ませます。シムが `PICO_COMMON_H_` を先に定義するので、実機の `pico_common.h` は無効になります。Wi-Fi と SPIFFS 以外のヘッダは実機のものを使います。

@@ -46,7 +46,7 @@ arduino-cli upload -p COM3 --profile esp32 srdc_8_micromouse
 
 `.ino` と `.h` はリポジトリの [.clang-format](.clang-format) で整形します。CI はスケッチのコンパイルと、clang-format による整形のチェックを行います。
 
-VS Code の clangd は `.vscode/compile_commands.json` を使ってヘッダを解決します。このファイルは Git で管理していないので、クローンした後やスケッチのファイルを増やした後に `python tools/make_compile_db.py` で作り直します。
+VS Code の clangd は `.vscode/compile_commands.json` を使ってヘッダを解決します。このファイルは Git で管理していないので、クローンした後やスケッチのファイルを増やした後に `python tools/make_compile_db.py` で作り直します。PC の g++ でビルドする `tools/step8_*` の下のファイルは、このデータベースを使わず、[.clangd](.clangd) に書いた MinGW 向けの設定で解析します。
 
 ## 実機で確認・調整が必要な値
 
@@ -65,6 +65,8 @@ STEP8 の調整の順序は [STEP8_GUIDE.md §11](srdc_8_micromouse/STEP8_GUIDE.
 ## PC シミュレーター
 
 [tools/step8_sim](tools/step8_sim/README.md) で、STEP8 の迷路ロジック（探索と最短走行）を PC 上でランダムな迷路に対して確かめられます。
+
+[tools/step8_mms](tools/step8_mms/README.md) で、同じ迷路ロジックをマイクロマウスシミュレーター [mms](https://github.com/mackorone/mms) の上で動かし、走る様子と、覚えた壁・歩数マップの移り変わりを画面で確かめられます。
 
 ## License
 
