@@ -18,17 +18,15 @@
 #define LED2 16
 #define LED3 15
 
-// SW1は内部プルアップを使う。SW2(GPIO35)は内部プルアップがないので、
-// SW2をプルアップしていないならUSE_SW2を0にする(SW2を読まない)
+// SW1・SW2とも内部プルアップを使う
 #define SW1 33
-#define SW2 35
-#define USE_SW2 1
+#define SW2 32
 
 int g_state_1, g_state_2;
 
-// スイッチが押されている(=LOW)か。USE_SW2が0のあいだ、SW2は押されていないとみなす
+// スイッチが押されている(=LOW)か
 bool sw1Pressed(void) { return digitalRead(SW1) == LOW; }
-bool sw2Pressed(void) { return USE_SW2 && (digitalRead(SW2) == LOW); }
+bool sw2Pressed(void) { return digitalRead(SW2) == LOW; }
 
 void setup()
 {
@@ -38,7 +36,7 @@ void setup()
   pinMode(LED3, OUTPUT);
 
   pinMode(SW1, INPUT_PULLUP);
-  pinMode(SW2, INPUT);
+  pinMode(SW2, INPUT_PULLUP);
 
   g_state_1 = g_state_2 = 0;
 }
@@ -53,13 +51,13 @@ void loop()
   // 押されたSWに対応するLEDの点灯・消灯を、押すたびに切り替える
   if (sw1Pressed()) {
     ++g_state_1;
-    digitalWrite(LED0, g_state_1 & 0x01);
-    digitalWrite(LED1, g_state_1 & 0x01);
+    digitalWrite(LED2, g_state_1 & 0x01);
+    digitalWrite(LED3, g_state_1 & 0x01);
   }
   if (sw2Pressed()) {
     ++g_state_2;
-    digitalWrite(LED2, g_state_2 & 0x01);
-    digitalWrite(LED3, g_state_2 & 0x01);
+    digitalWrite(LED0, g_state_2 & 0x01);
+    digitalWrite(LED1, g_state_2 & 0x01);
   }
 
   delay(30);  // チャタリング回避

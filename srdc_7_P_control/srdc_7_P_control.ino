@@ -23,11 +23,9 @@
 #define LED2 16
 #define LED3 15
 
-// SW2(GPIO35)は内部プルアップがない。SW2をプルアップしていないならUSE_SW2を0にする
+// SW1・SW2とも内部プルアップを使う
 #define SW1 33
-#define SW2 35
-#define USE_SW2 1
-#define LONG_PRESS_MS 1000  // SW1をこの時間以上押したら長押し
+#define SW2 32
 
 // HIGHでモータ有効(LOWでドライバがSLEEP)
 #define MOTOR_EN 17
@@ -68,7 +66,7 @@ void setup()
   digitalWrite(LED3, LOW);
 
   pinMode(SW1, INPUT_PULLUP);
-  pinMode(SW2, INPUT);
+  pinMode(SW2, INPUT_PULLUP);
 
   // モータを無効にする
   pinMode(MOTOR_EN, OUTPUT);
@@ -98,22 +96,11 @@ void setup()
 
 void loop()
 {
-  while ((digitalRead(SW1) == HIGH) &&
-         !(USE_SW2 && (digitalRead(SW2) == LOW))) {  // スイッチが押されるまで待機
+  while ((digitalRead(SW1) == HIGH) && (digitalRead(SW2) == HIGH)) {  // スイッチが押されるまで待機
     continue;
   }
-  // SW1でセンサ値の表示、SW2(USE_SW2が0ならSW1の長押し)で走行
-  bool run = false;
-  if (USE_SW2 && (digitalRead(SW2) == LOW)) {
-    run = true;
-  } else {
-    unsigned long t0 = millis();
-    while (digitalRead(SW1) == LOW) {
-      continue;
-    }
-    run = !USE_SW2 && ((millis() - t0) >= LONG_PRESS_MS);
-  }
-  if (!run) {
+  // SW1でセンサ値の表示、SW2で走行
+  if (digitalRead(SW2) == HIGH) {
     while (1) {
       Serial.printf("r_sen  is %d\n\r", g_sensor.sen_r.value);
       Serial.printf("f_sen  is %d\n\r", g_sensor.sen_f.value);

@@ -18,12 +18,9 @@
 #define LED2 16
 #define LED3 15
 
-// SW1=次のモード、SW2=決定。SW2(GPIO35)は内部プルアップがないので、SW2をプルアップして
-// いないならUSE_SW2を0にする(SW2を読まず、SW1の短押し=次、長押し=決定になる)
+// SW1=次のモード、SW2=決定。どちらも内部プルアップを使う
 #define SW1 33
-#define SW2 35
-#define USE_SW2 1
-#define LONG_PRESS_MS 1000
+#define SW2 32
 
 #define BUZZER 23
 
@@ -51,7 +48,7 @@ void setup()
   pinMode(LED3, OUTPUT);
 
   pinMode(SW1, INPUT_PULLUP);
-  pinMode(SW2, INPUT);
+  pinMode(SW2, INPUT_PULLUP);
 
   ledcAttach(BUZZER, 440, 10);  // Pin, 周波数[Hz](440~4000), PWM分解能[bit](2^bit-1, 最大値: 14)
   ledcWrite(BUZZER, 1024);  // Pin, pwm_duty(0~1023(2^10-1), LOW(0) or HIGH(1024) -> Mute)
@@ -92,7 +89,7 @@ void loop()
 char switchGet(void)
 {
   while (1) {
-    if (USE_SW2 && (digitalRead(SW2) == LOW)) {
+    if (digitalRead(SW2) == LOW) {
       delay(30);  // チャタリング回避
       while (digitalRead(SW2) == LOW) {
         continue;
@@ -101,14 +98,12 @@ char switchGet(void)
       return SW_OK;
     }
     if (digitalRead(SW1) == LOW) {
-      unsigned long t0 = millis();
       delay(30);  // チャタリング回避
       while (digitalRead(SW1) == LOW) {
         continue;
       }
-      unsigned long len = millis() - t0;
       delay(30);
-      return (!USE_SW2 && (len >= LONG_PRESS_MS)) ? SW_OK : SW_NEXT;
+      return SW_NEXT;
     }
   }
 }
