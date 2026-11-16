@@ -194,7 +194,7 @@ void deviceInit(void)
   ledSet(0);
 
   pinMode(SW1, INPUT_PULLUP);
-  pinMode(SW2, INPUT);  // 内部プルアップなし
+  pinMode(SW2, INPUT_PULLUP);
 
   ledcAttach(BUZZER, 440, 10);
   ledcWrite(BUZZER, 1024);
@@ -266,33 +266,22 @@ void motorDisable(void)
   digitalWrite(MOTOR_EN, LOW);  //Power OFF (SLEEP)
 }
 
-// 押されたスイッチを取得し、離されるまで待つ。USE_SW2が1ならSW1=SW_RM(次)、SW2=SW_CM(決定)。
-// 0ならSW1の短押しがSW_RM、SW_LONG_PRESS_MS以上の長押しがSW_CM。長押しになった時点で短く鳴らす
+// 押されたスイッチを取得し、離されるまで待つ。SW1=SW_RM(次)、SW2=SW_CM(決定)
 unsigned char switchGet(void)
 {
   unsigned char ret = 0;
   if (digitalRead(SW1) == LOW) {
-    const unsigned long t0 = millis();
-    bool long_press = false;
     do {
       delay(20);
-      if (!USE_SW2 && !long_press && (millis() - t0 >= SW_LONG_PRESS_MS)) {
-        long_press = true;
-        buzzerEnable(DEC_FREQ);
-        delay(30);
-        buzzerDisable();
-      }
     } while (digitalRead(SW1) == LOW);
-    ret |= long_press ? SW_CM : SW_RM;
+    ret |= SW_RM;
   }
-#if USE_SW2
   if (digitalRead(SW2) == LOW) {
     do {
       delay(20);
     } while (digitalRead(SW2) == LOW);
     ret |= SW_CM;
   }
-#endif
   return ret;
 }
 

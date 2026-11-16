@@ -9,13 +9,13 @@ SRDC2026 標準機体用の Arduino スケッチ集です。STEP1〜7 でハー�
 | マイコン | ESP32-DevKitC-32E（無印 ESP32） |
 | モータドライバ | EIC4311（SLA7078 互換）。CLOCK と CW/CCW で駆動する |
 | LED | 4 個（GPIO 5, 13, 16, 15）。HIGH で点灯 |
-| スイッチ | SW1（GPIO33）、SW2（GPIO35） |
+| スイッチ | SW1（GPIO33）、SW2（GPIO32） |
 | 壁センサ | 前・右・左の 3 組（前は 1 個） |
 | 電池 | LiPo 3 セル |
 
-SW1 が「次」、SW2 が「決定」です。SW2 の GPIO35 は入力専用ピンで内部プルアップがないので、SW2 をプルアップしていないなら各スケッチの `USE_SW2` を 0 にします。SW2 を読まず、SW1 の短押しを「次」、長押し（1 秒以上）を「決定」にします。
+SW1 が「次」、SW2 が「決定」です。どちらも内部プルアップを使います。
 
-ピンは回路図 V5（11/3 版）に合わせてあります。一覧は [srdc_8_micromouse/STEP8_GUIDE.md §2](srdc_8_micromouse/STEP8_GUIDE.md) にあります。
+ピンは回路図（11/11 版、`新入生機体_261111.pdf`）に合わせてあります。一覧は [srdc_8_micromouse/STEP8_GUIDE.md §2](srdc_8_micromouse/STEP8_GUIDE.md) にあります。
 
 ## スケッチ
 
@@ -56,7 +56,6 @@ VS Code の clangd は `.vscode/compile_commands.json` を使ってヘッダを�
 | --- | --- | --- |
 | 1 回転あたりのパルス数（400） | `PULSE_PER_REV` | モータを 1 回転させる |
 | モータの回転方向 | `CW_R_FORWARD`／`CW_L_FORWARD` | STEP5 で前進しなければ反転する |
-| 受光素子の割り当て（前 36・右 39・左 34） | `AD_F`／`AD_R`／`AD_L` | STEP4 でセンサ値を表示する |
 | モータの電流 | 基板のトリマ R26 | 脱調や発熱を見ながら合わせる |
 | タイヤ径・トレッド幅・センサの基準値としきい値 | `parameter.h`（STEP8）、`pins_config.h`（STEP5〜7） | STEP8 の調整メニューと Web 調整で校正する |
 

@@ -1,11 +1,11 @@
 #ifndef PINS_CONFIG_H_
 #define PINS_CONFIG_H_
 
-// 受光素子(ADC1)。前・右・左の対応は仮置きのため、実機で確認すること
-#define AD_F 36
-#define AD_R 39
-#define AD_L 34
-#define AD_BATT 32
+// 受光素子(ADC1)
+#define AD_F 39
+#define AD_R 34
+#define AD_L 36
+#define AD_BATT 35
 
 // センサ用LEDピン(HIGHで点灯)。前は1個
 #define SLED_F 14

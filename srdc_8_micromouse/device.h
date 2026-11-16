@@ -16,7 +16,7 @@
 
 #include <Arduino.h>
 
-// SRDC2026標準機体(ESP32-DevKitC-32E)のピン定義。回路図V5(11/3版)の配線に合わせてある
+// SRDC2026標準機体(ESP32-DevKitC-32E)のピン定義。回路図(11/11版)の配線に合わせてある
 
 // switchGet()の戻り値。SW_RM=次、SW_CM=決定(値を減らす操作はない)
 #define SW_CM 2
@@ -30,24 +30,20 @@
 #define LED_ON HIGH
 #define LED_OFF LOW
 
-// SW1は内部プルアップを使う。SW1が「次」、SW2が「決定」。SW2(GPIO35)は入力専用ピンで
-// 内部プルアップがないので、SW2をプルアップしていないならUSE_SW2を0にする
-// (SW2を読まず、SW1の短押しを「次」、長押しを「決定」にする)
+// SW1が「次」、SW2が「決定」。どちらも内部プルアップを使う
 #define SW1 33
-#define SW2 35
-#define USE_SW2 1
-#define SW_LONG_PRESS_MS 1000  // USE_SW2が0のとき、SW1をこの時間以上押したら長押し(決定)
+#define SW2 32
 
 // センサLED(HIGHで点灯)。前は1個で、前方の受光素子1個と組になる
 #define SLED_F 14
 #define SLED_R 4
 #define SLED_L 27
 
-// 受光素子(すべてADC1)。前・右・左の対応は仮のため、実機で確認すること
-#define AD_F 36  // S1
-#define AD_R 39  // S3
-#define AD_L 34  // S4
-#define AD_BATT 32
+// 受光素子(すべてADC1)
+#define AD_F 39  // S3
+#define AD_R 34  // S4
+#define AD_L 36  // S1
+#define AD_BATT 35
 
 #define BUZZER 23
 

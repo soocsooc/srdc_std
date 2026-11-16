@@ -22,10 +22,9 @@
 #define LED2 16
 #define LED3 15
 
-// SW2(GPIO35)は内部プルアップがない。SW2をプルアップしていないならUSE_SW2を0にする
+// SW1・SW2とも内部プルアップを使う
 #define SW1 33
-#define SW2 35
-#define USE_SW2 1
+#define SW2 32
 
 // HIGHでモータ有効(LOWでドライバがSLEEP)
 #define MOTOR_EN 17
@@ -57,7 +56,7 @@ void setup()
   digitalWrite(LED3, LOW);
 
   pinMode(SW1, INPUT_PULLUP);
-  pinMode(SW2, INPUT);
+  pinMode(SW2, INPUT_PULLUP);
 
   // モータを無効にする
   pinMode(MOTOR_EN, OUTPUT);
@@ -73,8 +72,7 @@ void setup()
 
 void loop()
 {
-  while ((digitalRead(SW1) == HIGH) &&
-         !(USE_SW2 && (digitalRead(SW2) == LOW))) {  // ボタンを押すまで待機
+  while ((digitalRead(SW1) == HIGH) && (digitalRead(SW2) == HIGH)) {  // ボタンを押すまで待機
     delay(1);
     continue;
   }
