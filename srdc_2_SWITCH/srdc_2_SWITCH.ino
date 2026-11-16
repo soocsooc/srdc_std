@@ -51,13 +51,13 @@ void loop()
   // 押されたSWに対応するLEDの点灯・消灯を、押すたびに切り替える
   if (sw1Pressed()) {
     ++g_state_1;
-    digitalWrite(LED0, g_state_1 & 0x01);
-    digitalWrite(LED1, g_state_1 & 0x01);
+    digitalWrite(LED2, g_state_1 & 0x01);
+    digitalWrite(LED3, g_state_1 & 0x01);
   }
   if (sw2Pressed()) {
     ++g_state_2;
-    digitalWrite(LED2, g_state_2 & 0x01);
-    digitalWrite(LED3, g_state_2 & 0x01);
+    digitalWrite(LED0, g_state_2 & 0x01);
+    digitalWrite(LED1, g_state_2 & 0x01);
   }
 
   delay(30);  // チャタリング回避
