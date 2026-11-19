@@ -202,6 +202,49 @@ static bool frontSensorSample(short * f)
   return true;
 }
 
+// 壁1枚の色。白=既知(壁あり/なし)、赤=未知、黄=それ以外(仮想壁など)
+static const char * mapWallColor(char wall)
+{
+  if (wall == NOWALL || wall == WALL) return "\x1b[37m";
+  if (wall == _UNKNOWN) return "\x1b[31m";
+  return "\x1b[33m";
+}
+
+// 迷路の横の壁1列(各区画のdir側)を「+--+」の形で出力する
+static void mapViewHorizontal(int y, t_global_direction dir)
+{
+  Serial.printf("+");
+  for (int x = 0; x < g_map.maze_x; x++) {
+    const char w = g_map.wallDataGet(x, y, dir);
+    Serial.printf("%s%s\x1b[37m+", mapWallColor(w), (w == NOWALL) ? "  " : "--");
+  }
+  Serial.printf("\r\n");
+}
+
+// Flashに保存した迷路の壁情報を読み込み、シリアルモニタに表示する。上が北、左下がスタート。
+// 色はmapWallColor()を参照。表示のためにg_mapの壁情報を保存した内容で上書きする
+void ADJUST::mapView(void)
+{
+  mapCopy();
+  Serial.printf("\x1b[2J\x1b[0;0H");
+  Serial.printf("maze %dx%d  goal (%d,%d)", g_map.maze_x, g_map.maze_y, g_map.goal_mx, g_map.goal_my);
+  if (g_map.goal_mx2 >= 0) Serial.printf("-(%d,%d)", g_map.goal_mx2, g_map.goal_my2);
+  Serial.printf("\r\n");
+
+  mapViewHorizontal(g_map.maze_y - 1, north);
+  for (int y = g_map.maze_y - 1; y >= 0; y--) {
+    const char w_west = g_map.wallDataGet(0, y, west);
+    Serial.printf("%s%c", mapWallColor(w_west), (w_west == NOWALL) ? ' ' : '|');
+    for (int x = 0; x < g_map.maze_x; x++) {
+      const char w = g_map.wallDataGet(x, y, east);
+      Serial.printf("%s  %c", mapWallColor(w), (w == NOWALL) ? ' ' : '|');
+    }
+    Serial.printf("\x1b[37m\r\n");
+    mapViewHorizontal(y, south);
+  }
+  Serial.printf("\x1b[0m");
+}
+
 // 区画中央に置き、1区画先の前壁あり→なしで前センサを測り、測定値と平均(th_sen_f)を保存する。
 // LEDは前壁あり=0b0110、なし=0b1001。「次」で中止。詳細は設計メモ §7参照
 void ADJUST::frontThresholdCalib(void)
@@ -310,6 +353,7 @@ void ADJUST::modeListPrint(void)
     "8: straight sensor diag",
     "9: slalom turn check (right)",
     "10: front threshold calib (center, wall 1 cell ahead -> no wall)",
+    "11: map view (serial)",
   };
   for (const char * n : names) Serial.println(n);
   Serial.printf("%d: exit to main menu\r\n", ADJUST_MODE_EXIT);
@@ -367,6 +411,10 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
       break;
     case 10:
       frontThresholdCalib();  // 1区画先の前壁あり/なしを測り、平均を前センサ閾値にする
+      break;
+    case 11:
+      mapView();  // Flashに保存した迷路をシリアルモニタに表示
+      g_misc.buttonOk();
       break;
     default:
       return 1;

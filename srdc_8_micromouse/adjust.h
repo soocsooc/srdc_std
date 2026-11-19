@@ -17,8 +17,8 @@
 
 #include "map_manager.h"  // t_local_direction
 
-// 調整モードは1〜10、ADJUST_MODE_EXITで走行モードの選択へ戻る。「次」で1つ進め、ADJUST_MODE_EXITの次は1
-#define ADJUST_MODE_EXIT 11
+// 調整モードは1〜11、ADJUST_MODE_EXITで走行モードの選択へ戻る。「次」で1つ進め、ADJUST_MODE_EXITの次は1
+#define ADJUST_MODE_EXIT 12
 
 class ADJUST
 {
@@ -34,6 +34,7 @@ public:
   void straightSensorDiag(float section_check);
   void slalomTurnCheck(t_local_direction dir);
   void frontThresholdCalib(void);
+  void mapView(void);  // Flashに保存した迷路をシリアルへ表示
   unsigned char modeExec(unsigned char _mode);
 };
 
