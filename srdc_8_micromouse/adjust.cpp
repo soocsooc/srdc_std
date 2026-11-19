@@ -50,7 +50,7 @@ void ADJUST::adcView(void)
 void ADJUST::straightCheck(int section_check)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
   if (section_check > 1) {
     g_run.straight(
@@ -65,7 +65,7 @@ void ADJUST::straightCheck(int section_check)
 void ADJUST::rotationCheck(void)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
   for (int i = 0; i < 8; i++) {
     g_run.rotate(right, 1);
   }
@@ -87,7 +87,7 @@ static unsigned char slalomTailLed(float tail)
 void ADJUST::circuitCheck(void)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
 
   ledSet(0b0000);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
@@ -107,7 +107,7 @@ void ADJUST::circuitCheck(void)
 void ADJUST::slalomSequenceCheck(void)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
 
   ledSet(0b0001);
   g_run.startAccelerate(HALF_SECTION, g_run.slalom_speed);
@@ -137,7 +137,7 @@ void ADJUST::slalomSequenceCheck(void)
 void ADJUST::straightSensorDiag(float section_check)  // 最大走行区画数(壁の手前で止まる値にすること)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
   if (!g_run.oneStepDynamic((int)(SECTION * section_check), g_run.search_speed, INT_MAX, true)) {
     g_run.decelerate(HALF_SECTION, g_run.speed);
@@ -152,7 +152,7 @@ void ADJUST::straightToWallCheck(void)
   const int cruise_speed = g_run.stoppableSpeed(HALF_SECTION);  // 半区画で止まり切れる速度
 
   motorEnable();
-  delay(1000);
+  delay(500);
   g_run.startAccelerate(HALF_SECTION, cruise_speed);
   if (!g_run.oneStepDynamic(
         SECTION * MAZESIZE_MAX, cruise_speed, g_sensor.th_approach, true)) {
@@ -167,7 +167,7 @@ void ADJUST::slalomTurnCheck(t_local_direction dir)
 {
   Serial.printf("slalom_offset = %.1f mm\r\n", g_run.slalom_offset);
   motorEnable();
-  delay(1000);
+  delay(500);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
   g_run.oneStepDynamic(SECTION * 2, g_run.search_speed, g_sensor.th_approach_slalom);
   g_run.slalomCell(dir);

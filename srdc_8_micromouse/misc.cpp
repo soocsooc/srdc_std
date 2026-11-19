@@ -91,7 +91,7 @@ void MISC::modeExec(int mode)
   mode_select = mode;
   g_map.unreachable = false;
   motorEnable();
-  delay(1000);
+  delay(500);
 
   switch (mode) {
     case 1:  //迷路情報を取得する左手法

@@ -185,7 +185,7 @@
 
 `MISC::modeExec()` は、どのモードでも次の共通処理を行います。
 
-- 先頭で、実行するモード番号を `mode_select` に記録し、`g_map.unreachable` を false に戻して（§8）、`motorEnable()` してから 1 秒待ちます
+- 先頭で、実行するモード番号を `mode_select` に記録し、`g_map.unreachable` を false に戻して（§8）、`motorEnable()` してから 0.5 秒待ちます
 - 末尾で `ledSet(mode)` により、走行中の LED 表示を実行したモード番号の表示に戻し、`motorDisable()` します。走行中の LED は探索の状態表示などに使うので、戻さないとモード選択の表示と食い違います
 
 ## §14 横センサが柱を読んだときの落ち込み
