@@ -256,7 +256,7 @@ static bool menuExitHeld(void)
 }
 
 // 調整メニュー。LED3を点滅させながら「次」で番号を選び、「決定」でmodeExec()を実行する。
-// 「決定」の長押し、またはmodeExec()が1を返したら(11を選んだら)走行モードの選択へ戻る
+// 「決定」の長押し、またはmodeExec()が1を返したら(ADJUST_MODE_EXITを選んだら)走行モードの選択へ戻る
 void ADJUST::menu(void)
 {
   unsigned char l_mode = 1;
@@ -282,7 +282,7 @@ void ADJUST::menu(void)
     LED3_data = 0;
     switch (sw) {
       case SW_RM:
-        l_mode = g_misc.buttonInc(l_mode, 11, 1);
+        l_mode = g_misc.buttonInc(l_mode, ADJUST_MODE_EXIT, 1);
         break;
       case SW_CM:
         g_misc.buttonOk();
@@ -310,9 +310,9 @@ void ADJUST::modeListPrint(void)
     "8: straight sensor diag",
     "9: slalom turn check (right)",
     "10: front threshold calib (center, wall 1 cell ahead -> no wall)",
-    "11: exit to main menu",
   };
   for (const char * n : names) Serial.println(n);
+  Serial.printf("%d: exit to main menu\r\n", ADJUST_MODE_EXIT);
 }
 
 // 選択された調整項目を実行

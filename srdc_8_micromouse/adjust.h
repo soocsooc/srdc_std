@@ -17,6 +17,9 @@
 
 #include "map_manager.h"  // t_local_direction
 
+// 調整モードは1〜10、ADJUST_MODE_EXITで走行モードの選択へ戻る。「次」で1つ進め、ADJUST_MODE_EXITの次は1
+#define ADJUST_MODE_EXIT 11
+
 class ADJUST
 {
 public:
