@@ -16,12 +16,6 @@
 
 #include "pico_common.h"
 
-// デバッグ用。判定した壁をLEDに表示する(左:0b1000, 前:0b0110, 右:0b0001の論理和)
-static void ledWallShow(bool wall_l, bool wall_f, bool wall_r)
-{
-  ledSet((wall_l ? 0b1000 : 0) | (wall_f ? 0b0110 : 0) | (wall_r ? 0b0001 : 0));
-}
-
 // 区画中心で180度回転する。前壁と左壁があればuTurn(right)、前壁と右壁があればuTurn(left)で壁に当てて
 // 位置を補正し、どちらでもなければその場でrotate(right, 2)する(設計メモ §5)
 void SEARCH::turnBack(bool wall_f, bool wall_r, bool wall_l)

@@ -65,6 +65,7 @@ void sensorInterruptStart(void);
 void sensorInterruptStop(void);
 void deviceInit(void);
 void ledSet(unsigned char data);
+void ledWallShow(bool wall_l, bool wall_f, bool wall_r);
 void buzzerEnable(short f);
 void buzzerDisable(void);
 void motorEnable(void);

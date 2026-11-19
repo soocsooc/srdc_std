@@ -135,6 +135,7 @@ void FAST::run(short gx, short gy, short gx2, short gy2)
             straight_count * SECTION, turn_speed, g_run.max_speed, turn_speed);
           straight_count = 0;
         }
+        ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall);
         g_run.decelerate(HALF_SECTION, turn_speed);
         g_run.rotate(right, 1);
         g_run.accelerate(HALF_SECTION, turn_speed);
@@ -145,6 +146,7 @@ void FAST::run(short gx, short gy, short gx2, short gy2)
             straight_count * SECTION, turn_speed, g_run.max_speed, turn_speed);
           straight_count = 0;
         }
+        ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall);
         g_run.decelerate(HALF_SECTION, turn_speed);
         g_run.rotate(left, 1);
         g_run.accelerate(HALF_SECTION, turn_speed);
@@ -164,6 +166,7 @@ void FAST::run(short gx, short gy, short gx2, short gy2)
   }
   // 復路の探索が最初の向きを未知の壁で決めないよう、入ったゴール区画の壁を記録する(設計メモ §11)
   g_map.wallSet(g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
+  ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall);
   g_run.decelerate(HALF_SECTION, turn_speed);
 }
 
@@ -213,6 +216,10 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
             straight_count * SECTION, g_run.speed, g_run.max_speed, g_run.slalom_speed);
           straight_count = 0;
         }
+        // 側壁はゴール区画の記録と同じth_wall_slalomで判定する
+        ledWallShow(
+          g_sensor.sen_l.value > g_sensor.sen_l.th_wall_slalom, g_sensor.sen_f.is_wall,
+          g_sensor.sen_r.value > g_sensor.sen_r.th_wall_slalom);
         g_run.slalomCell(dir);
         break;
       case rear:
@@ -221,6 +228,7 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
           g_run.straight(straight_count * SECTION, g_run.speed, g_run.max_speed, stop_speed);
           straight_count = 0;
         }
+        ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall);
         g_run.decelerate(HALF_SECTION, g_run.speed);
         g_search.turnBack(
           g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
@@ -239,8 +247,9 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
     g_run.straight(straight_count * SECTION, g_run.speed, g_run.max_speed, stop_speed);
   }
   // ゴール区画の壁を記録する(run()と同じ、設計メモ §11)。側壁は復路のモード3と同じth_wall_slalomで判定
-  g_map.wallSet(
-    g_sensor.sen_f.is_wall, g_sensor.sen_r.value > g_sensor.sen_r.th_wall_slalom,
-    g_sensor.sen_l.value > g_sensor.sen_l.th_wall_slalom);
+  const bool goal_wall_r = g_sensor.sen_r.value > g_sensor.sen_r.th_wall_slalom;
+  const bool goal_wall_l = g_sensor.sen_l.value > g_sensor.sen_l.th_wall_slalom;
+  g_map.wallSet(g_sensor.sen_f.is_wall, goal_wall_r, goal_wall_l);
+  ledWallShow(goal_wall_l, g_sensor.sen_f.is_wall, goal_wall_r);
   g_run.decelerate(HALF_SECTION, g_run.speed);
 }
