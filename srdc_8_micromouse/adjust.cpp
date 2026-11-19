@@ -61,11 +61,19 @@ void ADJUST::straightCheck(int section_check)
   motorDisable();
 }
 
-// 90度回転を繰り返して回転動作を確認
+// 回転動作を確認
 void ADJUST::rotationCheck(void)
 {
   motorEnable();
   delay(500);
+  g_run.rotate(right, 1);
+  delay(200);
+  g_run.rotate(left, 1);
+  delay(200);
+  g_run.rotate(right, 2);
+  delay(200);
+  g_run.rotate(left, 2);
+  delay(200);
   for (int i = 0; i < 8; i++) {
     g_run.rotate(right, 1);
   }
