@@ -43,10 +43,16 @@ void RUN::interrupt(void)
 
   // 壁制御が有効なときは左右の壁誤差から左右速度を補正
   if (con_wall.enable == true) {
+    // 左の壁誤差に基準値の比(右/左)を掛けて右の大きさにそろえる
+    const double lr_ratio = (g_sensor.sen_l.ref > 0)
+                              ? (double)g_sensor.sen_r.ref / g_sensor.sen_l.ref
+                              : 1.0;
+    const double error_r = g_sensor.sen_r.error;
+    const double error_l = g_sensor.sen_l.error * lr_ratio;
     if ((g_sensor.sen_r.is_control == true) && (g_sensor.sen_l.is_control == true)) {
-      con_wall.error = g_sensor.sen_r.error - g_sensor.sen_l.error;
+      con_wall.error = error_r - error_l;
     } else {
-      con_wall.error = 2.0 * (g_sensor.sen_r.error - g_sensor.sen_l.error);
+      con_wall.error = 2.0 * (error_r - error_l);
     }
     con_wall.control = 0.001 * speed * con_wall.kp * con_wall.error;
     speed_target_r = speed + con_wall.control;

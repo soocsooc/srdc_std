@@ -179,7 +179,8 @@ mapWrite()
 
 1. `speed += accel` を毎周期足し、`upper_speed_limit`／`lower_speed_limit` の範囲に収めます
 2. 壁の P 制御が有効（`con_wall.enable`）なとき
-   - 左右両方の壁が制御範囲内なら `error = sen_r.error − sen_l.error`、片方だけなら `error = 2 × (sen_r.error − sen_l.error)`
+   - 左右のセンサは値の大きさが違うので、左の誤差に基準値の比 `ratio = sen_r.ref / sen_l.ref` を掛けて右の大きさにそろえます。そろえないと、片側の壁だけで制御したときに左右で補正の強さが変わり、機体がよれます
+   - 左右両方の壁が制御範囲内なら `error = sen_r.error − ratio × sen_l.error`、片方だけなら `error = 2 × (sen_r.error − ratio × sen_l.error)`
    - `control = 0.001 × speed × kp × error`（速度に比例させ、速度によらず同じように収束させる）
    - 右の目標速度 = `speed + control`、左 = `speed − control`
    - 旋回中は無効にします。旋回中に壁センサが反応すると、狙った角度まで回れないためです
