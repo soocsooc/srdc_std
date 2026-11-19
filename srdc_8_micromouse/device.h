@@ -54,7 +54,7 @@
 #define CW_R 22
 #define CW_L 21
 // 前進時のCW/CCWピンの出力。モータの向きが逆なら、ここを反転する
-#define CW_R_FORWARD LOW
+#define CW_R_FORWARD HIGH
 #define CW_L_FORWARD LOW
 
 // device.cppの関数

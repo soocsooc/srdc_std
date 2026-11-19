@@ -17,31 +17,31 @@
 // 各パラメータの初期値
 // タイヤ径・トレッド幅・センサ値は調整メニュー(モード7)とWeb調整で校正
 
-#define TIRE_DIAMETER_INIT (48.0)  // タイヤ径[mm]、直進距離に影響
-#define TREAD_WIDTH_INIT (65.0)    // トレッド幅[mm]、旋回角度に影響
+#define TIRE_DIAMETER_INIT (51.66)  // タイヤ径[mm]、直進距離に影響
+#define TREAD_WIDTH_INIT (100.95)    // トレッド幅[mm]、旋回角度に影響
 
 // モータ1回転あたりのパルス数
-// EIC4311(SLA7078互換)をM2=H・M1/M3=Lで使う前提の仮の値のため、実機で1回転させて確認
+// 1.8°モータ、EIC4311(SLA7078互換)はM2=H・M1/M3=Lの2分割なので200×2
 #define PULSE_PER_REV 400.0
 
 // ---- 壁センサ ----
 // 下の基準値・閾値には判定時にSEN_RATIOの倍率を掛ける
 
 // 機体が区画中心にあるときの横センサ値。壁制御の目標値
-#define REF_SEN_R_INIT 589
-#define REF_SEN_L_INIT 628
+#define REF_SEN_R_INIT 433
+#define REF_SEN_L_INIT 447
 // 壁があると判断する閾値
-#define TH_SEN_R_INIT 300
-#define TH_SEN_L_INIT 215
-#define TH_SEN_F_INIT 103
+#define TH_SEN_R_INIT 315
+#define TH_SEN_L_INIT 320
+#define TH_SEN_F_INIT 447
 // 区画中心で測った前センサ値(1区画先の前壁あり/なし)。調整モード10で測定(設計メモ §7)
-#define SEN_F_WALL_INIT 150
-#define SEN_F_NOWALL_INIT 56
+#define SEN_F_WALL_INIT 330
+#define SEN_F_NOWALL_INIT 263
 
 // 走行中に前壁が近づいたと判断する前センサの閾値(設計メモ §4)
 // モード2用とモード3用。速度が違うため別の値にしてある
-#define TH_SEN_F_APPROACH_INIT 145
-#define TH_SEN_F_APPROACH_SLALOM_INIT 70
+#define TH_SEN_F_APPROACH_INIT 370
+#define TH_SEN_F_APPROACH_SLALOM_INIT TH_SEN_F_APPROACH_INIT
 
 // モード3の横壁の閾値(th_sen_r/l_slalom)の初期値はTH_SEN_R/L_INITと同じ(設計メモ §5)
 
@@ -77,10 +77,10 @@
 
 // ---- 走行 ----
 
-#define CON_WALL_KP_INIT 0.3   // 壁制御の比例ゲイン
-#define SEARCH_ACCEL_INIT 1.5  // 直進の加速度[m/s^2]
-#define TURN_ACCEL_INIT 0.4    // 超信地旋回の加速度[m/s^2]
-#define SEARCH_SPEED_INIT 600  // 探索の速度[mm/s]
+#define CON_WALL_KP_INIT 0.5   // 壁制御の比例ゲイン
+#define SEARCH_ACCEL_INIT 1.0  // 直進の加速度[m/s^2]
+#define TURN_ACCEL_INIT 1.0    // 超信地旋回の加速度[m/s^2]
+#define SEARCH_SPEED_INIT 400  // 探索の速度[mm/s]
 #define MAX_SPEED_INIT 800     // 最短走行の最高速度[mm/s]
 #define MIN_SPEED 30           // 最低速度[mm/s]
 #define STOP_WAIT_MS 300       // stop()で機体が止まるまで待つ時間[ms]

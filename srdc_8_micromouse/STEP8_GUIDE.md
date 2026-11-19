@@ -317,7 +317,6 @@ Wi-Fi の送信で電源が一瞬下がると、ブラウンアウト（`E BOD`�
    - STEP1 で LED が L_1〜L_4 の順に並んでいることを確かめます
    - STEP4 でセンサ値を表示し、前・右・左の受光素子の割り当て（`AD_F`／`AD_R`／`AD_L`）を確かめます
    - STEP5 で前進するか確かめます。逆に回るモータは `CW_R_FORWARD`／`CW_L_FORWARD` を反転します
-   - 1 回転あたりのパルス数（`PULSE_PER_REV`）を、1 回転させて確かめます
    - モータの電流を基板のトリマ R26 で合わせます
 2. センサの物理調整：横センサは壁に対して 15〜45° 外向き、前センサは 1〜5° 外向きにし、光が壁の高さを越えないようにします
 3. センサの基準値・しきい値（調整モード 1 の Web か、調整モード 6）
@@ -360,26 +359,26 @@ Web ページの最下部にも同じ内容を表示しています。
 
 | マクロ | 値 | 意味 |
 | --- | --- | --- |
-| `TIRE_DIAMETER_INIT` | 48.0 | タイヤ径 [mm] |
-| `TREAD_WIDTH_INIT` | 65.0 | トレッド幅 [mm] |
+| `TIRE_DIAMETER_INIT` | 51.66 | タイヤ径 [mm] |
+| `TREAD_WIDTH_INIT` | 100.95 | トレッド幅 [mm] |
 | `PULSE_PER_REV` | 400 | モータ 1 回転あたりのパルス数 |
-| `REF_SEN_R_INIT`／`REF_SEN_L_INIT` | 589／628 | 横センサの目標値 |
-| `TH_SEN_R_INIT`／`TH_SEN_L_INIT` | 300／215 | 横センサの壁ありなしのしきい値 |
-| `TH_SEN_F_INIT` | 103 | 前センサの壁ありなしのしきい値 |
-| `SEN_F_WALL_INIT`／`SEN_F_NOWALL_INIT` | 150／56 | 調整モード 10 の測定値（記録用） |
-| `TH_SEN_F_APPROACH_INIT` | 145 | モード 2 の到達しきい値（前センサの値） |
-| `TH_SEN_F_APPROACH_SLALOM_INIT` | 70 | モード 3 の到達しきい値（前センサの値） |
+| `REF_SEN_R_INIT`／`REF_SEN_L_INIT` | 433／447 | 横センサの目標値 |
+| `TH_SEN_R_INIT`／`TH_SEN_L_INIT` | 315／320 | 横センサの壁ありなしのしきい値 |
+| `TH_SEN_F_INIT` | 447 | 前センサの壁ありなしのしきい値 |
+| `SEN_F_WALL_INIT`／`SEN_F_NOWALL_INIT` | 330／263 | 調整モード 10 の測定値（記録用） |
+| `TH_SEN_F_APPROACH_INIT` | 370 | モード 2 の到達しきい値（前センサの値） |
+| `TH_SEN_F_APPROACH_SLALOM_INIT` | `TH_SEN_F_APPROACH_INIT` と同じ（370） | モード 3 の到達しきい値（前センサの値） |
 | （`th_sen_r/l_slalom` の初期値） | `TH_SEN_R/L_INIT` と同じ | モード 3 の側壁しきい値 |
 | `SEN_RATIO_INIT` | 100 | センサのベース値に掛ける倍率 [%] |
 | `MAZESIZE_X/Y_INIT` | 4／4 | 迷路の大きさ [区画] |
 | `GOAL_X/Y_INIT`／`GOAL_X2/Y2_INIT` | 3, 3／3, 3 | ゴール区画（対角 2 座標） |
-| `CON_WALL_KP_INIT` | 0.3 | 壁の P 制御のゲイン |
-| `SEARCH_ACCEL_INIT` | 1.5 | 直進の加速度 [m/s²] |
-| `TURN_ACCEL_INIT` | 0.4 | `rotate()` の加速度 [m/s²] |
-| `SEARCH_SPEED_INIT` | 600 | 探索速度 [mm/s] |
+| `CON_WALL_KP_INIT` | 0.5 | 壁の P 制御のゲイン |
+| `SEARCH_ACCEL_INIT` | 1.0 | 直進の加速度 [m/s²] |
+| `TURN_ACCEL_INIT` | 1.0 | `rotate()` の加速度 [m/s²] |
+| `SEARCH_SPEED_INIT` | 400 | 探索速度 [mm/s] |
 | `MAX_SPEED_INIT` | 800 | 最短走行の最高速度 [mm/s] |
 | `SLALOM_SPEED_INIT` | 400 | スラローム旋回中の速度 [mm/s] |
-| `SLALOM_INNER_RATIO_INIT`／`SLALOM_OUTER_GAIN_INIT`／`SLALOM_RAMP_LEN_INIT` | 0.1／0.0／30 | スラロームの形（張り出しは約 55mm） |
+| `SLALOM_INNER_RATIO_INIT`／`SLALOM_OUTER_GAIN_INIT`／`SLALOM_RAMP_LEN_INIT` | 0.1／0.0／30 | スラロームの形（張り出しは約 77mm） |
 | `UTURN_BACK_LEN_INIT`／`WALL_RETURN_LEN_INIT`／`UTURN_SPEED_INIT` | 40／25／100 | 壁に当てるバックの距離・戻る前進の距離 [mm]・速度 [mm/s] |
 | `BATT_MIN` | 10000 | 低電圧の警告を出す電圧 [mV] |
 | `MIN_SPEED` | 30 | 最低速度 [mm/s] |
