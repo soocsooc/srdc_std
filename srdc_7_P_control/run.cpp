@@ -59,12 +59,13 @@ void RUN::interrupt(void)
   speed_target_r = speed + con_wall.control;
   speed_target_l = speed - con_wall.control;
 
-  if (speed_target_r < min_speed) {
-    speed_target_r = min_speed;
+  // 補正後の速度の下限はMIN_SPEED。min_speedを使うと等速走行中に遅い側の車輪を減速できない
+  if (speed_target_r < MIN_SPEED) {
+    speed_target_r = MIN_SPEED;
   }
 
-  if (speed_target_l < min_speed) {
-    speed_target_l = min_speed;
+  if (speed_target_l < MIN_SPEED) {
+    speed_target_l = MIN_SPEED;
   }
 }
 
