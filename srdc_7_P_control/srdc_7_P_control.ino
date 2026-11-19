@@ -112,7 +112,7 @@ void loop()
   digitalWrite(MOTOR_EN, HIGH);  // 励磁ON
   delay(1000);
   g_run.accelerate(90, 350);    // 0.5区画加速
-  g_run.oneStep(180 * 3, 350);  // 3区画前進
+  g_run.oneStep(180 * 2, 350);  // 2区画前進
   g_run.decelerate(90, 350);    // 0.5区画減速
   delay(1000);
   digitalWrite(MOTOR_EN, LOW);  // 励磁OFF

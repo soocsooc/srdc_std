@@ -15,7 +15,7 @@
 #ifndef SRC_FLASH_H_
 #define SRC_FLASH_H_
 
-#include <Arduino.h>
+#include <Arduino.h>  // IWYU pragma: keep (StringはArduino.h経由で使う)
 #include <FS.h>
 
 void flashInit(void);

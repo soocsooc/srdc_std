@@ -18,25 +18,25 @@
 #define CW_R 22
 #define CW_L 21
 // 前進時のCW/CCWピンの出力。モータの向きが逆なら、ここを反転する
-#define CW_R_FORWARD LOW
+#define CW_R_FORWARD HIGH
 #define CW_L_FORWARD LOW
 
-#define TIRE_DIAMETER (48.00)
-#define TREAD_WIDTH (65.00)
+#define TIRE_DIAMETER (51.66)
+#define TREAD_WIDTH (101.00)
 #define MIN_SPEED 30
 
-// モータ1回転あたりのパルス数(M2=H・M1/M3=Lの前提の仮の値。実機で1回転させて確認する)
+// モータ1回転あたりのパルス数(1.8°モータ、EIC4311はM2=H・M1/M3=Lの2分割で200×2)
 #define PULSE_PER_REV 400.0
 #define PULSE (TIRE_DIAMETER * PI / PULSE_PER_REV)
 
 //環境に合わせて変更する(標準機体では未校正。STEP7のSW1の短押しでセンサ値を表示して決める)
 //ここから
-#define REF_SEN_R 589
-#define REF_SEN_L 628
+#define REF_SEN_R 757
+#define REF_SEN_L 592
 
-#define TH_SEN_R 300
-#define TH_SEN_L 215
-#define TH_SEN_F 103
+#define TH_SEN_R 385
+#define TH_SEN_L 350
+#define TH_SEN_F 447
 
 #define CON_WALL_KP (0.5)
 //ここまで

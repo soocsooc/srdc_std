@@ -26,7 +26,9 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
 
   controlInterruptStop();
   accel = 0.0;
-  speed = lower_speed_limit = upper_speed_limit = (double)init_speed;
+  upper_speed_limit = (double)init_speed;
+  lower_speed_limit = (double)init_speed;
+  speed = (double)init_speed;
   con_wall.enable = true;
   dirSet(MOT_FORWARD, MOT_FORWARD);
   speedSet(speed, speed);
@@ -40,7 +42,10 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
     const int f = g_sensor.sen_f.value;
     if (debug_log && ((millis() - last_log_ms) >= 20)) {
       last_log_ms = millis();
-      Serial.printf("len=%d f=%d\r\n", step_lr_len, f);
+      // r・lの後の*は柱による落ち込み中(設計メモ §14)
+      Serial.printf(
+        "len=%d f=%d r=%d%s l=%d%s\r\n", step_lr_len, f, g_sensor.sen_r.value,
+        g_sensor.sen_r.is_dip ? "*" : "", g_sensor.sen_l.value, g_sensor.sen_l.is_dip ? "*" : "");
     }
 
     if (debug_log && (switchGet() != 0)) {

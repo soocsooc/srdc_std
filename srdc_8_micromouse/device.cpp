@@ -75,7 +75,7 @@ void sensorInterruptStart(void)
 
 void sensorInterruptStop(void)
 {
-  // Flash 書き込み等の前に呼ばれる。進行中の 1 サイクル完了を待って停止する。
+  // Flash 書き込み等の前に呼ばれる。進行中の 1 サイクル完了を待って停止する
   // Flash書き込み中はキャッシュが止まるため、パルス生成のタイマーも止める
   g_sensor_run = false;
   for (int i = 0; i < 10 && !g_sensor_paused; i++) delay(1);
@@ -83,7 +83,7 @@ void sensorInterruptStop(void)
 }
 
 // --- ステッピングモータのパルス生成 (EIC4311/SLA7078互換) ---------------------
-// v3(Pi:Co Classic3)と同じく、左右のタイマー割り込みでCLOCKにパルスを出し、パルス数を数える。
+// 左右のタイマー割り込みでCLOCKにパルスを出し、パルス数を数える
 // 周期は次のパルスで反映されるため、速度の変更は最大1パルス分遅れる
 #define STEP_TIMER_HZ 2000000
 #define STEP_HZ_MIN 30  // 周期の上限(約33ms)。これより遅いと速度の変更が反映されるまで待たされる
@@ -207,7 +207,7 @@ void deviceInit(void)
   digitalWrite(SLED_L, LOW);
 
   pinMode(MOTOR_EN, OUTPUT);
-  digitalWrite(MOTOR_EN, LOW);  // SLEEP
+  digitalWrite(MOTOR_EN, LOW);  // モータドライバをSLEEPにする
   pinMode(CW_R, OUTPUT);
   pinMode(CW_L, OUTPUT);
   pinMode(CLOCK_R, OUTPUT);
@@ -248,22 +248,28 @@ void ledSet(unsigned char data)
   digitalWrite(LED3, (data & 0x08) ? LED_ON : LED_OFF);
 }
 
+// 判定した壁をLEDに表示する(左:0b1000, 前:0b0110, 右:0b0001の論理和)
+void ledWallShow(bool wall_l, bool wall_f, bool wall_r)
+{
+  ledSet((wall_l ? 0b1000 : 0) | (wall_f ? 0b0110 : 0) | (wall_r ? 0b0001 : 0));
+}
+
 // ブザーを指定周波数で鳴らす
 void buzzerEnable(short f) { ledcWriteTone(BUZZER, f); }
 
 void buzzerDisable(void)
 {
-  ledcWrite(BUZZER, 1024);  //duty 100% Buzzer OFF
+  ledcWrite(BUZZER, 1024);  // デューティ100%にして音を止める
 }
 
 void motorEnable(void)
 {
-  digitalWrite(MOTOR_EN, HIGH);  //Power ON
+  digitalWrite(MOTOR_EN, HIGH);  // モータドライバを有効にする
 }
 
 void motorDisable(void)
 {
-  digitalWrite(MOTOR_EN, LOW);  //Power OFF (SLEEP)
+  digitalWrite(MOTOR_EN, LOW);  // モータドライバをSLEEPにする
 }
 
 // 押されたスイッチを取得し、離されるまで待つ。SW1=SW_RM(次)、SW2=SW_CM(決定)

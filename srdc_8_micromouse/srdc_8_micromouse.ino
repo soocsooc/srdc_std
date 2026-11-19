@@ -22,13 +22,13 @@ void setup()
   paramRead();
   mapCopy();  // 電源を切っても前回の地図から続けられるようにする(設計メモ §10)
 
-  // 起動音を鳴らしてからモーターを無効化
+  // モータを無効にしてから起動音を鳴らす
   motorDisable();
   buzzerEnable(INC_FREQ);
   delay(80);
   buzzerDisable();
 
-  // 起動時はモード選択画面から開始
+  // 起動時はモード1を選んだ状態から始める
   g_misc.mode_select = 1;
 }
 
@@ -40,7 +40,7 @@ void loop()
   ledSet(g_misc.mode_select);
   switch (switchGet()) {
     case SW_RM:
-      // 「次」(SW1の短押し)で次のモードへ移動(MODE_ADJUSTの次は1)
+      // 「次」(SW1)で次のモードへ移動(MODE_ADJUSTの次は1)
       g_misc.mode_select = g_misc.buttonInc(g_misc.mode_select, MODE_ADJUST, 1);
       break;
     case SW_CM:

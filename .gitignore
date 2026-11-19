@@ -69,3 +69,6 @@ Testing/
 
 # VS Code の設定(.vscode/compile_commands.json は tools/make_compile_db.py で作る)
 .vscode/
+
+# ローカルでのテストファイル
+local_check/

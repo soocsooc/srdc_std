@@ -14,11 +14,11 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
-#include <Arduino.h>
+#include <Arduino.h>  // IWYU pragma: keep (マクロの中身でHIGH/LOWを使う)
 
 // SRDC2026標準機体(ESP32-DevKitC-32E)のピン定義。回路図(11/11版)の配線に合わせてある
 
-// switchGet()の戻り値。SW_RM=次、SW_CM=決定(値を減らす操作はない)
+// switchGet()の戻り値。SW_RM=次、SW_CM=決定
 #define SW_CM 2
 #define SW_RM 4
 
@@ -54,7 +54,7 @@
 #define CW_R 22
 #define CW_L 21
 // 前進時のCW/CCWピンの出力。モータの向きが逆なら、ここを反転する
-#define CW_R_FORWARD LOW
+#define CW_R_FORWARD HIGH
 #define CW_L_FORWARD LOW
 
 // device.cppの関数
@@ -65,6 +65,7 @@ void sensorInterruptStart(void);
 void sensorInterruptStop(void);
 void deviceInit(void);
 void ledSet(unsigned char data);
+void ledWallShow(bool wall_l, bool wall_f, bool wall_r);
 void buzzerEnable(short f);
 void buzzerDisable(void);
 void motorEnable(void);

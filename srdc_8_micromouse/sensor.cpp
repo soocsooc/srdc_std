@@ -73,10 +73,53 @@ static inline short senFilter(short prev, short in)
 static inline short senProcess(unsigned char ch, short prev, unsigned short raw)
 {
   if (raw == SENSOR_SAMPLE_BAD) {
-    g_sensor.sample_reject[ch]++;
+    g_sensor.sample_reject[ch] = g_sensor.sample_reject[ch] + 1;
     return prev;
   }
   return senFilter(prev, senMedian3(ch, raw));
+}
+
+// 横センサの壁判定と壁制御用の誤差を更新する。壁ありのときだけP制御に使う。
+// 柱を読むと値が急に下がるので、SEN_DROP_LOOKBACK[ms]前より基準値のSEN_DROP_PCT[%]を超えて
+// 下がったら落ち込み中とし、その間は負の誤差(壁から遠い向き)を0にする。落ち込み中の最小値から
+// 下がり幅のしきい値以上戻るか、下がる前の値近くまで戻るか、SEN_DIP_MAX_LEN[mm]走ったら終える。
+// 柱を読む間に機体が壁から離れても、谷を過ぎた時点で終わる(設計メモ §14)
+static void sideUpdate(volatile t_sensor & s)
+{
+  const short old = s.hist[s.hist_idx];  // SEN_DROP_LOOKBACK[ms]前の値
+  s.hist[s.hist_idx] = s.value;
+  if (++s.hist_idx >= SEN_DROP_LOOKBACK) s.hist_idx = 0;
+
+  if (s.value <= s.th_wall) {
+    s.is_wall = false;
+    s.error = 0;
+    s.is_control = false;
+    s.is_dip = false;
+    return;
+  }
+
+  const short drop_th = (short)((long)s.ref * SEN_DROP_PCT / 100);
+  if (!s.is_dip) {
+    if ((old - s.value) > drop_th) {
+      s.is_dip = true;
+      s.dip_base = old;
+      s.dip_min = s.value;
+      s.dip_len = 0.0f;
+    }
+  } else {
+    if (s.value < s.dip_min) s.dip_min = s.value;
+    s.dip_len += (float)g_run.speed * 0.001f;  // 1msで進んだ距離[mm]
+    if (
+      (s.value >= s.dip_min + drop_th) || (s.value >= s.dip_base - drop_th / 2) ||
+      (s.dip_len > SEN_DIP_MAX_LEN)) {
+      s.is_dip = false;
+    }
+  }
+
+  s.is_wall = true;
+  s.error = s.value - s.ref;
+  if (s.is_dip && (s.error < 0)) s.error = 0;
+  s.is_control = true;
 }
 
 // センサを順番に読み取り、壁判定と壁制御用誤差を更新する。タスクが起きた直後は読むタイミングが
@@ -108,28 +151,11 @@ void SENSOR::interrupt(void)
       break;
     case 2:
       sen_r.value = senProcess(1, sen_r.value, sensorGetR());
-      // 壁ありのときだけP制御に使う
-      if (sen_r.value > sen_r.th_wall) {
-        sen_r.is_wall = true;
-        sen_r.error = sen_r.value - sen_r.ref;
-        sen_r.is_control = true;
-      } else {
-        sen_r.is_wall = false;
-        sen_r.error = 0;
-        sen_r.is_control = false;
-      }
+      sideUpdate(sen_r);
       break;
     case 3:
       sen_l.value = senProcess(2, sen_l.value, sensorGetL());
-      if (sen_l.value > sen_l.th_wall) {
-        sen_l.is_wall = true;
-        sen_l.error = sen_l.value - sen_l.ref;
-        sen_l.is_control = true;
-      } else {
-        sen_l.is_wall = false;
-        sen_l.error = 0;
-        sen_l.is_control = false;
-      }
+      sideUpdate(sen_l);
       break;
     default:
       Serial.printf("sensor state error\n\r");

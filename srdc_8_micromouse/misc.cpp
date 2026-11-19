@@ -91,7 +91,7 @@ void MISC::modeExec(int mode)
   mode_select = mode;
   g_map.unreachable = false;
   motorEnable();
-  delay(1000);
+  delay(500);
 
   switch (mode) {
     case 1:  //迷路情報を取得する左手法
@@ -101,7 +101,7 @@ void MISC::modeExec(int mode)
       break;
     case 2:  //足立法(前壁で区画境界を判定)
       g_map.positionInit();
-      g_search.adachiDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
+      g_search.adachiDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// ゴールへ向かう
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
@@ -116,7 +116,7 @@ void MISC::modeExec(int mode)
       break;
     case 3:  //足立法(前壁で区画境界を判定、スラローム版)
       g_map.positionInit();
-      g_search.adachiSlalomDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// goalへ向かう
+      g_search.adachiSlalomDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// ゴールへ向かう
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
       g_run.rotate(right, 2);
       g_map.nextDir(right);

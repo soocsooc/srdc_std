@@ -15,8 +15,6 @@
 #ifndef SRC_SEARCH_H_
 #define SRC_SEARCH_H_
 
-#include "map_manager.h"  // t_local_direction, t_global_direction
-
 class SEARCH
 {
 public:

@@ -334,7 +334,7 @@ static String htmlFormEnd(void)
 )HTML";
 }
 
-// 走行モード・調整モードの番号と動作の一覧のHTMLを返す(静的、値の埋め込みなし)。
+// 走行モード・調整モードの番号と動作の一覧のHTMLを返す(埋め込む値はADJUST_MODE_EXITのみ)。
 // 詳細はSTEP8_GUIDE.md §4・§5参照。
 static String htmlModeSection(void)
 {
@@ -355,7 +355,7 @@ static String htmlModeSection(void)
 <table align="center">
 <tr><th>No</th><th>挙動</th></tr>
 <tr><td>1</td><td>このWebサーバを起動(AP: 192.168.4.1)</td></tr>
-<tr><td>2</td><td>右90°旋回×8(計720°)。旋回前後の向きのズレでTREAD_WIDTHを調整</td></tr>
+<tr><td>2</td><td>右90°→左90°→右180°→左180°の後、右90°旋回×8(計720°)。旋回前後の向きのズレでTREAD_WIDTHを調整</td></tr>
 <tr><td>3</td><td>4x4コース最外周をスラローム旋回でつないで周回。直進→旋回→直進のつなぎ・脱調を確認</td></tr>
 <tr><td>4</td><td>前壁が見えるまで直進し区画中心で停止。壁際からの収束具合でGain(姿勢制御Pゲイン)を調整</td></tr>
 <tr><td>5</td><td>3区画直進。距離のズレでTIRE_DIAMETERを調整</td></tr>
@@ -364,7 +364,8 @@ static String htmlModeSection(void)
 <tr><td>8</td><td>モード2・3の到達判定閾値の実測診断。前壁への走行距離と前センサの値をシリアルへ出力</td></tr>
 <tr><td>9</td><td>単発のスラローム旋回の確認(2区画直進した区画で曲がる)。張り出しをシリアルへ出力</td></tr>
 <tr><td>10</td><td>前センサ閾値の校正。区画中央に置き、1区画先(次の区画の奥)の前壁あり→なしの順に「決定」で測り、平均をFRONT Thresholdへ保存</td></tr>
-<tr><td>11〜</td><td>調整メニューを終了し走行モード選択へ戻る</td></tr>
+<tr><td>11</td><td>Flashに保存した迷路(/map.txt)をシリアルモニタに表示。未知の壁は赤、仮想壁は黄</td></tr>
+<tr><td>)HTML" + String(ADJUST_MODE_EXIT) + R"HTML(</td><td>調整メニューを終了し走行モード選択へ戻る(「決定」の長押しでも戻る)</td></tr>
 </table>
 </div>
 )HTML";

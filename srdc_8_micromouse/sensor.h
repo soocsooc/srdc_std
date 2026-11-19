@@ -15,7 +15,7 @@
 #ifndef SRC_SENSOR_H_
 #define SRC_SENSOR_H_
 
-#include "run.h"
+#include "parameter.h"  // SEN_DROP_LOOKBACK
 
 typedef struct
 {
@@ -27,6 +27,13 @@ typedef struct
   short th_wall_slalom;
   bool is_wall;
   bool is_control;
+  // 柱を読んだときの値の落ち込みの判定(sen_r/sen_lだけで使う、設計メモ §14)
+  short hist[SEN_DROP_LOOKBACK];  // 最近の値(1msごと)
+  unsigned char hist_idx;
+  bool is_dip;     // 落ち込み中。負の誤差を制御に使わない
+  short dip_base;  // 落ち込む前の値
+  short dip_min;   // 落ち込み中の最小値
+  float dip_len;   // 落ち込み中に走った距離[mm]
 } t_sensor;
 
 // REF・しきい値のベース値(Flash・Webで編集する値)。判定に使う値はapplyRatio()で倍率を掛けて作る(設計メモ §12)

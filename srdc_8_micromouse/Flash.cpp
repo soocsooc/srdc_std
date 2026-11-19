@@ -269,7 +269,7 @@ void mapWrite(void)
   File file = SPIFFS.open(file_tmp, FILE_WRITE);
   if (!file) {
     Serial.println("- failed to open file for writing");
-    controlInterruptStart();  // 早期returnで割り込みを止めたままにしない(設計メモ §10)
+    controlInterruptStart();  // 途中で戻るときも割り込みを再開する(設計メモ §10)
     sensorInterruptStart();
     return;
   }
@@ -313,7 +313,7 @@ void mapCopy(void)
   File file = SPIFFS.open("/map.txt", FILE_READ);
   if (!file || file.isDirectory()) {
     Serial.println("- failed to open file for reading");
-    controlInterruptStart();  // 早期returnで割り込みを止めたままにしない(設計メモ §10)
+    controlInterruptStart();  // 途中で戻るときも割り込みを再開する(設計メモ §10)
     sensorInterruptStart();
     return;
   }
@@ -344,7 +344,7 @@ void paramWrite(void)
     text += String(param_table[i].key) + ' ' + paramFormat(param_table[i]) + '\n';
   }
 
-  //タイマーによる割り込みは禁止にする必要がある。
+  // Flashを読み書きする間は割り込みを止める
   controlInterruptStop();
   sensorInterruptStop();
   delay(10);
@@ -358,7 +358,7 @@ void paramRead(void)
 {
   String cmds[2] = {"\0"};  // 分割された文字列を格納する配列
 
-  //タイマーによる割り込みは禁止にする必要がある。
+  // Flashを読み書きする間は割り込みを止める
   controlInterruptStop();
   sensorInterruptStop();
   delay(10);

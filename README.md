@@ -54,7 +54,6 @@ VS Code の clangd は `.vscode/compile_commands.json` を使ってヘッダを�
 
 | 項目 | 場所 | 確認方法 |
 | --- | --- | --- |
-| 1 回転あたりのパルス数（400） | `PULSE_PER_REV` | モータを 1 回転させる |
 | モータの回転方向 | `CW_R_FORWARD`／`CW_L_FORWARD` | STEP5 で前進しなければ反転する |
 | モータの電流 | 基板のトリマ R26 | 脱調や発熱を見ながら合わせる |
 | タイヤ径・トレッド幅・センサの基準値としきい値 | `parameter.h`（STEP8）、`pins_config.h`（STEP5〜7） | STEP8 の調整メニューと Web 調整で校正する |

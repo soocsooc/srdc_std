@@ -27,6 +27,7 @@ void SEARCH::lefthandGetWall(char gx, char gy, char gx2, char gy2)
   while (1) {
     // 現在区画の壁情報を記録する
     g_map.wallSet(g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
+    ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall);
 
     // ゴール到達、またはスイッチ押下で探索終了
     if (g_map.posIn(gx, gy, gx2, gy2) || (switchGet() != 0)) {

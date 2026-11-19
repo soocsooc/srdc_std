@@ -16,7 +16,7 @@
 
 ADJUST g_adjust;
 
-// センサ値とバッテリー電圧をシリアルモニタに表示
+// センサ値と電池電圧をシリアルモニタに表示
 // いずれかのスイッチを押すと表示を終了して呼び出し元へ戻る
 void ADJUST::adcView(void)
 {
@@ -50,7 +50,7 @@ void ADJUST::adcView(void)
 void ADJUST::straightCheck(int section_check)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
   if (section_check > 1) {
     g_run.straight(
@@ -61,11 +61,19 @@ void ADJUST::straightCheck(int section_check)
   motorDisable();
 }
 
-// 90度回転を繰り返して回転動作を確認
+// 回転動作を確認
 void ADJUST::rotationCheck(void)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
+  g_run.rotate(right, 1);
+  delay(200);
+  g_run.rotate(left, 1);
+  delay(200);
+  g_run.rotate(right, 2);
+  delay(200);
+  g_run.rotate(left, 2);
+  delay(200);
   for (int i = 0; i < 8; i++) {
     g_run.rotate(right, 1);
   }
@@ -87,7 +95,7 @@ static unsigned char slalomTailLed(float tail)
 void ADJUST::circuitCheck(void)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
 
   ledSet(0b0000);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
@@ -107,7 +115,7 @@ void ADJUST::circuitCheck(void)
 void ADJUST::slalomSequenceCheck(void)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
 
   ledSet(0b0001);
   g_run.startAccelerate(HALF_SECTION, g_run.slalom_speed);
@@ -134,10 +142,10 @@ void ADJUST::slalomSequenceCheck(void)
 
 // th_approachを決めるための測定。センサでは止まらないようにして(th=INT_MAX)壁へ向けて走り、走行距離と前センサ値を
 // Serialへ出力する。スイッチで即停止できる。詳細は設計メモ §4参照。
-void ADJUST::straightSensorDiag(float section_check)	// 最大走行区画数(壁の手前で止まる値にすること)
+void ADJUST::straightSensorDiag(float section_check)  // 最大走行区画数(壁の手前で止まる値にすること)
 {
   motorEnable();
-  delay(1000);
+  delay(500);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
   if (!g_run.oneStepDynamic((int)(SECTION * section_check), g_run.search_speed, INT_MAX, true)) {
     g_run.decelerate(HALF_SECTION, g_run.speed);
@@ -152,7 +160,7 @@ void ADJUST::straightToWallCheck(void)
   const int cruise_speed = g_run.stoppableSpeed(HALF_SECTION);  // 半区画で止まり切れる速度
 
   motorEnable();
-  delay(1000);
+  delay(500);
   g_run.startAccelerate(HALF_SECTION, cruise_speed);
   if (!g_run.oneStepDynamic(
         SECTION * MAZESIZE_MAX, cruise_speed, g_sensor.th_approach, true)) {
@@ -167,7 +175,7 @@ void ADJUST::slalomTurnCheck(t_local_direction dir)
 {
   Serial.printf("slalom_offset = %.1f mm\r\n", g_run.slalom_offset);
   motorEnable();
-  delay(1000);
+  delay(500);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
   g_run.oneStepDynamic(SECTION * 2, g_run.search_speed, g_sensor.th_approach_slalom);
   g_run.slalomCell(dir);
@@ -194,19 +202,62 @@ static bool frontSensorSample(short * f)
   return true;
 }
 
+// 壁1枚の色。白=既知(壁あり/なし)、赤=未知、黄=それ以外(仮想壁など)
+static const char * mapWallColor(char wall)
+{
+  if (wall == NOWALL || wall == WALL) return "\x1b[37m";
+  if (wall == _UNKNOWN) return "\x1b[31m";
+  return "\x1b[33m";
+}
+
+// 迷路の横の壁1列(各区画のdir側)を「+--+」の形で出力する
+static void mapViewHorizontal(int y, t_global_direction dir)
+{
+  Serial.printf("+");
+  for (int x = 0; x < g_map.maze_x; x++) {
+    const char w = g_map.wallDataGet(x, y, dir);
+    Serial.printf("%s%s\x1b[37m+", mapWallColor(w), (w == NOWALL) ? "  " : "--");
+  }
+  Serial.printf("\r\n");
+}
+
+// Flashに保存した迷路の壁情報を読み込み、シリアルモニタに表示する。上が北、左下がスタート。
+// 色はmapWallColor()を参照。表示のためにg_mapの壁情報を保存した内容で上書きする
+void ADJUST::mapView(void)
+{
+  mapCopy();
+  Serial.printf("\x1b[2J\x1b[0;0H");
+  Serial.printf("maze %dx%d  goal (%d,%d)", g_map.maze_x, g_map.maze_y, g_map.goal_mx, g_map.goal_my);
+  if (g_map.goal_mx2 >= 0) Serial.printf("-(%d,%d)", g_map.goal_mx2, g_map.goal_my2);
+  Serial.printf("\r\n");
+
+  mapViewHorizontal(g_map.maze_y - 1, north);
+  for (int y = g_map.maze_y - 1; y >= 0; y--) {
+    const char w_west = g_map.wallDataGet(0, y, west);
+    Serial.printf("%s%c", mapWallColor(w_west), (w_west == NOWALL) ? ' ' : '|');
+    for (int x = 0; x < g_map.maze_x; x++) {
+      const char w = g_map.wallDataGet(x, y, east);
+      Serial.printf("%s  %c", mapWallColor(w), (w == NOWALL) ? ' ' : '|');
+    }
+    Serial.printf("\x1b[37m\r\n");
+    mapViewHorizontal(y, south);
+  }
+  Serial.printf("\x1b[0m");
+}
+
 // 区画中央に置き、1区画先の前壁あり→なしで前センサを測り、測定値と平均(th_sen_f)を保存する。
 // LEDは前壁あり=0b0110、なし=0b1001。「次」で中止。詳細は設計メモ §7参照
 void ADJUST::frontThresholdCalib(void)
 {
   short f_wall, f_nowall;
 
-  Serial.println("place at cell center, wall 1 cell ahead (no wall in this cell) -> center SW");
+  Serial.println("place at cell center, wall 1 cell ahead (no wall in this cell) -> SW");
   ledSet(0b0110);
   if (!frontSensorSample(&f_wall)) return;
   Serial.printf("wall    f=%d\r\n", f_wall);
   g_misc.buttonOk();
 
-  Serial.println("remove the wall -> center SW");
+  Serial.println("remove the wall -> SW");
   ledSet(0b1001);
   if (!frontSensorSample(&f_nowall)) return;
   Serial.printf("no wall f=%d\r\n", f_nowall);
@@ -221,28 +272,66 @@ void ADJUST::frontThresholdCalib(void)
   g_misc.buttonOk();
 }
 
-// 調整メニュー。LED3を点滅させながら「次」で番号を選び、「決定」でmodeExec()を実行する。
-// modeExec()が1を返したら(11を選んだら)走行モードの選択へ戻る
+// 「決定」(SW2)がこの時間以上押され続けたら、調整メニューから走行モードの選択へ戻る
+static const uint32_t MENU_EXIT_HOLD_MS = 1000;
+
+// 「決定」が押されていれば離されるまで待ち、長押しならtrueを返す。長押しになった時点で
+// 確認音を鳴らし、離してよいことを知らせる。押されていなければすぐfalseを返す
+static bool menuExitHeld(void)
+{
+  if (digitalRead(SW2) != LOW) return false;
+  const uint32_t t0 = millis();
+  bool held = false;
+  while (digitalRead(SW2) == LOW) {
+    if (!held && millis() - t0 >= MENU_EXIT_HOLD_MS) {
+      held = true;
+      buzzerEnable(DEC_FREQ);
+      delay(80);
+      buzzerEnable(INC_FREQ);
+      delay(80);
+      buzzerEnable(DEC_FREQ);
+      delay(80);
+      buzzerDisable();
+    }
+    delay(20);
+  }
+  return held;
+}
+
+// 調整メニュー。番号をLEDに表示し(7以下はLED3点滅、8以上は4ビット)、「次」で番号を選び、「決定」でmodeExec()を実行する。
+// 「決定」の長押し、またはmodeExec()が1を返したら(ADJUST_MODE_EXITを選んだら)走行モードの選択へ戻る
 void ADJUST::menu(void)
 {
   unsigned char l_mode = 1;
-  char LED3_data;
+  char LED3_data = 0;
   char sw;
 
   while (1) {
     ledSet(l_mode);
     while (1) {
+      if (digitalRead(SW2) == LOW) {
+        // 「決定」は離すまで待って長押しかを判定する。短押しなら通常の「決定」として扱う
+        if (menuExitHeld()) return;
+        sw = SW_CM;
+        break;
+      }
       sw = switchGet();
       if (sw != 0) break;
       paramSerialPoll();  // 待機中はUSBシリアルからのパラメータ設定を受け付ける
       delay(33);
       LED3_data ^= 1;
-      ledSet((l_mode & 0x7) + ((LED3_data << 3) & 0x08));
+      if (l_mode < 8) {
+        ledSet((l_mode & 0x7) + ((LED3_data << 3) & 0x08));  // 7以下は下位3ビット+LED3点滅
+      } else {
+        // 8以上はLED3も番号に使うので点滅させず4ビットで表示する。走行モード(1〜7)では
+        // LED3が点かないので、LED3の点灯で調整メニューと区別できる
+        ledSet(l_mode & 0xF);
+      }
     }
     LED3_data = 0;
     switch (sw) {
       case SW_RM:
-        l_mode = g_misc.buttonInc(l_mode, 11, 1);
+        l_mode = g_misc.buttonInc(l_mode, ADJUST_MODE_EXIT, 1);
         break;
       case SW_CM:
         g_misc.buttonOk();
@@ -270,9 +359,10 @@ void ADJUST::modeListPrint(void)
     "8: straight sensor diag",
     "9: slalom turn check (right)",
     "10: front threshold calib (center, wall 1 cell ahead -> no wall)",
-    "11: exit to main menu",
+    "11: map view (serial)",
   };
   for (const char * n : names) Serial.println(n);
+  Serial.printf("%d: exit to main menu\r\n", ADJUST_MODE_EXIT);
 }
 
 // 選択された調整項目を実行
@@ -288,20 +378,20 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
       buzzerEnable(INC_FREQ);
       delay(30);
       buzzerDisable();
-      webServerSetup(); // センサ値等を確認するためのWebサーバをセットアップ (192.168.4.1)
-      //webserverでセンサの値のばらつきが大きすぎて判断できない時は、調整モード6(adcView)でシリアルモニタから確認
+      webServerSetup(); // センサ値の確認とパラメータ調整用のWebサーバを起動する(192.168.4.1)
+      // Webでセンサの値のばらつきが大きく判断できない時は、調整モード6(adcView)でシリアルモニタから確認
       break;
     case 2:
-      rotationCheck();	// タイヤ間距離を調整、旋回角度が足りなければ距離を大きく
+      rotationCheck();  // トレッド幅の調整用。旋回角度が足りなければ大きくする
       break;
     case 3:
-      circuitCheck();		// 4x4コース最外周をスラローム周回で確認
+      circuitCheck();    // 4x4コース最外周をスラローム周回で確認
       break;
-		case 4:
-      straightToWallCheck();  // 前壁まで直進してPゲイン調整、壁際に置いて3~4区画で中心が目標
+    case 4:
+      straightToWallCheck();  // Pゲインの調整用。壁際に置き、3〜4区画で中央に寄るよう合わせる
       break;
     case 5:
-			straightCheck(3);	// 3区画前進で直径を調整、目標より手前だったら直径を小さく
+      straightCheck(3);  // タイヤ径の調整用。目標の手前で止まったら小さくする
       break;
     case 6:
       // シリアルモニタでセンサ値と電池電圧を確認する(調整モード1のシリアル版)。いずれかのスイッチで調整メニューへ戻る
@@ -315,7 +405,7 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
       adcView();
       break;
     case 7:
-      slalomSequenceCheck();	// 連続旋回・行き止まりUターンを含めた一連の動作を確認
+      slalomSequenceCheck();  // S字・旋回直後の直進・U字の連続旋回を一続きに確認
       break;
     case 8:
       // th_approach決定用。壁まで580mmの環境で余裕を取った値(STEP8_GUIDE.md §5参照)。
@@ -327,6 +417,10 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
       break;
     case 10:
       frontThresholdCalib();  // 1区画先の前壁あり/なしを測り、平均を前センサ閾値にする
+      break;
+    case 11:
+      mapView();  // Flashに保存した迷路をシリアルモニタに表示
+      g_misc.buttonOk();
       break;
     default:
       return 1;
