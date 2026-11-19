@@ -14,7 +14,7 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
-#include <Arduino.h>
+#include <Arduino.h>  // IWYU pragma: keep (マクロの中身でHIGH/LOWを使う)
 
 // SRDC2026標準機体(ESP32-DevKitC-32E)のピン定義。回路図(11/11版)の配線に合わせてある
 

@@ -15,6 +15,8 @@
 #ifndef SRC_ADJUST_H_
 #define SRC_ADJUST_H_
 
+#include "map_manager.h"  // t_local_direction
+
 class ADJUST
 {
 public:

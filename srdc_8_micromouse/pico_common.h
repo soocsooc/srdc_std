@@ -17,6 +17,8 @@
 #ifndef PICO_COMMON_H_
 #define PICO_COMMON_H_
 
+// 各.cppが使うヘッダをここでまとめて提供する(include-cleanerに使用中と判定させる)
+// IWYU pragma: begin_exports
 #include <Arduino.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -39,5 +41,6 @@
 #include "flash.h"          // SPIFFS 読み書き(Flash.cpp)
 #include "web.h"            // WebServer(webserver.cpp)
 // clang-format on
+// IWYU pragma: end_exports
 
 #endif  // PICO_COMMON_H_

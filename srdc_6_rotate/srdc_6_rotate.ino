@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pins_config.h"
 #include "run.h"
 #include "stepper.h"
 
@@ -29,7 +28,7 @@
 // HIGHでモータ有効(LOWでドライバがSLEEP)
 #define MOTOR_EN 17
 
-// 駆動ピン・タイヤ径・トレッド幅・PULSE・MIN_SPEEDはpins_config.hにまとめてある
+// 駆動ピン・タイヤ径・トレッド幅・PULSE・MIN_SPEEDはpins_config.hにまとめてある(run.cpp・stepper.cppが読み込む)
 
 hw_timer_t * g_timer0 = NULL;
 

@@ -15,6 +15,8 @@
 #ifndef MAP_MANAGER_H_
 #define MAP_MANAGER_H_
 
+#include <stdint.h>
+
 #define MAZESIZE_MAX (16)  //配列の大きさ。実際の迷路の大きさはmaze_x/maze_y(設計メモ §9)
 
 #define _UNKNOWN 2  //壁があるかないか判らない状態の場合の値
