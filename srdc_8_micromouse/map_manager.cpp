@@ -52,7 +52,6 @@ void MapManager::mapClear(void)
     wall[0][i].west = WALL;               //四方の壁を追加する(西)
     wall[maze_x - 1][i].east = WALL;  //四方の壁を追加する(東)
   }
-  //   x,y
   wall[0][0].east = wall[1][0].west = WALL;  //スタート地点の右の壁を追加する
   wall[0][0].north = wall[0][1].south = NOWALL;
 }
@@ -156,7 +155,7 @@ void MapManager::nextDir(t_local_direction l_local_dir)
 }
 
 // センサの壁判定を現在位置と隣接マスへ記録
-void MapManager::wallSet(bool IS_SEN_F, bool IS_SEN_R, bool IS_SEN_L)  //壁情報を記録
+void MapManager::wallSet(bool IS_SEN_F, bool IS_SEN_R, bool IS_SEN_L)
 {
   switch (mypos.dir) {
     case north:

@@ -18,7 +18,7 @@
 
 // SRDC2026標準機体(ESP32-DevKitC-32E)のピン定義。回路図(11/11版)の配線に合わせてある
 
-// switchGet()の戻り値。SW_RM=次、SW_CM=決定(値を減らす操作はない)
+// switchGet()の戻り値。SW_RM=次、SW_CM=決定
 #define SW_CM 2
 #define SW_RM 4
 

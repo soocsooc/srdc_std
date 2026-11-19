@@ -355,7 +355,7 @@ static String htmlModeSection(void)
 <table align="center">
 <tr><th>No</th><th>挙動</th></tr>
 <tr><td>1</td><td>このWebサーバを起動(AP: 192.168.4.1)</td></tr>
-<tr><td>2</td><td>右90°旋回×8(計720°)。旋回前後の向きのズレでTREAD_WIDTHを調整</td></tr>
+<tr><td>2</td><td>右90°→左90°→右180°→左180°の後、右90°旋回×8(計720°)。旋回前後の向きのズレでTREAD_WIDTHを調整</td></tr>
 <tr><td>3</td><td>4x4コース最外周をスラローム旋回でつないで周回。直進→旋回→直進のつなぎ・脱調を確認</td></tr>
 <tr><td>4</td><td>前壁が見えるまで直進し区画中心で停止。壁際からの収束具合でGain(姿勢制御Pゲイン)を調整</td></tr>
 <tr><td>5</td><td>3区画直進。距離のズレでTIRE_DIAMETERを調整</td></tr>

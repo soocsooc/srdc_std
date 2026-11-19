@@ -104,7 +104,7 @@ void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
 }
 
 // adachiDynamic()の90度旋回を、区画境界からのslalomCell()に置き換えた版(止まらずに曲がる)。
-// 行き止まりはuTurn()で回転する(設計メモ §4・§3)
+// 後ろへはturnBack()で回る(設計メモ §4・§3)
 void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
 {
   t_global_direction glob_nextdir;

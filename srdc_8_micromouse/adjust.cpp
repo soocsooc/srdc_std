@@ -16,7 +16,7 @@
 
 ADJUST g_adjust;
 
-// センサ値とバッテリー電圧をシリアルモニタに表示
+// センサ値と電池電圧をシリアルモニタに表示
 // いずれかのスイッチを押すと表示を終了して呼び出し元へ戻る
 void ADJUST::adcView(void)
 {
@@ -251,13 +251,13 @@ void ADJUST::frontThresholdCalib(void)
 {
   short f_wall, f_nowall;
 
-  Serial.println("place at cell center, wall 1 cell ahead (no wall in this cell) -> center SW");
+  Serial.println("place at cell center, wall 1 cell ahead (no wall in this cell) -> SW");
   ledSet(0b0110);
   if (!frontSensorSample(&f_wall)) return;
   Serial.printf("wall    f=%d\r\n", f_wall);
   g_misc.buttonOk();
 
-  Serial.println("remove the wall -> center SW");
+  Serial.println("remove the wall -> SW");
   ledSet(0b1001);
   if (!frontSensorSample(&f_nowall)) return;
   Serial.printf("no wall f=%d\r\n", f_nowall);
@@ -378,20 +378,20 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
       buzzerEnable(INC_FREQ);
       delay(30);
       buzzerDisable();
-      webServerSetup(); // センサ値等を確認するためのWebサーバをセットアップ (192.168.4.1)
-      //webserverでセンサの値のばらつきが大きすぎて判断できない時は、調整モード6(adcView)でシリアルモニタから確認
+      webServerSetup(); // センサ値の確認とパラメータ調整用のWebサーバを起動する(192.168.4.1)
+      // Webでセンサの値のばらつきが大きく判断できない時は、調整モード6(adcView)でシリアルモニタから確認
       break;
     case 2:
-      rotationCheck();	// タイヤ間距離を調整、旋回角度が足りなければ距離を大きく
+      rotationCheck();  // トレッド幅の調整用。旋回角度が足りなければ大きくする
       break;
     case 3:
-      circuitCheck();		// 4x4コース最外周をスラローム周回で確認
+      circuitCheck();    // 4x4コース最外周をスラローム周回で確認
       break;
-		case 4:
-      straightToWallCheck();  // 前壁まで直進してPゲイン調整、壁際に置いて3~4区画で中心が目標
+    case 4:
+      straightToWallCheck();  // Pゲインの調整用。壁際に置き、3〜4区画で中央に寄るよう合わせる
       break;
     case 5:
-			straightCheck(3);	// 3区画前進で直径を調整、目標より手前だったら直径を小さく
+      straightCheck(3);  // タイヤ径の調整用。目標の手前で止まったら小さくする
       break;
     case 6:
       // シリアルモニタでセンサ値と電池電圧を確認する(調整モード1のシリアル版)。いずれかのスイッチで調整メニューへ戻る
@@ -405,7 +405,7 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
       adcView();
       break;
     case 7:
-      slalomSequenceCheck();	// 連続旋回・行き止まりUターンを含めた一連の動作を確認
+      slalomSequenceCheck();  // S字・旋回直後の直進・U字の連続旋回を一続きに確認
       break;
     case 8:
       // th_approach決定用。壁まで580mmの環境で余裕を取った値(STEP8_GUIDE.md §5参照)。

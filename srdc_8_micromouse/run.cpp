@@ -116,7 +116,7 @@ void RUN::stepGet(void)
 // 左右の走行パルスを符号付きで個別に取得(スラロームの並進量・回転量の分離用)
 void RUN::stepGetLR(void) { stepperCounterGet(&step_l, &step_r); }
 
-// モーターを停止し、機械が止まるまで待機
+// モータを停止し、機体が止まるまで待つ
 void RUN::stop(void)
 {
   stepperStop();
