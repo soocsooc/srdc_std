@@ -229,17 +229,49 @@ void ADJUST::frontThresholdCalib(void)
   g_misc.buttonOk();
 }
 
+// 「決定」(SW2)がこの時間以上押され続けたら、調整メニューから走行モードの選択へ戻る
+static const uint32_t MENU_EXIT_HOLD_MS = 1000;
+
+// 「決定」が押されていれば離されるまで待ち、長押しならtrueを返す。長押しになった時点で
+// 確認音を鳴らし、離してよいことを知らせる。押されていなければすぐfalseを返す
+static bool menuExitHeld(void)
+{
+  if (digitalRead(SW2) != LOW) return false;
+  const uint32_t t0 = millis();
+  bool held = false;
+  while (digitalRead(SW2) == LOW) {
+    if (!held && millis() - t0 >= MENU_EXIT_HOLD_MS) {
+      held = true;
+      buzzerEnable(DEC_FREQ);
+      delay(80);
+      buzzerEnable(INC_FREQ);
+      delay(80);
+      buzzerEnable(DEC_FREQ);
+      delay(80);
+      buzzerDisable();
+    }
+    delay(20);
+  }
+  return held;
+}
+
 // 調整メニュー。LED3を点滅させながら「次」で番号を選び、「決定」でmodeExec()を実行する。
-// modeExec()が1を返したら(11を選んだら)走行モードの選択へ戻る
+// 「決定」の長押し、またはmodeExec()が1を返したら(11を選んだら)走行モードの選択へ戻る
 void ADJUST::menu(void)
 {
   unsigned char l_mode = 1;
-  char LED3_data;
+  char LED3_data = 0;
   char sw;
 
   while (1) {
     ledSet(l_mode);
     while (1) {
+      if (digitalRead(SW2) == LOW) {
+        // 「決定」は離すまで待って長押しかを判定する。短押しなら通常の「決定」として扱う
+        if (menuExitHeld()) return;
+        sw = SW_CM;
+        break;
+      }
       sw = switchGet();
       if (sw != 0) break;
       paramSerialPoll();  // 待機中はUSBシリアルからのパラメータ設定を受け付ける
