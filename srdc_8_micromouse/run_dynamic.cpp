@@ -26,7 +26,9 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
 
   controlInterruptStop();
   accel = 0.0;
-  speed = lower_speed_limit = upper_speed_limit = (double)init_speed;
+  upper_speed_limit = (double)init_speed;
+  lower_speed_limit = (double)init_speed;
+  speed = (double)init_speed;
   con_wall.enable = true;
   dirSet(MOT_FORWARD, MOT_FORWARD);
   speedSet(speed, speed);

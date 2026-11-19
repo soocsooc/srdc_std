@@ -45,17 +45,17 @@ void RUN::interrupt(void)
     speed = min_speed;
   }
 
-	// 左右の壁誤差から制御誤差を計算
+  // 左右の壁誤差から制御誤差を計算
   if ((g_sensor.sen_r.is_control == true) && (g_sensor.sen_l.is_control == true)) {
     con_wall.error = g_sensor.sen_r.error - g_sensor.sen_l.error;
   } else {
-    con_wall.error = 2.0 * (g_sensor.sen_r.error - g_sensor.sen_l.error);	// 片側のみ壁がある場合に備えて2倍
+    con_wall.error = 2.0 * (g_sensor.sen_r.error - g_sensor.sen_l.error);  // 片側のみ壁がある場合に備えて2倍
   }
 
-	// 制御量を計算 (0.001: 割り込み間隔[s])
+  // 制御量を計算 (0.001: 割り込み間隔[s])
   con_wall.control = 0.001 * speed * con_wall.kp * con_wall.error;
 
-	// 左右の目標速度を計算
+  // 左右の目標速度を計算
   speed_target_r = speed + con_wall.control;
   speed_target_l = speed - con_wall.control;
 
@@ -101,7 +101,8 @@ void RUN::accelerate(int len, int finish_speed)
   int obj_step;
 
   accel = 1.5;
-  speed = min_speed = MIN_SPEED;
+  min_speed = MIN_SPEED;
+  speed = MIN_SPEED;
   max_speed = finish_speed;
   counterClear();
   speedSet(MIN_SPEED, MIN_SPEED);
@@ -123,7 +124,8 @@ void RUN::oneStep(int len, int init_speed)
 
   accel = 0.0;
   max_speed = init_speed;
-  speed = min_speed = init_speed;
+  min_speed = init_speed;
+  speed = init_speed;
   counterClear();
   speedSet(init_speed, init_speed);
   dirSet(MOT_FORWARD, MOT_FORWARD);
@@ -145,7 +147,8 @@ void RUN::decelerate(int len, int init_speed)
 
   accel = 1.5;
   max_speed = init_speed;
-  speed = min_speed = init_speed;
+  min_speed = init_speed;
+  speed = init_speed;
   counterClear();
   speedSet(init_speed, init_speed);
   dirSet(MOT_FORWARD, MOT_FORWARD);
@@ -182,7 +185,8 @@ void RUN::rotate(t_local_direction dir, int times)
 
   accel = 1.5;
   max_speed = 350.0;
-  speed = min_speed = MIN_SPEED;
+  min_speed = MIN_SPEED;
+  speed = MIN_SPEED;
   counterClear();
   obj_step = (int)(TREAD_WIDTH * PI / 4.0 * (float)times * 2.0 / PULSE);
 

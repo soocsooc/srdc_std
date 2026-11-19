@@ -73,7 +73,7 @@ static inline short senFilter(short prev, short in)
 static inline short senProcess(unsigned char ch, short prev, unsigned short raw)
 {
   if (raw == SENSOR_SAMPLE_BAD) {
-    g_sensor.sample_reject[ch]++;
+    g_sensor.sample_reject[ch] = g_sensor.sample_reject[ch] + 1;
     return prev;
   }
   return senFilter(prev, senMedian3(ch, raw));

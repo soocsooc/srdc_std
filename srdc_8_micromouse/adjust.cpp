@@ -134,7 +134,7 @@ void ADJUST::slalomSequenceCheck(void)
 
 // th_approachを決めるための測定。センサでは止まらないようにして(th=INT_MAX)壁へ向けて走り、走行距離と前センサ値を
 // Serialへ出力する。スイッチで即停止できる。詳細は設計メモ §4参照。
-void ADJUST::straightSensorDiag(float section_check)	// 最大走行区画数(壁の手前で止まる値にすること)
+void ADJUST::straightSensorDiag(float section_check)  // 最大走行区画数(壁の手前で止まる値にすること)
 {
   motorEnable();
   delay(1000);

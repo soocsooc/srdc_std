@@ -89,7 +89,9 @@ void RUN::speedSet(double l_speed, double r_speed) { stepperHzSet(l_speed / puls
 void RUN::stay(float l_speed)
 {
   controlInterruptStop();
-  upper_speed_limit = lower_speed_limit = speed = (double)l_speed;
+  speed = (double)l_speed;
+  lower_speed_limit = (double)l_speed;
+  upper_speed_limit = (double)l_speed;
   accel = 0.0;
   counterClear();
   speedSet(l_speed, l_speed);
@@ -178,7 +180,8 @@ void RUN::accelerate(int len, int finish_speed)
 
   controlInterruptStop();
   accel = search_accel;
-  speed = lower_speed_limit = (double)MIN_SPEED;
+  lower_speed_limit = (double)MIN_SPEED;
+  speed = (double)MIN_SPEED;
   upper_speed_limit = (double)finish_speed;
   con_wall.enable = true;
   dirSet(MOT_FORWARD, MOT_FORWARD);
@@ -205,7 +208,9 @@ void RUN::oneStep(int len, int init_speed)
 
   controlInterruptStop();
   accel = 0.0;
-  speed = lower_speed_limit = upper_speed_limit = (double)init_speed;
+  upper_speed_limit = (double)init_speed;
+  lower_speed_limit = (double)init_speed;
+  speed = (double)init_speed;
   con_wall.enable = true;
   dirSet(MOT_FORWARD, MOT_FORWARD);
   speedSet(speed, speed);
@@ -230,7 +235,8 @@ void RUN::decelerate(int len, float init_speed)
 
   controlInterruptStop();
   accel = search_accel;
-  speed = upper_speed_limit = init_speed;
+  upper_speed_limit = init_speed;
+  speed = init_speed;
   lower_speed_limit = MIN_SPEED;
   con_wall.enable = true;
   dirSet(MOT_FORWARD, MOT_FORWARD);
@@ -279,7 +285,8 @@ void RUN::rotate(t_local_direction dir, int times)
   controlInterruptStop();
   accel = turn_accel;
   upper_speed_limit = search_speed;
-  speed = lower_speed_limit = MIN_SPEED;
+  lower_speed_limit = MIN_SPEED;
+  speed = MIN_SPEED;
   con_wall.enable = false;
   obj_step = (int)(tread_width * PI / 4.0 * (float)times * 2.0 / pulse);
 
@@ -443,13 +450,15 @@ void RUN::slalom(t_local_direction dir, float angle)
 
   // 基板の接触不良等でパルス数が進まず旋回が終わらない場合は強制停止する(設計メモ §8)
   if (timed_out) {
-    upper_speed_limit = lower_speed_limit = MIN_SPEED;
+    lower_speed_limit = MIN_SPEED;
+    upper_speed_limit = MIN_SPEED;
     stop();
     buzzerEnable(400);
     delay(200);
     buzzerDisable();
   } else {
-    upper_speed_limit = lower_speed_limit = speed;
+    lower_speed_limit = speed;
+    upper_speed_limit = speed;
   }
 
   // straight()等は開始時にcounterClear()しない前提のため、ここで明示的にクリアする(設計メモ §2)
@@ -513,7 +522,9 @@ void RUN::moveFixed(t_CW_CCW dir, int len, int spd)
 
   controlInterruptStop();
   accel = 0.0;
-  speed = lower_speed_limit = upper_speed_limit = (double)spd;
+  upper_speed_limit = (double)spd;
+  lower_speed_limit = (double)spd;
+  speed = (double)spd;
   con_wall.enable = false;
   dirSet(dir, dir);
   speedSet(spd, spd);
