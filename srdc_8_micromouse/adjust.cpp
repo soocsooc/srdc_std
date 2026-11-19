@@ -298,7 +298,7 @@ static bool menuExitHeld(void)
   return held;
 }
 
-// 調整メニュー。LED3を点滅させながら「次」で番号を選び、「決定」でmodeExec()を実行する。
+// 調整メニュー。番号をLEDに表示し(7以下はLED3点滅、8以上は4ビット)、「次」で番号を選び、「決定」でmodeExec()を実行する。
 // 「決定」の長押し、またはmodeExec()が1を返したら(ADJUST_MODE_EXITを選んだら)走行モードの選択へ戻る
 void ADJUST::menu(void)
 {
@@ -320,7 +320,13 @@ void ADJUST::menu(void)
       paramSerialPoll();  // 待機中はUSBシリアルからのパラメータ設定を受け付ける
       delay(33);
       LED3_data ^= 1;
-      ledSet((l_mode & 0x7) + ((LED3_data << 3) & 0x08));
+      if (l_mode < 8) {
+        ledSet((l_mode & 0x7) + ((LED3_data << 3) & 0x08));  // 7以下は下位3ビット+LED3点滅
+      } else {
+        // 8以上はLED3も番号に使うので点滅させず4ビットで表示する。走行モード(1〜7)では
+        // LED3が点かないので、LED3の点灯で調整メニューと区別できる
+        ledSet(l_mode & 0xF);
+      }
     }
     LED3_data = 0;
     switch (sw) {
