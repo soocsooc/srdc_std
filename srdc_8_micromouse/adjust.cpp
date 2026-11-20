@@ -27,6 +27,12 @@ void ADJUST::adcView(void)
     Serial.printf("f_sen        is\t%d   \r\n", g_sensor.sen_f.value);
     Serial.printf("l_sen        is\t%d   \r\n", g_sensor.sen_l.value);
     Serial.printf("VDD          is\t%d mV\r\n", g_sensor.battery_value);
+#if SEN_AMBIENT_CANCEL
+    // LEDを点ける直前の消灯時の値(前/右/左)。上のセンサ値はこれを引いた後の値(設計メモ §15)
+    Serial.printf(
+      "ambient F/R/L\t%u %u %u\r\n", g_sensor.ambient[0], g_sensor.ambient[1],
+      g_sensor.ambient[2]);
+#endif
     // SLED_WINDOW_MAX_USを超えて捨てた読み取りの累計(前/右/左)。WiFi接続中に増える
     Serial.printf(
       "reject F/R/L\t%lu %lu %lu\r\n", g_sensor.sample_reject[0], g_sensor.sample_reject[1],

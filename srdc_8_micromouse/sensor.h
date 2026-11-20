@@ -65,6 +65,8 @@ public:
   // 遅れていないかの確認用。sled_on_us_maxは調整モード6で表示するたびに0へ戻し、sled_on_us_max_allは起動からの最大
   volatile unsigned short sled_on_us_max[3];
   volatile unsigned short sled_on_us_max_all[3];
+  // LEDを点ける直前に読んだ消灯時の値(ch: 0=前 1=右 2=左)。SEN_AMBIENT_CANCELが1のとき更新する
+  volatile unsigned short ambient[3];
   void interrupt(void);
   void applyRatio(void);  // base×ratio_pctを判定用の値へ反映する
 };

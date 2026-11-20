@@ -293,9 +293,14 @@ unsigned char switchGet(void)
 
 // SLEDを点灯し、SLED_SETTLE_US待ってからanalogRead()する。点灯からAD変換が終わるまでが
 // SLED_WINDOW_MAX_USを超えたらSENSOR_SAMPLE_BADを返し、呼び出し側で捨てる(STEP8_GUIDE.md §7)
-// その時間の最大値はch(0=前 1=右 2=左)ごとにg_sensor.sled_on_us_max(_all)へ記録する
+// その時間の最大値はch(0=前 1=右 2=左)ごとにg_sensor.sled_on_us_max(_all)へ記録する。
+// SEN_AMBIENT_CANCELが1なら点灯前に消灯時の値を読み、点灯時の値から引く(設計メモ §15)
 static unsigned short sledRead(uint8_t sled_pin, uint8_t adc_pin, unsigned char ch)
 {
+#if SEN_AMBIENT_CANCEL
+  const unsigned short off = analogRead(adc_pin);
+  g_sensor.ambient[ch] = off;
+#endif
   digitalWrite(sled_pin, HIGH);
   uint32_t t0 = micros();
   delayMicroseconds(SLED_SETTLE_US);
@@ -306,7 +311,12 @@ static unsigned short sledRead(uint8_t sled_pin, uint8_t adc_pin, unsigned char 
   const unsigned short us = (on_us > 0xFFFF) ? 0xFFFF : (unsigned short)on_us;
   if (us > g_sensor.sled_on_us_max[ch]) g_sensor.sled_on_us_max[ch] = us;
   if (us > g_sensor.sled_on_us_max_all[ch]) g_sensor.sled_on_us_max_all[ch] = us;
-  return (on_us > SLED_WINDOW_MAX_US) ? SENSOR_SAMPLE_BAD : tmp;
+  if (on_us > SLED_WINDOW_MAX_US) return SENSOR_SAMPLE_BAD;
+#if SEN_AMBIENT_CANCEL
+  return (tmp > off) ? (unsigned short)(tmp - off) : 0;
+#else
+  return tmp;
+#endif
 }
 
 unsigned short sensorGetR(void) { return sledRead(SLED_R, AD_R, 1); }
