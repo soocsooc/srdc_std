@@ -73,6 +73,7 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
 void RUN::alignStartPosition(void)
 {
   moveFixed(MOT_BACK, uturn_back_len, uturn_speed);
+  delay(100);
   moveFixed(MOT_FORWARD, wall_return_len, uturn_speed);
 }
 
