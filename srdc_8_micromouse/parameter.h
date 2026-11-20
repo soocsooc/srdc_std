@@ -28,8 +28,8 @@
 // 下の基準値・閾値には判定時にSEN_RATIOの倍率を掛ける
 
 // 区画中心で測った前センサ値(1区画先の前壁あり/なし)。調整モード10で測定(設計メモ §7)
-#define SEN_F_WALL_INIT 125
-#define SEN_F_NOWALL_INIT 35
+#define SEN_F_WALL_INIT 127
+#define SEN_F_NOWALL_INIT 36
 
 // 機体が左右の中央にあるときの横センサ値。壁制御の目標値。区画中心では光が柱に当たるので、
 // 前後にずらして光が壁に当たる位置で測る(設計メモ §14)
@@ -137,9 +137,9 @@
 
 // 後ろの壁に当てるときのバック距離[mm]。確実に当てるため前進より長くする
 // (行き止まりのUターンと走行開始時、設計メモ §6)
-#define UTURN_BACK_LEN_INIT 40
+#define UTURN_BACK_LEN_INIT 50
 // 壁に当てた後、区画中心へ戻る前進距離[mm]
-#define WALL_RETURN_LEN_INIT 32
+#define WALL_RETURN_LEN_INIT 40
 // バックと前進の速度[mm/s]
 #define UTURN_SPEED_INIT 100
 

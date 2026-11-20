@@ -50,7 +50,7 @@ ESP32-DevKitC-32E（無印 ESP32）とモータドライバ EIC4311（SLA7078 �
 - モータの電流は基板のトリマ（R26）で合わせます
 - 電池は LiPo 3 セルを想定しています。残量 LED はありません。電圧が 10.0V（`BATT_MIN`）を 200ms 続けて下回ると、ブザーを鳴らして LED を消します
 - GY-521（ジャイロ）は I2C（SDA 25、SCL 26）につながっていますが、このスケッチでは使いません
-- 機体の寸法（前後方向、機体の中心から）：先端 約 55mm、後端 約 50mm、前センサ 約 50mm。区画中心から壁の表面までは 84mm なので、後ろ壁に当てた位置から区画中心へは約 34mm 前進します（`wall_return_len`、[設計メモ §6](DESIGN_NOTES.md)）。区画中心で止まったとき、先端と前壁の間は約 29mm です
+- 機体の寸法（前後方向、機体の中心から）：先端 約 55mm、後端 約 50mm、前センサ 約 50mm。区画中心から壁の表面までは 84mm なので、後ろ壁に当てた位置から区画中心へは、寸法からは約 34mm です。走らせて合わせた `wall_return_len` は 40mm です（[設計メモ §6](DESIGN_NOTES.md)）。区画中心で止まったとき、先端と前壁の間は約 29mm です
 - 受光素子の出力は 0.01μF のコンデンサを通るので、センサ LED を点けた直後だけ値が上がり、約 50〜90μs で減衰します
 - 受光素子の信号線は 51kΩ（R7〜R9）で 3.3V にプルアップしています。回路図では 1MΩ ですが、51kΩ を実装します。受光側は 5.1kΩ で GND に落ちているので、光がないときは約 0.3V（値は 210 前後）になります。ESP32 の ADC は 11dB 減衰のとき約 0.15V 未満を 0 と読むので、この不感帯より上に持ち上げるためです。1MΩ では約 17mV で不感帯に入り、10kΩ では約 1.1V になって信号に使える幅が狭くなります
 - センサ LED を駆動する DTC123（TR1〜TR3）は、UTC の DTC123E（TO-92）だと足の並びが GND・OUT・IN で、フットプリント（IN・GND・OUT）と合いません。そのまま挿すと、センサ LED が常にうっすら点いたままになり、センサの値が変わりません。IN をパッド 1、GND をパッド 2、OUT をパッド 3 に挿します
@@ -374,7 +374,7 @@ Web ページの最下部にも同じ内容を表示しています。
 | `REF_SEN_R_INIT`／`REF_SEN_L_INIT` | 201／240 | 横センサの目標値 |
 | `TH_SEN_R_INIT`／`TH_SEN_L_INIT` | 75／101 | 横センサの壁ありなしのしきい値 |
 | `TH_SEN_F_INIT` | 120 | 前センサの壁ありなしのしきい値 |
-| `SEN_F_WALL_INIT`／`SEN_F_NOWALL_INIT` | 125／35 | 調整モード 10 の測定値（記録用） |
+| `SEN_F_WALL_INIT`／`SEN_F_NOWALL_INIT` | 127／36 | 調整モード 10 の測定値（記録用） |
 | `TH_SEN_F_APPROACH_INIT` | 330 | モード 2 の到達しきい値（前センサの値） |
 | `TH_SEN_F_APPROACH_SLALOM_INIT` | `TH_SEN_F_APPROACH_INIT` と同じ（330） | モード 3 の到達しきい値（前センサの値） |
 | （`th_sen_r/l_slalom` の初期値） | `TH_SEN_R/L_INIT` と同じ | モード 3 の側壁しきい値 |
@@ -387,8 +387,9 @@ Web ページの最下部にも同じ内容を表示しています。
 | `SEARCH_SPEED_INIT` | 400 | 探索速度 [mm/s] |
 | `MAX_SPEED_INIT` | 800 | 最短走行の最高速度 [mm/s] |
 | `SLALOM_SPEED_INIT` | 400 | スラローム旋回中の速度 [mm/s] |
-| `SLALOM_INNER_RATIO_INIT`／`SLALOM_OUTER_GAIN_INIT`／`SLALOM_RAMP_LEN_INIT` | 0.1／0.0／30 | スラロームの形（張り出しは約 77mm） |
-| `UTURN_BACK_LEN_INIT`／`WALL_RETURN_LEN_INIT`／`UTURN_SPEED_INIT` | 40／32／100 | 壁に当てるバックの距離・戻る前進の距離 [mm]・速度 [mm/s] |
+| `SLALOM_INNER_RATIO_INIT`／`SLALOM_OUTER_GAIN_INIT`／`SLALOM_RAMP_LEN_INIT` | 0.1／0.0／30 | スラロームの形（`SLALOM_TREAD_WIDTH_INIT` の約 92.5mm で張り出しは約 72mm） |
+| `SLALOM_TREAD_WIDTH_INIT` | `TREAD_WIDTH_INIT` × `SLALOM_TREAD_RATIO`（0.9163）＝ 約 92.5 | スラロームの旋回角に使うトレッド幅 [mm]。0 なら `tread_w` と同じ値を使う |
+| `UTURN_BACK_LEN_INIT`／`WALL_RETURN_LEN_INIT`／`UTURN_SPEED_INIT` | 50／40／100 | 壁に当てるバックの距離・戻る前進の距離 [mm]・速度 [mm/s] |
 | `BATT_MIN` | 10000 | 低電圧の警告を出す電圧 [mV] |
 | `MIN_SPEED` | 30 | 最低速度 [mm/s] |
 | `HALF_SECTION`／`SECTION` | 90／180 | 半区画／1 区画 [mm] |
