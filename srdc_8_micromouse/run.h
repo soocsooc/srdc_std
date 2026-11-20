@@ -48,7 +48,6 @@ public:
   float slalom_ramp_len;
   float slalom_offset;  // 90度旋回の前後の張り出し[mm](slalomParamUpdate()で計算)
   float slalom_ramp_th;  // fを0→1へ上げる間に曲がる角度[rad](slalomParamUpdate()で計算)
-  float slalom_tail;  // 直前のslalom()で外輪がs_totalを超えて走った距離[mm](確認用)
   short uturn_back_len;  // uTurn()のバック距離[mm]
   short wall_return_len;  // 壁に当てた後、区画中心へ戻る前進距離[mm](uTurn()・走行開始時)
   short uturn_speed;  // uTurn()のバック/前進の速度[mm/s]

@@ -452,7 +452,6 @@ void RUN::slalom(t_local_direction dir, float angle)
   turn_enable = false;
   turn_f = 0.0;
   accel = 0.0;
-  slalom_tail = (float)max(0.0, s_out - s_total);
 
   // 基板の接触不良等でパルス数が進まず旋回が終わらない場合は強制停止する(設計メモ §8)
   if (timed_out) {
