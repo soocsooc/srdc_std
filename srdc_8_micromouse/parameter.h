@@ -114,9 +114,16 @@
 // スラロームの旋回の形(設計メモ §3)
 // 外輪 = 速度×(1 + OUTER_GAIN×f)、内輪 = 速度×(1 − (1 − INNER_RATIO)×f)
 // fは旋回の強さ。外輪がRAMP_LEN[mm]走る間にfを0→1へ上げ、旋回の終わりに同じ距離で1→0へ下げる
+// 内輪の速度の比。0.1で一定区間の旋回半径は約57mm、張り出しは約72mm(SLALOM_TREAD_WIDTH_INITの約92.5mm、設計メモ §3)
 #define SLALOM_INNER_RATIO_INIT 0.1
 #define SLALOM_OUTER_GAIN_INIT 0.0
 #define SLALOM_RAMP_LEN_INIT 30.0
+// SLALOM_TREAD_WIDTH_INITを決めるためTREAD_WIDTH_INITに掛ける比。実測で合わせた92.5mm ÷ 100.95mm
+#define SLALOM_TREAD_RATIO 0.9163
+// スラロームの旋回角の計算に使うトレッド幅[mm]。0ならTREAD_WIDTHと同じ値を使う。曲がりながら走るときの
+// 実際のトレッド幅は超信地旋回のときと違うことがあるので別に持つ。旋回の終わりで曲がりすぎるなら小さくする(設計メモ §3)
+#define SLALOM_TREAD_WIDTH_INIT (TREAD_WIDTH_INIT * SLALOM_TREAD_RATIO)
+#define SLALOM_TREAD_WIDTH_MAX 300.0
 #define SLALOM_INNER_RATIO_MAX 0.9
 #define SLALOM_OUTER_GAIN_MAX 1.0
 #define SLALOM_RAMP_LEN_MAX 150.0

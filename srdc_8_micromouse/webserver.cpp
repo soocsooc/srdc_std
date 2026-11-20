@@ -289,6 +289,9 @@ static String htmlSlalomParameterSection(void)
 <tr><th>Slalom ramp len</th><td>)HTML";
   html += inputBox("slalom_ramp_len", String(g_run.slalom_ramp_len, 1));
   html += R"HTML(mm</td></tr>
+<tr><th>Slalom tread width</th><td>)HTML";
+  html += inputBox("slalom_tread_w", String(g_run.slalom_tread_width, 2));
+  html += R"HTML(mm(0ならtread_w)</td></tr>
 <tr><th>Slalom offset(計算値)</th><td>)HTML";
   html += String(g_run.slalom_offset, 1);
   html += R"HTML(mm</td></tr>

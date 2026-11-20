@@ -56,6 +56,8 @@ public:
 
   float tire_diameter;
   float tread_width;
+  // スラロームの旋回角の計算に使うトレッド幅[mm]。0ならtread_widthを使う(設計メモ §3)
+  float slalom_tread_width;
   float pulse;
 
   RUN();
@@ -72,6 +74,11 @@ public:
   void slalomCell(t_local_direction dir);
   // スラロームの形のパラメータの範囲チェックとslalom_offsetの再計算
   void slalomParamUpdate(void);
+  // スラロームで使うトレッド幅[mm]。slalom_tread_widthが0ならtread_width
+  double slalomTread(void) const
+  {
+    return (slalom_tread_width > 0.0f) ? slalom_tread_width : tread_width;
+  }
   void uTurn(t_local_direction dir);
   // 前センサの値がthを超えたら区画境界に着いたとみなすoneStep()。max_lenは距離の上限。
   // debug_log=trueでログを出し、スイッチで中断できる(中断したらtrue、設計メモ §4)

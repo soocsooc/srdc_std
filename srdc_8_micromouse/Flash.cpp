@@ -67,6 +67,8 @@ static const t_param_entry param_table[] = {
    SLALOM_OUTER_GAIN_MAX},
   {"slalom_ramp_len", PARAM_FLOAT, &g_run.slalom_ramp_len, SLALOM_RAMP_LEN_INIT, 1.0f,
    SLALOM_RAMP_LEN_MAX},
+  {"slalom_tread_w", PARAM_FLOAT, &g_run.slalom_tread_width, SLALOM_TREAD_WIDTH_INIT, 0.0f,
+   SLALOM_TREAD_WIDTH_MAX},
   {"uturn_back_len", PARAM_SHORT, &g_run.uturn_back_len, UTURN_BACK_LEN_INIT, 1, SECTION},
   {"wall_return_len", PARAM_SHORT, &g_run.wall_return_len, WALL_RETURN_LEN_INIT, 1, SECTION},
   {"uturn_speed", PARAM_SHORT, &g_run.uturn_speed, UTURN_SPEED_INIT, SPEED_RANGE},

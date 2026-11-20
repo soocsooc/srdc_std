@@ -308,7 +308,7 @@ Wi-Fi の送信で電源が一瞬下がると、ブラウンアウト（`E BOD`�
   - `Sensor Parameter`：`Sensor ratio` と、REF・しきい値のベース値。括弧内に倍率を掛けた実際の値を表示します。`FRONT measured` 行は調整モード 10 の測定値です（表示のみ）
   - `FRONT Approach Threshold`／`FRONT Approach Threshold(Slalom)`：モード 2・3 の到達しきい値（前センサの値と比べる）
   - `SIDE Threshold(Slalom)`：モード 3 の側壁しきい値
-  - `Slalom Parameter`：`Slalom speed`・`Slalom inner ratio`・`Slalom outer gain`・`Slalom ramp len` と、計算した `Slalom offset`
+  - `Slalom Parameter`：`Slalom speed`・`Slalom inner ratio`・`Slalom outer gain`・`Slalom ramp len`・`Slalom tread width` と、計算した `Slalom offset`
   - `GOAL Parameter`：迷路の大きさ（`MAZE SIZE`）とゴールの対角 2 座標（`AXIS`／`AXIS2`）。迷路の大きさを変えて保存すると迷路情報を消去します
 - 迷路図（`Maze Map`）、走行モード・調整モードの一覧、各パラメータの効果の目安も表示します
 - センサ値の表示には、リクエストごとに直近 5 個のメディアンを使います。Wi-Fi の影響で残る大きめの外れ値を表示から除くためで、制御に使う値は変えていません
@@ -354,6 +354,7 @@ Web ページの最下部にも同じ内容を表示しています。
 | `Slalom inner ratio` | 大回りになり、張り出しが大きくなる | 小回りになる。0 でほぼ内輪を軸に回る |
 | `Slalom ramp len` | 滑らかに曲がり始めるが、張り出しが大きくなる | 張り出しは小さいが、急に曲がり始めて姿勢が乱れやすい |
 | `Slalom outer gain` | 同じ形のまま早く曲がり終わるが、外輪がスリップしやすい | 外輪は増速しない（0） |
+| `Slalom tread width` | 旋回の角度が大きくなり、張り出しも大きくなる | 旋回の角度が小さくなる。0 なら `TREAD_WIDTH` と同じ |
 | `Slalom speed` | 早く曲がり終わるが、遠心力でスリップしやすい（軌跡は変わらない） | 確実だが時間がかかる |
 | `Sensor ratio` | REF としきい値がまとめて大きくなる | まとめて小さくなる |
 | `Search speed` | 探索は速いが、センサや P 制御が追いつかず衝突しやすい | 安定するが時間がかかる |

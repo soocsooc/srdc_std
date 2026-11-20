@@ -361,7 +361,7 @@ static double slalomProfile(double s_out, double s_total, double ramp_len)
   return max((double)SLALOM_F_MIN, f);
 }
 
-// 旋回の強さfのとき、外輪が1mm進む間に曲がる角度×tread_width
+// 旋回の強さfのとき、外輪が1mm進む間に曲がる角度×トレッド幅
 static double slalomTurnRate(double f, double inner_ratio, double outer_gain)
 {
   const double outer = 1.0 + outer_gain * f;
@@ -384,7 +384,7 @@ double RUN::slalomRampAngle(double s_end)
   };
   double th = slalomTurnRate(SLALOM_F_MIN, slalom_inner_ratio, slalom_outer_gain) * s_min;
   if (s_end > s_min) th += prim(s_end) - prim(s_min);
-  return th / tread_width;
+  return th / slalomTread();
 }
 
 // obj_th[rad]曲がるときの外輪の走行距離[mm]。台形なら旋回角が距離の一次式になるので直接求め、
@@ -394,7 +394,7 @@ double RUN::slalomLength(double obj_th)
   const double len = slalom_ramp_len;
   if (obj_th >= 2.0 * slalom_ramp_th) {
     const double rate = slalomTurnRate(1.0, slalom_inner_ratio, slalom_outer_gain);
-    return 2.0 * len + (obj_th - 2.0 * slalom_ramp_th) * tread_width / rate;
+    return 2.0 * len + (obj_th - 2.0 * slalom_ramp_th) * slalomTread() / rate;
   }
   double lo = 0.0, hi = 2.0 * len;
   for (int i = 0; i < 30; i++) {
@@ -436,7 +436,7 @@ void RUN::slalom(t_local_direction dir, float angle)
   while (1) {
     stepGetLR();
     s_out = (double)((turn_sign > 0) ? step_r : step_l) * pulse;
-    const double th = fabs((double)(step_r - step_l)) * pulse / tread_width;
+    const double th = fabs((double)(step_r - step_l)) * pulse / slalomTread();
     // s_totalを過ぎても角度が足りなければF_MINで回り続ける
     turn_f = slalomProfile(s_out, s_total, slalom_ramp_len);
     speedSet(speed_target_l, speed_target_r);
@@ -504,7 +504,7 @@ void RUN::slalomParamUpdate(void)
     const double f = slalomProfile(s_out + ds / 2.0, s_total, slalom_ramp_len);
     const double outer = 1.0 + slalom_outer_gain * f;
     const double inner = 1.0 - (1.0 - slalom_inner_ratio) * f;
-    const double dth = (outer - inner) / outer * ds / tread_width;
+    const double dth = (outer - inner) / outer * ds / slalomTread();
     const double dc = (outer + inner) / (2.0 * outer) * ds;
     fwd += dc * cos(th + dth / 2.0);
     side += dc * sin(th + dth / 2.0);
