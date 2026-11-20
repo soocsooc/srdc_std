@@ -131,6 +131,9 @@
 #define SLALOM_F_MIN 0.05
 // 内輪がMIN_SPEEDを下回るとき、左右の速度に同じ倍率を掛けて上げる。その倍率の上限
 #define SLALOM_MIN_SPEED_SCALE_MAX 2.0
+// slalomCell(dir, true)で表示する走行の段階(調整モード3・9)。直進は外側2個、スラローム中は内側2個を点ける
+#define LED_PHASE_STRAIGHT 0b1001
+#define LED_PHASE_SLALOM 0b0110
 
 // 後ろの壁に当てるときのバック距離[mm]。確実に当てるため前進より長くする
 // (行き止まりのUターンと走行開始時、設計メモ §6)

@@ -86,30 +86,19 @@ void ADJUST::rotationCheck(void)
   motorDisable();
 }
 
-// slalom()がs_totalを超えて余計に走った距離をLEDの点灯数で表す(5mm未満で1個、45mm以上で4個)
-static unsigned char slalomTailLed(float tail)
-{
-  if (tail < 5.0f) return 0b0001;
-  if (tail < 20.0f) return 0b0011;
-  if (tail < 45.0f) return 0b0111;
-  return 0b1111;
-}
-
 // 4x4区画コースの最外周をスラローム旋回でつないで周回する。各辺は2区画の直進+角の
 // slalomCell()。switchGet()の判定は角を曲がった後の区画境界でのみ行う(設計メモ §3)。
-// 角を曲がった後は、その旋回の余計な走行距離をslalomTailLed()で次の角まで表示する(設計メモ §3)
+// 旋回はslalomCell(right, true)で呼び、直進中とスラローム中でLEDの表示を変える
 void ADJUST::circuitCheck(void)
 {
   motorEnable();
   delay(500);
 
-  ledSet(0b0000);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
 
   do {
     g_run.straight(SECTION * 2, g_run.speed, g_run.search_speed, g_run.slalom_speed);
-    g_run.slalomCell(right);
-    ledSet(slalomTailLed(g_run.slalom_tail));
+    g_run.slalomCell(right, true);
   } while (switchGet() == 0);
 
   g_run.decelerate(HALF_SECTION, g_run.speed);
@@ -177,14 +166,16 @@ void ADJUST::straightToWallCheck(void)
 
 // 単発のslalomCell()の確認(モード3と同じ入り方)。スタートから2区画直進した区画(前壁あり)で
 // 曲がり、次の区画の中心で止まる。張り出しslalom_offsetをSerialへ出力する(設計メモ §3)。
+// 直進中はLED_PHASE_STRAIGHT、スラローム中はLED_PHASE_SLALOMを点ける
 void ADJUST::slalomTurnCheck(t_local_direction dir)
 {
   Serial.printf("slalom_offset = %.1f mm\r\n", g_run.slalom_offset);
   motorEnable();
   delay(500);
+  ledSet(LED_PHASE_STRAIGHT);
   g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
   g_run.oneStepDynamic(SECTION * 2, g_run.search_speed, g_sensor.th_approach_slalom);
-  g_run.slalomCell(dir);
+  g_run.slalomCell(dir, true);
   g_run.decelerate(HALF_SECTION, g_run.speed);
   motorDisable();
 }

@@ -71,7 +71,8 @@ public:
   void rotate(t_local_direction dir, int times);
   void slalom(t_local_direction dir, float angle);
   // 区画境界から次の区画境界までを1動作で90度曲がる(区画中心の前後slalom_offsetで旋回、設計メモ §3)
-  void slalomCell(t_local_direction dir);
+  // show_phase=trueなら、直進中とスラローム中でLEDの表示を変える(LED_PHASE_*、調整モード3・9)
+  void slalomCell(t_local_direction dir, bool show_phase = false);
   // スラロームの形のパラメータの範囲チェックとslalom_offsetの再計算
   void slalomParamUpdate(void);
   // スラロームで使うトレッド幅[mm]。slalom_tread_widthが0ならtread_width

@@ -472,11 +472,14 @@ void RUN::slalom(t_local_direction dir, float angle)
 }
 
 // 区画境界から次の区画境界までを1動作で90度曲がる(設計メモ §3)
-void RUN::slalomCell(t_local_direction dir)
+void RUN::slalomCell(t_local_direction dir, bool show_phase)
 {
   const int pre = max(0, (int)(HALF_SECTION - slalom_offset + 0.5f));
+  if (show_phase) ledSet(LED_PHASE_STRAIGHT);
   if (pre > 0) oneStep(pre, (int)speed);
+  if (show_phase) ledSet(LED_PHASE_SLALOM);
   slalom(dir, 90);
+  if (show_phase) ledSet(LED_PHASE_STRAIGHT);
   if (pre > 0) oneStep(pre, (int)speed);
 }
 
