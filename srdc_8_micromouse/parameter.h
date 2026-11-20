@@ -27,27 +27,32 @@
 // ---- 壁センサ ----
 // 下の基準値・閾値には判定時にSEN_RATIOの倍率を掛ける
 
+// 区画中心で測った前センサ値(1区画先の前壁あり/なし)。調整モード10で測定(設計メモ §7)
+#define SEN_F_WALL_INIT 125
+#define SEN_F_NOWALL_INIT 35
+
 // 機体が左右の中央にあるときの横センサ値。壁制御の目標値。区画中心では光が柱に当たるので、
 // 前後にずらして光が壁に当たる位置で測る(設計メモ §14)
-#define REF_SEN_R_INIT 433
-#define REF_SEN_L_INIT 447
+#define REF_SEN_R_INIT 201
+#define REF_SEN_L_INIT 240
+
 // 壁があると判断する閾値
-#define TH_SEN_R_INIT 315
-#define TH_SEN_L_INIT 320
-#define TH_SEN_F_INIT 447
+#define TH_SEN_R_INIT 75
+#define TH_SEN_L_INIT 101
+// 前センサは区画境界で判定する。境界で前壁(174mm先)が約335、2区画先の壁(354mm先)だけなら約47なので、
+// その間で見落としにくい低めの値にした(調整モード8のログ、設計メモ §7)
+#define TH_SEN_F_INIT 120
+
 // 横センサが柱を読んだときの値の落ち込みの判定(設計メモ §14)。落ち込み中は負の誤差を制御に使わない
 // 400mm/sで柱の落ち込みは約16mm(40ms)かけて30〜40下がる。比べる間隔が短いとノイズと区別できない
 #define SEN_DROP_LOOKBACK 20  // 何ms前の値と比べるか(400mm/sで8mm手前)
 #define SEN_DROP_PCT 3  // 基準値の何%より大きく下がったら落ち込みとみなすか
 #define SEN_DIP_MAX_LEN 30  // 落ち込みの最長距離[mm]。柱で値が下がる区間は約16mm
 
-// 区画中心で測った前センサ値(1区画先の前壁あり/なし)。調整モード10で測定(設計メモ §7)
-#define SEN_F_WALL_INIT 330
-#define SEN_F_NOWALL_INIT 263
-
 // 走行中に前壁が近づいたと判断する前センサの閾値(設計メモ §4)
 // モード2用とモード3用。速度が違うため別の値にしてある
-#define TH_SEN_F_APPROACH_INIT 370
+// 区画境界で前壁(174mm先)を見たときの値。調整モード8のログで測った
+#define TH_SEN_F_APPROACH_INIT 330
 #define TH_SEN_F_APPROACH_SLALOM_INIT TH_SEN_F_APPROACH_INIT
 
 // モード1の直進で前壁の見落としに気付いたとき、区画中心を越えて減速してよい距離の上限[mm](設計メモ §15)
@@ -70,9 +75,11 @@
 
 // センサ値の平滑化の係数a。value = (value*a + 新しい値)/(a+1)
 #define SEN_IIR_A 3
+
 // LED点灯からAD変換が終わるまでの許容時間[us]。超えた読み取り値は捨てて前回値を使う
 // (STEP8_GUIDE.md §7)
 #define SLED_WINDOW_MAX_US 200
+
 // 捨てる読み取り値を表す値。analogRead()は0〜4095なので重ならない
 #define SENSOR_SAMPLE_BAD 0xFFFF
 
@@ -81,6 +88,7 @@
 // 迷路の大きさ[区画]。Web UIで2〜MAZESIZE_MAXの範囲で変更できる(設計メモ §9)
 #define MAZESIZE_X_INIT 4
 #define MAZESIZE_Y_INIT 4
+
 // ゴール区画。(GOAL_X,GOAL_Y)と(GOAL_X2,GOAL_Y2)を対角とする長方形(設計メモ §9)
 #define GOAL_X_INIT 3
 #define GOAL_Y_INIT 3
@@ -121,7 +129,7 @@
 // (行き止まりのUターンと走行開始時、設計メモ §6)
 #define UTURN_BACK_LEN_INIT 40
 // 壁に当てた後、区画中心へ戻る前進距離[mm]
-#define WALL_RETURN_LEN_INIT 25
+#define WALL_RETURN_LEN_INIT 32
 // バックと前進の速度[mm/s]
 #define UTURN_SPEED_INIT 100
 

@@ -369,12 +369,12 @@ Web ページの最下部にも同じ内容を表示しています。
 | `TIRE_DIAMETER_INIT` | 51.66 | タイヤ径 [mm] |
 | `TREAD_WIDTH_INIT` | 100.95 | トレッド幅 [mm] |
 | `PULSE_PER_REV` | 400 | モータ 1 回転あたりのパルス数 |
-| `REF_SEN_R_INIT`／`REF_SEN_L_INIT` | 433／447 | 横センサの目標値 |
-| `TH_SEN_R_INIT`／`TH_SEN_L_INIT` | 315／320 | 横センサの壁ありなしのしきい値 |
-| `TH_SEN_F_INIT` | 447 | 前センサの壁ありなしのしきい値 |
-| `SEN_F_WALL_INIT`／`SEN_F_NOWALL_INIT` | 330／263 | 調整モード 10 の測定値（記録用） |
-| `TH_SEN_F_APPROACH_INIT` | 370 | モード 2 の到達しきい値（前センサの値） |
-| `TH_SEN_F_APPROACH_SLALOM_INIT` | `TH_SEN_F_APPROACH_INIT` と同じ（370） | モード 3 の到達しきい値（前センサの値） |
+| `REF_SEN_R_INIT`／`REF_SEN_L_INIT` | 201／240 | 横センサの目標値 |
+| `TH_SEN_R_INIT`／`TH_SEN_L_INIT` | 75／101 | 横センサの壁ありなしのしきい値 |
+| `TH_SEN_F_INIT` | 120 | 前センサの壁ありなしのしきい値 |
+| `SEN_F_WALL_INIT`／`SEN_F_NOWALL_INIT` | 125／35 | 調整モード 10 の測定値（記録用） |
+| `TH_SEN_F_APPROACH_INIT` | 330 | モード 2 の到達しきい値（前センサの値） |
+| `TH_SEN_F_APPROACH_SLALOM_INIT` | `TH_SEN_F_APPROACH_INIT` と同じ（330） | モード 3 の到達しきい値（前センサの値） |
 | （`th_sen_r/l_slalom` の初期値） | `TH_SEN_R/L_INIT` と同じ | モード 3 の側壁しきい値 |
 | `SEN_RATIO_INIT` | 100 | センサのベース値に掛ける倍率 [%] |
 | `MAZESIZE_X/Y_INIT` | 4／4 | 迷路の大きさ [区画] |
@@ -386,7 +386,7 @@ Web ページの最下部にも同じ内容を表示しています。
 | `MAX_SPEED_INIT` | 800 | 最短走行の最高速度 [mm/s] |
 | `SLALOM_SPEED_INIT` | 400 | スラローム旋回中の速度 [mm/s] |
 | `SLALOM_INNER_RATIO_INIT`／`SLALOM_OUTER_GAIN_INIT`／`SLALOM_RAMP_LEN_INIT` | 0.1／0.0／30 | スラロームの形（張り出しは約 77mm） |
-| `UTURN_BACK_LEN_INIT`／`WALL_RETURN_LEN_INIT`／`UTURN_SPEED_INIT` | 40／25／100 | 壁に当てるバックの距離・戻る前進の距離 [mm]・速度 [mm/s] |
+| `UTURN_BACK_LEN_INIT`／`WALL_RETURN_LEN_INIT`／`UTURN_SPEED_INIT` | 40／32／100 | 壁に当てるバックの距離・戻る前進の距離 [mm]・速度 [mm/s] |
 | `BATT_MIN` | 10000 | 低電圧の警告を出す電圧 [mV] |
 | `MIN_SPEED` | 30 | 最低速度 [mm/s] |
 | `HALF_SECTION`／`SECTION` | 90／180 | 半区画／1 区画 [mm] |
