@@ -50,6 +50,9 @@
 #define TH_SEN_F_APPROACH_INIT 370
 #define TH_SEN_F_APPROACH_SLALOM_INIT TH_SEN_F_APPROACH_INIT
 
+// モード1の直進で前壁の見落としに気付いたとき、区画中心を越えて減速してよい距離の上限[mm](設計メモ §15)
+#define FRONT_GUARD_OVERRUN_MAX 20
+
 // モード3の横壁の閾値(th_sen_r/l_slalom)の初期値はTH_SEN_R/L_INITと同じ(設計メモ §5)
 
 // 基準値・閾値に掛ける倍率[%]。会場でセンサの感度が変わったときに一括で合わせる(設計メモ §12)

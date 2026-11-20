@@ -55,6 +55,8 @@ public:
   // oneStepDynamic()で前壁が近づいたと判断する前センサの閾値(モード2用/モード3用、設計メモ §4)
   short th_approach;
   short th_approach_slalom;
+  // モード1の直進で前壁の見落としを判定する前センサの閾値。th_approachとth_wallの大きい方(設計メモ §15)
+  short th_f_guard;
   t_sensor_base base;
   short ratio_pct;  // baseに掛ける倍率[%]
   // SLED_WINDOW_MAX_USを超えて捨てた読み取りの回数(ch: 0=前 1=右 2=左)。SLED_WINDOW_MAX_USの調整用

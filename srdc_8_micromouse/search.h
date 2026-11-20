@@ -25,6 +25,8 @@ public:
   void adachiSlalomDynamic(char gx, char gy, char gx2, char gy2);
   // 区画中心で180度回転する。前壁と左右どちらかの壁があればuTurn()、なければrotate()(設計メモ §5)
   void turnBack(bool wall_f, bool wall_r, bool wall_l);
+  // モード1の直進。前半で前壁の見落としに気付いたら区画中心で止まってtrueを返す(設計メモ §15)
+  bool straightGuarded(int speed);
 };
 
 extern SEARCH g_search;

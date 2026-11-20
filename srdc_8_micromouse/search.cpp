@@ -25,27 +25,45 @@ void SEARCH::lefthandGetWall(char gx, char gy, char gx2, char gy2)
   g_map.axisUpdate();
 
   while (1) {
-    // 現在区画の壁情報を記録する
-    g_map.wallSet(g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall, g_sensor.sen_l.is_wall);
-    ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall);
+    // 現在区画の壁情報を記録する。記録と進む方向の判断に同じ値を使うよう、ここで1回だけ読む
+    const bool wall_f = g_sensor.sen_f.is_wall;
+    const bool wall_r = g_sensor.sen_r.is_wall;
+    const bool wall_l = g_sensor.sen_l.is_wall;
+    g_map.wallSet(wall_f, wall_r, wall_l);
+    ledWallShow(wall_l, wall_f, wall_r);
 
     // ゴール到達、またはスイッチ押下で探索終了
     if (g_map.posIn(gx, gy, gx2, gy2) || (switchGet() != 0)) {
       break;
     }
 
-    if (g_sensor.sen_l.is_wall == false) {
+    if (wall_l == false) {
       // 左が開いている → 左折して1区画進む
       g_run.decelerate(HALF_SECTION, g_run.search_speed);
       g_run.rotate(left, 1);
       g_map.nextDir(left);
       g_run.accelerate(HALF_SECTION, g_run.search_speed);
       g_map.axisUpdate();
-    } else if (g_sensor.sen_f.is_wall == false) {
-      // 前が開いている → 直進して1区画進む
-      g_run.oneStep(SECTION, g_run.search_speed);
+    } else if (wall_f == false) {
+      // 前が開いている → 直進して1区画進む。前壁を見落としていたら区画中心で止まり、
+      // 右か後ろへ向きを変える(設計メモ §15)
+      if (!straightGuarded(g_run.search_speed)) {
+        g_map.axisUpdate();
+        continue;
+      }
+      g_map.wallSet(true, wall_r, wall_l);
+      ledWallShow(wall_l, true, wall_r);
+      if (wall_r == false) {
+        g_run.rotate(right, 1);
+        g_map.nextDir(right);
+      } else {
+        turnBack(true, wall_r, wall_l);  // 前壁と左壁に当てて位置を補正する
+        g_map.nextDir(right);
+        g_map.nextDir(right);
+      }
+      g_run.accelerate(HALF_SECTION, g_run.search_speed);
       g_map.axisUpdate();
-    } else if (g_sensor.sen_r.is_wall == false) {
+    } else if (wall_r == false) {
       // 右が開いている → 右折して1区画進む
       g_run.decelerate(HALF_SECTION, g_run.search_speed);
       g_run.rotate(right, 1);
@@ -67,3 +85,29 @@ void SEARCH::lefthandGetWall(char gx, char gy, char gx2, char gy2)
   g_run.decelerate(HALF_SECTION, g_run.search_speed);
 }
 
+// 区画境界から1区画直進する。前半(区画中心まで)は前センサを見張り、th_f_guardを超えたら
+// 区画境界で前壁を見落としたとみなして区画中心で止まり、trueを返す。超えなければ次の区画境界まで
+// 進んでfalseを返す(設計メモ §15)
+bool SEARCH::straightGuarded(int speed)
+{
+  g_run.oneStepDynamic(HALF_SECTION, speed, g_sensor.th_f_guard);
+  if (g_sensor.sen_f.value <= g_sensor.th_f_guard) {
+    g_run.oneStep(HALF_SECTION, speed);
+    return false;
+  }
+
+  // 区画中心までの残りで止まる。止まり切れないときは、FRONT_GUARD_OVERRUN_MAXまで中心を越えて減速する
+  const int remain = HALF_SECTION - g_run.lastLenGet();
+  const int brake = (int)(((double)speed * speed - (double)MIN_SPEED * MIN_SPEED) /
+                          (2.0 * 1000.0 * g_run.search_accel));
+  int len = (brake > remain) ? brake : remain;
+  if (len > remain + FRONT_GUARD_OVERRUN_MAX) len = remain + FRONT_GUARD_OVERRUN_MAX;
+  if (len < 1) len = 1;
+  g_run.decelerate(len, speed);
+
+  // 見落としに気付いたことを音で知らせる
+  buzzerEnable(DEC_FREQ);
+  delay(50);
+  buzzerDisable();
+  return true;
+}

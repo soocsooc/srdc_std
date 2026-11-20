@@ -81,6 +81,8 @@ public:
   void alignStartPosition(void);
   // 走行開始時の加速。align=trueなら先にalignStartPosition()で区画中心へ合わせる(設計メモ §6)
   void startAccelerate(int len, int finish_speed, bool align = true);
+  // 直前の走行関数がループを抜けた時点の走行距離[mm]。stay()でカウンタを0にしても残る
+  int lastLenGet(void) const { return step_lr_len; }
 
 private:
   int step_lr_len, step_lr;

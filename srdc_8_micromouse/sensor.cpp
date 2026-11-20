@@ -36,6 +36,7 @@ void SENSOR::applyRatio(void)
   sen_l.th_wall_slalom = senScale(base.th_l_slalom, p);
   th_approach = senScale(base.th_approach, p);
   th_approach_slalom = senScale(base.th_approach_slalom, p);
+  th_f_guard = (th_approach > sen_f.th_wall) ? th_approach : sen_f.th_wall;
 }
 
 // --- センサ値の平滑化 ------------------------------------------------------
