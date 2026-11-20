@@ -414,9 +414,10 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
       slalomSequenceCheck();  // S字・旋回直後の直進・U字の連続旋回を一続きに確認
       break;
     case 8:
-      // th_approach決定用。壁まで580mmの環境で余裕を取った値(STEP8_GUIDE.md §5参照)。
-      // 壁の距離を変えたらここも変更する
-      straightSensorDiag(2.2);
+      // th_approach決定用。(0,0)〜(0,3)を壁で囲んだ環境(開始区画の中心から壁の表面まで624mm)で、
+      // 区画境界(0,2)/(0,3)の少し先まで記録し、(0,3)の中心の約9mm先で止まる。機体の先端(中心から55mm)と
+      // 壁の間は約20mm残る(STEP8_GUIDE.md §5参照)。壁の距離を変えたらここも変更する
+      straightSensorDiag(2.05);
       break;
     case 9:
       slalomTurnCheck(right);  // 単発の旋回の確認(左を確認するときはleftへ変更)
