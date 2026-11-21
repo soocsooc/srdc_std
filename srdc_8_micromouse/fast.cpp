@@ -184,7 +184,7 @@ void FAST::runSlalomFaster(short gx, short gy, short gx2, short gy2)
 }
 
 // スラローム版の最短走行の本体。直進区間はv_max[mm/s]まで加速する。90度旋回はslalomCell()、
-// 行き止まりはuTurn()、開始直後の方向合わせのみrotate()。詳細は設計メモ §3参照
+// 行き止まりはturnBack()、開始直後の方向合わせのみrotate()。詳細は設計メモ §3参照
 void FAST::runSlalomAt(short gx, short gy, short gx2, short gy2, short v_max)
 {
   t_global_direction glob_nextdir;

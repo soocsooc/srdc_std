@@ -460,7 +460,7 @@ void MapManager::goalStepsEqualize(int x, int y, int x2, int y2)
     }
   }
 
-  // 隣の歩数+1より大きい区画を減らす。ゴール区画は変えない
+  // 隣の区画の歩数がこの区画の歩数+1より大きければ、+1の値にする。ゴール区画は変えない
   static const signed char dx[4] = {0, 1, 0, -1};  // north, east, south, west
   static const signed char dy[4] = {1, 0, -1, 0};
   auto neighbor = [&](int i, int j, int d, int * ni, int * nj) {

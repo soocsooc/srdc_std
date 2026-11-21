@@ -174,7 +174,7 @@ void MISC::modeExec(int mode)
       motorDisable();
       g_adjust.menu();  //調整メニューに行く
       break;
-    case 8:  //最短走行(スラローム版、速度上昇&往路のみ)
+    case 8:  //最短走行(スラローム版、直進を速くして往路のみ)
       mapCopy();
       g_map.positionInit();
       g_fast.runSlalomFaster(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);

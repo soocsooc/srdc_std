@@ -41,7 +41,7 @@ public:
   short search_speed;
   short max_speed;
   short max_speed_faster;  // モード8(runSlalomFaster())の直進の最高速度[mm/s]
-  short slalom_speed;  // slalom()の旋回中の速度[mm/s](外輪の基準)
+  short slalom_speed;      // slalom()の旋回中の速度[mm/s](外輪の基準)
   float turn_accel;
   // slalom()の旋回の形(設計メモ §3)。内輪の最低速度比、外輪の増速率、fを0→1にする外輪の走行距離[mm]
   float slalom_inner_ratio;

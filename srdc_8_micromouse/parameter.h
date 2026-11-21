@@ -100,14 +100,14 @@
 
 // ---- 走行 ----
 
-#define CON_WALL_KP_INIT 0.5   // 壁制御の比例ゲイン
-#define SEARCH_ACCEL_INIT 1.0  // 直進の加速度[m/s^2]
-#define TURN_ACCEL_INIT 1.0    // 超信地旋回の加速度[m/s^2]
-#define SEARCH_SPEED_INIT 400  // 探索の速度[mm/s]
-#define MAX_SPEED_INIT 800     // 最短走行の最高速度[mm/s]
+#define CON_WALL_KP_INIT 0.5        // 壁制御の比例ゲイン
+#define SEARCH_ACCEL_INIT 1.0       // 直進の加速度[m/s^2]
+#define TURN_ACCEL_INIT 1.0         // 超信地旋回の加速度[m/s^2]
+#define SEARCH_SPEED_INIT 400       // 探索の速度[mm/s]
+#define MAX_SPEED_INIT 800          // 最短走行の最高速度[mm/s]
 #define MAX_SPEED_FASTER_INIT 1200  // モード8の最短走行の最高速度[mm/s]
-#define MIN_SPEED 30           // 最低速度[mm/s]
-#define STOP_WAIT_MS 300       // stop()で機体が止まるまで待つ時間[ms]
+#define MIN_SPEED 30                // 最低速度[mm/s]
+#define STOP_WAIT_MS 300            // stop()で機体が止まるまで待つ時間[ms]
 
 // スラロームの旋回中の速度[mm/s](外輪の基準)。旋回の軌跡は速度によらない(設計メモ §3)
 #define SLALOM_SPEED_INIT 400
