@@ -49,7 +49,7 @@ void MISC::goalAppeal(void)
   motorDisable();
   mapWrite();
 
-  for (int j = 0; j < 10; j++) {
+  for (int j = 0; j < 6; j++) {
     led_data = 1;
     for (int i = 0; i < 4; i++) {
       ledSet(led_data);
@@ -65,7 +65,7 @@ void MISC::goalAppeal(void)
     wtime -= 5;
   }
 
-  delay(500);
+  delay(100);
   motorEnable();
 }
 
