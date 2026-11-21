@@ -103,6 +103,7 @@ void MISC::modeExec(int mode)
       g_map.positionInit();
       g_search.adachiDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// ゴールへ向かう
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_map.goalArriveSet();  // 復路でゴール区画の歩数をそろえる(設計メモ §9)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -118,6 +119,7 @@ void MISC::modeExec(int mode)
       g_map.positionInit();
       g_search.adachiSlalomDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// ゴールへ向かう
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_map.goalArriveSet();  // 復路でゴール区画の歩数をそろえる(設計メモ §9)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -134,6 +136,7 @@ void MISC::modeExec(int mode)
       g_map.positionInit();
       g_fast.run(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_map.goalArriveSet();  // 復路でゴール区画の歩数をそろえる(設計メモ §9)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -150,6 +153,7 @@ void MISC::modeExec(int mode)
       g_map.positionInit();
       g_fast.runSlalom(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_map.goalArriveSet();  // 復路でゴール区画の歩数をそろえる(設計メモ §9)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);

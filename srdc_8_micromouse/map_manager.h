@@ -80,6 +80,8 @@ public:
   void mazeSizeValidate(void);  // 迷路の大きさが範囲外なら初期値へ戻す
   void goalValidate(void);  // ゴール座標が迷路外・スタートを含むなら初期値へ戻す
   void positionInit(void);
+  // 現在位置をゴールした区画として記録する。復路の歩数マップでゴール区画の歩数をそろえるのに使う(設計メモ §9)
+  void goalArriveSet(void);
   void mapClear(void);
   void wallDataSet(unsigned char x, unsigned char y, t_global_direction dir, char data);
   char wallDataGet(unsigned char x, unsigned char y, t_global_direction dir);
@@ -92,6 +94,13 @@ private:
   // 同じ区画を別の向きで2回通ることもあるので、長さの上限は状態の数(区画数×4)+1
   unsigned char fast_path[MAZESIZE_MAX * MAZESIZE_MAX * 4 + 1];
   short fast_path_len, fast_path_idx;
+  // goalArriveSet()で記録したゴールの区画。positionInit()で無効に戻す
+  bool goal_arrived;
+  unsigned char goal_arrive_x, goal_arrive_y;
+  // goalStepsEqualize()でゴール区画の歩数をそろえたときtrue。goal_exit_distはゴール区画から
+  // ゴールエリアの出口までの区画数(出口は0、行けなければ255)
+  bool goal_equalized;
+  unsigned char goal_exit_dist[MAZESIZE_MAX][MAZESIZE_MAX];
 
   void stepMapSet(
     unsigned char posX, unsigned char posY, t_global_direction l_global_dir, int * little,
@@ -99,6 +108,8 @@ private:
   t_local_direction nextGdir(t_global_direction * p_global_dir);
   void searchMapMake(int x, int y, int x2, int y2);
   void stepMapInit(int x, int y, int x2, int y2);
+  void goalStepsEqualize(int x, int y, int x2, int y2);
+  bool inGoalArea(int cx, int cy);  // (cx,cy)がゴールの長方形内か
   int priorityGet(unsigned char x, unsigned char y, t_global_direction dir);
 };
 
