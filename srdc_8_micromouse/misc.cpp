@@ -80,6 +80,7 @@ void MISC::modeListPrint(void)
     "5: fast run slalom",
     "6: erase map",
     "7: adjust menu",
+    "8: fast run slalom (faster, one way)",
   };
   for (const char * n : names) Serial.println(n);
 }
@@ -172,6 +173,16 @@ void MISC::modeExec(int mode)
     case MODE_ADJUST:
       motorDisable();
       g_adjust.menu();  //調整メニューに行く
+      break;
+    case 8:  //最短走行(スラローム版、速度上昇&往路のみ)
+      mapCopy();
+      g_map.positionInit();
+      g_fast.runSlalomFaster(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      g_misc.goalAppeal();
       break;
     default:
       break;

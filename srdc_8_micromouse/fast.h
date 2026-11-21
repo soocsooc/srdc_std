@@ -20,6 +20,10 @@ class FAST
 public:
   void run(short gx, short gy, short gx2, short gy2);
   void runSlalom(short gx, short gy, short gx2, short gy2);
+  void runSlalomFaster(short gx, short gy, short gx2, short gy2);
+
+private:
+  void runSlalomAt(short gx, short gy, short gx2, short gy2, short v_max);
 };
 
 extern FAST g_fast;
