@@ -19,6 +19,7 @@ ADJUST g_adjust;
 
 // ---- ハードウェアの置き換え ----
 void ledSet(unsigned char) {}
+void ledWallShow(bool, bool, bool) {}
 void buzzerEnable(short) {}
 void buzzerDisable(void) {}
 void motorEnable(void) {}
@@ -223,7 +224,7 @@ void RUN::rotate(t_local_direction dir, int times)
   sensorUpdate();
 }
 // 区画境界 → 半区画前進 → 90度 → 半区画前進(正味の位置は実機の slalomCell() と同じ)
-void RUN::slalomCell(t_local_direction dir)
+void RUN::slalomCell(t_local_direction dir, bool)  // show_phase(LED表示)は扱わない
 {
   callBegin(dir == right ? "slalomCell R" : "slalomCell L", 0);
   forward(HALF_SECTION);
