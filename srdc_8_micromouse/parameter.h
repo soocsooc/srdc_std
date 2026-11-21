@@ -28,20 +28,20 @@
 // 下の基準値・閾値には判定時にSEN_RATIOの倍率を掛ける
 
 // 区画中心で測った前センサ値(1区画先の前壁あり/なし)。調整モード10で測定(設計メモ §7)
-#define SEN_F_WALL_INIT 127
-#define SEN_F_NOWALL_INIT 36
+#define SEN_F_WALL_INIT 86
+#define SEN_F_NOWALL_INIT 17
 
 // 機体が左右の中央にあるときの横センサ値。壁制御の目標値。区画中心では光が柱に当たるので、
 // 前後にずらして光が壁に当たる位置で測る(設計メモ §14)
-#define REF_SEN_R_INIT 201
-#define REF_SEN_L_INIT 240
+#define REF_SEN_R_INIT 220
+#define REF_SEN_L_INIT 360
 
 // 壁があると判断する閾値
 #define TH_SEN_R_INIT 75
-#define TH_SEN_L_INIT 101
+#define TH_SEN_L_INIT 140
 // 前センサは区画境界で判定する。境界で前壁(174mm先)が約335、2区画先の壁(354mm先)だけなら約47なので、
 // その間で見落としにくい低めの値にした(調整モード8のログ、設計メモ §7)
-#define TH_SEN_F_INIT 120
+#define TH_SEN_F_INIT 80
 
 // 横センサが柱を読んだときの値の落ち込みの判定(設計メモ §14)。落ち込み中は負の誤差を制御に使わない
 // 400mm/sで柱の落ち込みは約16mm(40ms)かけて30〜40下がる。比べる間隔が短いとノイズと区別できない
@@ -86,14 +86,14 @@
 // ---- 迷路 ----
 
 // 迷路の大きさ[区画]。Web UIで2〜MAZESIZE_MAXの範囲で変更できる(設計メモ §9)
-#define MAZESIZE_X_INIT 4
-#define MAZESIZE_Y_INIT 4
+#define MAZESIZE_X_INIT 16
+#define MAZESIZE_Y_INIT 16
 
 // ゴール区画。(GOAL_X,GOAL_Y)と(GOAL_X2,GOAL_Y2)を対角とする長方形(設計メモ §9)
-#define GOAL_X_INIT 3
-#define GOAL_Y_INIT 3
-#define GOAL_X2_INIT 3
-#define GOAL_Y2_INIT 3
+#define GOAL_X_INIT 7
+#define GOAL_Y_INIT 7
+#define GOAL_X2_INIT 8
+#define GOAL_Y2_INIT 8
 
 #define HALF_SECTION 90  // 半区画[mm]
 #define SECTION 180      // 1区画[mm]
