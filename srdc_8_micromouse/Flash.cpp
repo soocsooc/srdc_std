@@ -60,6 +60,7 @@ static const t_param_entry param_table[] = {
   {"turn_accel", PARAM_FLOAT, &g_run.turn_accel, TURN_ACCEL_INIT, ACCEL_RANGE},
   {"search_speed", PARAM_SHORT, &g_run.search_speed, SEARCH_SPEED_INIT, SPEED_RANGE},
   {"max_speed", PARAM_SHORT, &g_run.max_speed, MAX_SPEED_INIT, SPEED_RANGE},
+  {"max_speed_faster", PARAM_SHORT, &g_run.max_speed_faster, MAX_SPEED_FASTER_INIT, SPEED_RANGE},
   {"slalom_speed", PARAM_SHORT, &g_run.slalom_speed, SLALOM_SPEED_INIT, SPEED_RANGE},
   {"slalom_inner_ratio", PARAM_FLOAT, &g_run.slalom_inner_ratio, SLALOM_INNER_RATIO_INIT, 0.0f,
    SLALOM_INNER_RATIO_MAX},

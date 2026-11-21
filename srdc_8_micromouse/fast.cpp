@@ -36,13 +36,14 @@ static float trapTime(float len, float v0, float v1, float vmax, float a)
   return ((vp - v0) / a + (vp - v1) / a) * 1.0e6f;
 }
 
-// 走行パラメータから経路探索の重み(各動作の時間)を作る。slalom=trueでrunSlalom()用(設計メモ §11)
-static void costMake(bool slalom, t_path_cost * c)
+// 走行パラメータから経路探索の重み(各動作の時間)を作る。slalom=trueでrunSlalom()用。
+// v_maxは直進区間の最高速度[mm/s](設計メモ §11)
+static void costMake(bool slalom, short v_max_mm, t_path_cost * c)
 {
   const float a = g_run.search_accel * 1000.0f;
   const float v_stop = (float)g_run.stoppableSpeed(HALF_SECTION);  // 半区画で止まり切れる速度
   const float v_c = slalom ? (float)g_run.slalom_speed : v_stop;   // 直進区間の始めと終わりの速度
-  const float v_max = (float)g_run.max_speed;
+  const float v_max = (float)v_max_mm;
   const float wait = STOP_WAIT_MS * 1000.0f;  // stop()の待ち時間
 
   // 超信地旋回(rotate())。片輪がtread_width×π/4×times走る間をturn_accelで加減速する
@@ -74,19 +75,19 @@ static void costMake(bool slalom, t_path_cost * c)
 }
 
 // 経路を作ってSerialへ出す。ゴールへ行けなければ点滅で知らせてfalse(設計メモ §8・§11)
-static bool fastPathPrepare(bool slalom, short gx, short gy, short gx2, short gy2)
+static bool fastPathPrepare(bool slalom, short v_max, short gx, short gy, short gx2, short gy2)
 {
   t_path_cost cost;
   uint32_t total_us;
-  costMake(slalom, &cost);
+  costMake(slalom, v_max, &cost);
   if (!g_map.fastPathMake(gx, gy, gx2, gy2, cost, &total_us)) {
     Serial.printf("fast path: goal unreachable\r\n");
     g_map.unreachableWait();
     return false;
   }
   Serial.printf(
-    "fast path (%s): turn %lu ms, est. %lu ms\r\n", slalom ? "slalom" : "pivot",
-    (unsigned long)(cost.turn / 1000), (unsigned long)(total_us / 1000));
+    "fast path (%s, max %d mm/s): turn %lu ms, est. %lu ms\r\n", slalom ? "slalom" : "pivot",
+    v_max, (unsigned long)(cost.turn / 1000), (unsigned long)(total_us / 1000));
   g_map.fastPathPrint();
   return true;
 }
@@ -98,7 +99,7 @@ void FAST::run(short gx, short gy, short gx2, short gy2)
   int straight_count = 0;
   int turn_speed = g_run.stoppableSpeed(HALF_SECTION);  // 旋回・ゴール前後の速度
 
-  if (!fastPathPrepare(false, gx, gy, gx2, gy2)) return;
+  if (!fastPathPrepare(false, g_run.max_speed, gx, gy, gx2, gy2)) return;
 
   // 次の方向へ向きを合わせる
   switch (g_map.fastPathNext(&glob_nextdir)) {
@@ -170,15 +171,27 @@ void FAST::run(short gx, short gy, short gx2, short gy2)
   g_run.decelerate(HALF_SECTION, turn_speed);
 }
 
-// 既知の迷路情報から直進区間をまとめて最短走行(スラローム版)。90度旋回はslalomCell()、
-// 行き止まりはuTurn()、開始直後の方向合わせのみrotate()。詳細は設計メモ §3参照
+// 既知の迷路情報から直進区間をまとめて最短走行(スラローム版)。直進の最高速度はmax_speed
 void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
+{
+  runSlalomAt(gx, gy, gx2, gy2, g_run.max_speed);
+}
+
+// runSlalom()の直進の最高速度をmax_speed_fasterにしたもの。モード8(往路のみ)で使う(設計メモ §11)
+void FAST::runSlalomFaster(short gx, short gy, short gx2, short gy2)
+{
+  runSlalomAt(gx, gy, gx2, gy2, g_run.max_speed_faster);
+}
+
+// スラローム版の最短走行の本体。直進区間はv_max[mm/s]まで加速する。90度旋回はslalomCell()、
+// 行き止まりはturnBack()、開始直後の方向合わせのみrotate()。詳細は設計メモ §3参照
+void FAST::runSlalomAt(short gx, short gy, short gx2, short gy2, short v_max)
 {
   t_global_direction glob_nextdir;
   int straight_count = 0;
   const int stop_speed = g_run.stoppableSpeed(HALF_SECTION);  // ゴール・Uターン前の速度
 
-  if (!fastPathPrepare(true, gx, gy, gx2, gy2)) return;
+  if (!fastPathPrepare(true, v_max, gx, gy, gx2, gy2)) return;
 
   // 次の方向へ向きを合わせる(停止状態のためrotate()を使う)
   switch (g_map.fastPathNext(&glob_nextdir)) {
@@ -213,7 +226,7 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
       case left:
         if (straight_count > 0) {
           g_run.straight(
-            straight_count * SECTION, g_run.speed, g_run.max_speed, g_run.slalom_speed);
+            straight_count * SECTION, g_run.speed, v_max, g_run.slalom_speed);
           straight_count = 0;
         }
         // 側壁はゴール区画の記録と同じth_wall_slalomで判定する
@@ -225,7 +238,7 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
       case rear:
         // 既知の壁だけの経路では通常は起きない(設計メモ §11)
         if (straight_count > 0) {
-          g_run.straight(straight_count * SECTION, g_run.speed, g_run.max_speed, stop_speed);
+          g_run.straight(straight_count * SECTION, g_run.speed, v_max, stop_speed);
           straight_count = 0;
         }
         ledWallShow(g_sensor.sen_l.is_wall, g_sensor.sen_f.is_wall, g_sensor.sen_r.is_wall);
@@ -244,7 +257,7 @@ void FAST::runSlalom(short gx, short gy, short gx2, short gy2)
     g_map.axisUpdate();
   }
   if (straight_count > 0) {
-    g_run.straight(straight_count * SECTION, g_run.speed, g_run.max_speed, stop_speed);
+    g_run.straight(straight_count * SECTION, g_run.speed, v_max, stop_speed);
   }
   // ゴール区画の壁を記録する(run()と同じ、設計メモ §11)。側壁は復路のモード3と同じth_wall_slalomで判定
   const bool goal_wall_r = g_sensor.sen_r.value > g_sensor.sen_r.th_wall_slalom;

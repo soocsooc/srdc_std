@@ -27,6 +27,9 @@ MapManager::MapManager()
   mypos.y = 0;
   mypos.dir = north;
   unreachable = false;
+  goal_arrived = false;
+  goal_arrive_x = goal_arrive_y = 0;
+  goal_equalized = false;
 
   goal_mx = goal_mx2 = 0x07;
   goal_my = goal_my2 = 0x07;
@@ -61,6 +64,15 @@ void MapManager::positionInit(void)
 {
   mypos.x = mypos.y = 0;
   mypos.dir = north;
+  goal_arrived = false;
+}
+
+// ゴール区画の中にいれば、現在位置をゴールした区画として記録する(設計メモ §9)
+void MapManager::goalArriveSet(void)
+{
+  goal_arrive_x = mypos.x;
+  goal_arrive_y = mypos.y;
+  goal_arrived = posIn(goal_mx, goal_my, goal_mx2, goal_my2);
 }
 
 char MapManager::wallDataGet(unsigned char x, unsigned char y, t_global_direction l_global_dir)
@@ -422,11 +434,100 @@ void MapManager::searchMapMake(int x, int y, int x2, int y2)
       }
     }
   } while (change_flag == true);
+
+  goal_equalized = false;
+  if (goal_arrived) goalStepsEqualize(x, y, x2, y2);
+}
+
+bool MapManager::inGoalArea(int cx, int cy)
+{
+  return (cx >= min(goal_mx, goal_mx2)) && (cx <= max(goal_mx, goal_mx2)) &&
+         (cy >= min(goal_my, goal_my2)) && (cy <= max(goal_my, goal_my2));
+}
+
+// 復路：ゴール区画の歩数をすべて、ゴールした区画の歩数sにそろえる。ゴール区画を通って入る区画の
+// 歩数がsより小さく残らないよう、ゴール区画をsに固定して歩数マップを作り直す。
+// 同じ歩数のゴール区画どうしは歩数で選べないので、出口までの区画数goal_exit_distも作る(設計メモ §9)
+void MapManager::goalStepsEqualize(int x, int y, int x2, int y2)
+{
+  const unsigned short s = steps_map[goal_arrive_x][goal_arrive_y];
+  if (s == 65535) return;
+
+  stepMapInit(x, y, x2, y2);
+  for (int i = 0; i < maze_x; i++) {
+    for (int j = 0; j < maze_y; j++) {
+      if (inGoalArea(i, j)) steps_map[i][j] = s;
+    }
+  }
+
+  // 隣の区画の歩数がこの区画の歩数+1より大きければ、+1の値にする。ゴール区画は変えない
+  static const signed char dx[4] = {0, 1, 0, -1};  // north, east, south, west
+  static const signed char dy[4] = {1, 0, -1, 0};
+  auto neighbor = [&](int i, int j, int d, int * ni, int * nj) {
+    *ni = i + dx[d];
+    *nj = j + dy[d];
+    return (*ni >= 0) && (*ni < maze_x) && (*nj >= 0) && (*nj < maze_y) &&
+           (wallDataGet(i, j, (t_global_direction)d) != WALL);
+  };
+  bool change_flag;
+  do {
+    change_flag = false;
+    for (int i = 0; i < maze_x; i++) {
+      for (int j = 0; j < maze_y; j++) {
+        if (steps_map[i][j] == 65535) continue;
+        for (int d = 0; d < 4; d++) {
+          int ni, nj;
+          if (!neighbor(i, j, d, &ni, &nj) || inGoalArea(ni, nj)) continue;
+          if (steps_map[ni][nj] > steps_map[i][j] + 1) {
+            steps_map[ni][nj] = steps_map[i][j] + 1;
+            change_flag = true;
+          }
+        }
+      }
+    }
+  } while (change_flag == true);
+
+  // 出口(ゴールの外の歩数がsより小さい区画へ出られるゴール区画)を0とし、ゴール区画の中だけで広げる
+  for (int i = 0; i < maze_x; i++) {
+    for (int j = 0; j < maze_y; j++) {
+      goal_exit_dist[i][j] = 255;
+      if (!inGoalArea(i, j)) continue;
+      for (int d = 0; d < 4; d++) {
+        int ni, nj;
+        if (neighbor(i, j, d, &ni, &nj) && !inGoalArea(ni, nj) && (steps_map[ni][nj] < s)) {
+          goal_exit_dist[i][j] = 0;
+        }
+      }
+    }
+  }
+  do {
+    change_flag = false;
+    for (int i = 0; i < maze_x; i++) {
+      for (int j = 0; j < maze_y; j++) {
+        if (goal_exit_dist[i][j] >= 254) continue;
+        for (int d = 0; d < 4; d++) {
+          int ni, nj;
+          if (!neighbor(i, j, d, &ni, &nj) || !inGoalArea(ni, nj)) continue;
+          if (goal_exit_dist[ni][nj] > goal_exit_dist[i][j] + 1) {
+            goal_exit_dist[ni][nj] = goal_exit_dist[i][j] + 1;
+            change_flag = true;
+          }
+        }
+      }
+    }
+  } while (change_flag == true);
+  goal_equalized = true;
 }
 
 int MapManager::priorityGet(unsigned char x, unsigned char y, t_global_direction dir)
 {
   int priority;
+
+  // 復路のゴール区画は、出口までの区画数が少ないほど優先する。向きと未知の壁で選ぶと、
+  // 同じ歩数のゴール区画を回ってから出ることがある(設計メモ §9)
+  if (goal_equalized && inGoalArea(x, y) && (goal_exit_dist[x][y] < 255)) {
+    return 1000 - goal_exit_dist[x][y];
+  }
 
   priority = 0;
 

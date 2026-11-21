@@ -49,7 +49,7 @@ void MISC::goalAppeal(void)
   motorDisable();
   mapWrite();
 
-  for (int j = 0; j < 10; j++) {
+  for (int j = 0; j < 6; j++) {
     led_data = 1;
     for (int i = 0; i < 4; i++) {
       ledSet(led_data);
@@ -65,7 +65,7 @@ void MISC::goalAppeal(void)
     wtime -= 5;
   }
 
-  delay(500);
+  delay(100);
   motorEnable();
 }
 
@@ -80,6 +80,7 @@ void MISC::modeListPrint(void)
     "5: fast run slalom",
     "6: erase map",
     "7: adjust menu",
+    "8: fast run slalom (faster, one way)",
   };
   for (const char * n : names) Serial.println(n);
 }
@@ -103,6 +104,7 @@ void MISC::modeExec(int mode)
       g_map.positionInit();
       g_search.adachiDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// ゴールへ向かう
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_map.goalArriveSet();  // 復路でゴール区画の歩数をそろえる(設計メモ §9)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -118,6 +120,7 @@ void MISC::modeExec(int mode)
       g_map.positionInit();
       g_search.adachiSlalomDynamic(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);	// ゴールへ向かう
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_map.goalArriveSet();  // 復路でゴール区画の歩数をそろえる(設計メモ §9)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -134,6 +137,7 @@ void MISC::modeExec(int mode)
       g_map.positionInit();
       g_fast.run(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_map.goalArriveSet();  // 復路でゴール区画の歩数をそろえる(設計メモ §9)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -150,6 +154,7 @@ void MISC::modeExec(int mode)
       g_map.positionInit();
       g_fast.runSlalom(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
       if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_map.goalArriveSet();  // 復路でゴール区画の歩数をそろえる(設計メモ §9)
       g_run.rotate(right, 2);
       g_map.nextDir(right);
       g_map.nextDir(right);
@@ -168,6 +173,16 @@ void MISC::modeExec(int mode)
     case MODE_ADJUST:
       motorDisable();
       g_adjust.menu();  //調整メニューに行く
+      break;
+    case 8:  //最短走行(スラローム版、直進を速くして往路のみ)
+      mapCopy();
+      g_map.positionInit();
+      g_fast.runSlalomFaster(g_map.goal_mx, g_map.goal_my, g_map.goal_mx2, g_map.goal_my2);
+      if (g_map.unreachable) break;  // 到達不能になりスイッチで脱出したら中断(設計メモ §8)
+      g_run.rotate(right, 2);
+      g_map.nextDir(right);
+      g_map.nextDir(right);
+      g_misc.goalAppeal();
       break;
     default:
       break;

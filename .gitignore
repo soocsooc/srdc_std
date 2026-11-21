@@ -72,3 +72,6 @@ Testing/
 
 # ローカルでのテストファイル
 local_check/
+# Python のキャッシュ
+__pycache__/
+*.pyc

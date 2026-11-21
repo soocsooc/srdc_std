@@ -313,6 +313,9 @@ static String htmlSpeedParameterSection(void)
 <tr><th>max speed</th><td>)HTML";
   html += inputBox("max_speed", String(g_run.max_speed));
   html += R"HTML(mm/s</td></tr>
+<tr><th>max speed (mode 8)</th><td>)HTML";
+  html += inputBox("max_speed_faster", String(g_run.max_speed_faster));
+  html += R"HTML(mm/s</td></tr>
 <tr><th>Uturn back len</th><td>)HTML";
   html += inputBox("uturn_back_len", String(g_run.uturn_back_len));
   html += R"HTML(mm</td></tr>

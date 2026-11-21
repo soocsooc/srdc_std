@@ -262,13 +262,17 @@ void buzzerDisable(void)
   ledcWrite(BUZZER, 1024);  // デューティ100%にして音を止める
 }
 
+// パルス出力はスリープ中も止まらないため、有効・無効のどちらでも止めておく。止めないと、
+// 走行の途中で抜けたモードのパルスが残り、次に有効にした瞬間にモータが回り出す
 void motorEnable(void)
 {
+  stepperStop();
   digitalWrite(MOTOR_EN, HIGH);  // モータドライバを有効にする
 }
 
 void motorDisable(void)
 {
+  stepperStop();
   digitalWrite(MOTOR_EN, LOW);  // モータドライバをSLEEPにする
 }
 
