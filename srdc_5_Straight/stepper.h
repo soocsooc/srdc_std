@@ -15,7 +15,7 @@
 #ifndef STEPPER_H_
 #define STEPPER_H_
 
-// EIC4311(SLA7078互換)のパルス生成。v3(Pi:Co Classic3)と同じく、左右のタイマー割り込みで
+// EIC4311(SLA7078互換)のパルス生成。左右のタイマー割り込みで
 // CLOCKピンにパルスを出し、パルス数を数える。カウンタは前進方向を正とする符号付き
 void stepperInit(void);
 void stepperDirSet(bool forward_l, bool forward_r);

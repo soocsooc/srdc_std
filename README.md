@@ -30,7 +30,7 @@ SW1 が「次」、SW2 が「決定」です。どちらも内部プルアップ
 | `srdc_7_P_control` | 「決定」で横の壁を見ながら 4 区画直進する。「次」でセンサ値を表示する |
 | `srdc_8_micromouse` | 迷路を探索して最短経路を走る。使い方は [STEP8_GUIDE.md](srdc_8_micromouse/STEP8_GUIDE.md)、設計の理由は [DESIGN_NOTES.md](srdc_8_micromouse/DESIGN_NOTES.md) |
 
-STEP5〜7 のピンとタイヤ径などは、各スケッチの `pins_config.h` にまとめてあります。STEP8 では `device.h` と `parameter.h` です。
+STEP5〜7 のピンとタイヤ径などは、各スケッチの `pins_config.h` にまとめてあります。STEP8 では `device.h` と `parameter.h` にあります。
 
 ## ビルド
 

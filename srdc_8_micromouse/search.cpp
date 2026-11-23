@@ -81,7 +81,7 @@ void SEARCH::lefthandGetWall(char gx, char gy, char gx2, char gy2)
     }
   }
 
-  // 半区画で減速停止（迷路情報の保存は呼び出し元の modeExec で行う）
+  // 半区画で減速停止(迷路情報の保存は呼び出し元の modeExec で行う)
   g_run.decelerate(HALF_SECTION, g_run.search_speed);
 }
 

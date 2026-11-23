@@ -27,7 +27,7 @@ const char * password = "ルータのパスワード";
 #endif
 
 // Web表示用の平滑化。リクエストごとに.valueを5個ためてメディアンを返す(STEP8_GUIDE.md §10)。
-// ch: 0=L 1=R 2=F
+// ch: 0=左 1=右 2=前
 #define WEB_SEN_MED_N 5
 
 static short webSenStable(unsigned char ch, short v)
@@ -341,7 +341,7 @@ static String htmlFormEnd(void)
 }
 
 // 走行モード・調整モードの番号と動作の一覧のHTMLを返す(埋め込む値はADJUST_MODE_EXITのみ)。
-// 詳細はSTEP8_GUIDE.md §4・§5参照。
+// 詳細はSTEP8_GUIDE.md §4・§5参照
 static String htmlModeSection(void)
 {
   return R"HTML(<hr>

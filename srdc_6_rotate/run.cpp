@@ -181,7 +181,7 @@ void RUN::rotate(t_local_direction dir, int times)
   while (1) {
     stepGet();	// 走行パルスの取得
     speedSet(speed, speed); // 速度の設定(L, R)
-    if ( 	// 減速開始条件の判定
+    if ( 	// 減速を始めるか判定する
       (int)((obj_step / 2.0 * PULSE) - step_lr_len) <
       (int)(((speed * speed) - (MIN_SPEED * MIN_SPEED)) / (2.0 * 1000.0 * accel))) {
       break;
@@ -194,7 +194,7 @@ void RUN::rotate(t_local_direction dir, int times)
   while (1) {
     stepGet();	// 走行パルスの取得
     speedSet(speed, speed); // 速度の設定(L, R)
-    if (step_lr > obj_step) {	// 回転完了条件の判定
+    if (step_lr > obj_step) {	// 回転し終えたか判定する
       break;
     }
   }

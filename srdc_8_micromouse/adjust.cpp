@@ -106,7 +106,7 @@ void ADJUST::circuitCheck(void)
 }
 
 // 連続旋回(S字)・旋回直後の再加速・U字(同方向の連続旋回)を一続きに確認する。
-// スタートから 右→左→1区画直進→右→右 の順に曲がれるコースで行う(設計メモ §3)。
+// スタートから 右→左→1区画直進→右→右 の順に曲がれるコースで行う(設計メモ §3)
 void ADJUST::slalomSequenceCheck(void)
 {
   motorEnable();
@@ -120,7 +120,7 @@ void ADJUST::slalomSequenceCheck(void)
   g_run.slalomCell(right);
   g_run.slalomCell(left);
 
-  // 旋回直後の直進
+  // 旋回の直後に直進する
   ledSet(0b0001);
   g_run.straight(SECTION, g_run.speed, g_run.search_speed, g_run.slalom_speed);
 
@@ -136,7 +136,7 @@ void ADJUST::slalomSequenceCheck(void)
 }
 
 // th_approachを決めるための測定。センサでは止まらないようにして(th=INT_MAX)壁へ向けて走り、走行距離と前センサ値を
-// Serialへ出力する。スイッチで即停止できる。詳細は設計メモ §4参照。
+// Serialへ出力する。スイッチで即停止できる。詳細は設計メモ §4参照
 void ADJUST::straightSensorDiag(float section_check)  // 最大走行区画数(壁の手前で止まる値にすること)
 {
   motorEnable();

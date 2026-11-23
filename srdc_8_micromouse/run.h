@@ -97,7 +97,7 @@ private:
   int step_l, step_r;
   volatile double turn_f;  // 旋回の強さ(0〜1)。interrupt()が外輪・内輪の速度に反映する
   volatile bool turn_enable;  // trueの間、interrupt()がturn_fで左右速度に差をつける
-  int turn_sign;              // +1:左旋回方向, -1:右旋回方向
+  int turn_sign;              // +1:左旋回方向、-1:右旋回方向
   void dirSet(t_CW_CCW dir_left, t_CW_CCW dir_right);
   void speedSet(double l_speed, double r_speed);
   void stepGet(void);

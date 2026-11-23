@@ -445,7 +445,7 @@ bool MapManager::inGoalArea(int cx, int cy)
          (cy >= min(goal_my, goal_my2)) && (cy <= max(goal_my, goal_my2));
 }
 
-// 復路：ゴール区画の歩数をすべて、ゴールした区画の歩数sにそろえる。ゴール区画を通って入る区画の
+// 復路: ゴール区画の歩数をすべて、ゴールした区画の歩数sにそろえる。ゴール区画を通って入る区画の
 // 歩数がsより小さく残らないよう、ゴール区画をsに固定して歩数マップを作り直す。
 // 同じ歩数のゴール区画どうしは歩数で選べないので、出口までの区画数goal_exit_distも作る(設計メモ §9)
 void MapManager::goalStepsEqualize(int x, int y, int x2, int y2)
@@ -605,7 +605,7 @@ bool MapManager::fastPathMake(
     path_done[i] = false;
   }
 
-  // 始点：区画の中心で静止した状態から、向きを合わせて隣の区画へ入る
+  // 始点: 区画の中心で静止した状態から、向きを合わせて隣の区画へ入る
   for (int d = 0; d < 4; d++) {
     const int nx = mypos.x + dir_dx[d], ny = mypos.y + dir_dy[d];
     if (!inMaze(nx, ny) || !passable(mypos.x, mypos.y, d)) continue;
