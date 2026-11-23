@@ -26,7 +26,7 @@ static volatile bool g_motor_move = false;
 static volatile unsigned short g_step_hz_r = STEP_HZ_MIN;
 static volatile unsigned short g_step_hz_l = STEP_HZ_MIN;
 static volatile int g_step_r = 0, g_step_l = 0;          // 前進方向を正とするパルス数
-static volatile int g_step_sign_r = 1, g_step_sign_l = 1;  // +1:前進, -1:後退
+static volatile int g_step_sign_r = 1, g_step_sign_l = 1;  // +1:前進、-1:後退
 
 // CLOCKピンに1パルス出す
 static inline void IRAM_ATTR clockPulse(uint8_t pin)

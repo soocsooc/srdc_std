@@ -35,7 +35,7 @@ void controlInterruptStart(void) { timerStart(g_timer0); }
 void controlInterruptStop(void) { timerStop(g_timer0); }
 
 // --- センサ計測タスク(core1) ------------------------------------------------
-// WiFi(core0)とは別のコアで動かす。タスクが起きた直後は読むタイミングが揺れるため、1回目は
+// WiFi(core0)とは別のコアで動かす。タスクが待機から戻った直後は読むタイミングがずれやすいため、1回目は
 // SLEDを使わない電池電圧の処理にする(sensor.cppのcnt==0、STEP8_GUIDE.md §7)
 #define SENSOR_TASK_CORE 1
 #define SENSOR_TASK_PRIORITY 20  // loopTask(1)/AsyncTCP(<=10)より上、WiFi内部より下
@@ -53,7 +53,7 @@ static void sensorTask(void * arg)
   for (;;) {
     if (g_sensor_run) {
       g_sensor_paused = false;
-      // g_sensor.interrupt(): cnt 0(電池,SLEDなし)->3(左)で1巡(sensor.cpp参照)
+      // g_sensor.interrupt(): cnt 0(電池、SLEDなし)->3(左)で1巡(sensor.cpp参照)
       for (int i = 0; i < 4; i++) {
         sensorInterrupt();
       }
@@ -94,7 +94,7 @@ static volatile bool g_motor_move = false;
 static volatile unsigned short g_step_hz_r = STEP_HZ_MIN;
 static volatile unsigned short g_step_hz_l = STEP_HZ_MIN;
 static volatile int g_step_r = 0, g_step_l = 0;          // 前進方向を正とする符号付きパルス数
-static volatile int g_step_sign_r = 1, g_step_sign_l = 1;  // 現在の回転方向(+1:前進, -1:後退)
+static volatile int g_step_sign_r = 1, g_step_sign_l = 1;  // 現在の回転方向(+1:前進、-1:後退)
 
 static inline void IRAM_ATTR clockPulse(uint8_t pin)
 {

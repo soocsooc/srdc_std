@@ -30,7 +30,7 @@ void SEARCH::turnBack(bool wall_f, bool wall_r, bool wall_l)
 }
 
 // 足立法で壁情報を更新しながらゴールまで探索する。前進はoneStepDynamic()で、前センサの値から
-// 区画境界への到達を判定する。right/leftはrotate()で回る。
+// 区画境界への到達を判定する。right/leftはrotate()で回る
 void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
 {
   t_global_direction glob_nextdir;

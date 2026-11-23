@@ -48,7 +48,7 @@ void SENSOR::interrupt(void)
       }
       sen_f.value = analogRead(AD_F);
       digitalWrite(SLED_F, LOW);  //LED消灯
-      sen_f.is_wall = (sen_f.value > sen_f.th_wall);  // 前壁検知
+      sen_f.is_wall = (sen_f.value > sen_f.th_wall);  // 前壁があるか判定する
       break;
     case 1:
       digitalWrite(SLED_R, HIGH);  //LED点灯
@@ -83,7 +83,7 @@ void SENSOR::interrupt(void)
         sen_l.error = 0;
         sen_l.is_control = false;
       }
-      battery_value = (double)analogReadMilliVolts(AD_BATT) / 10.0 * (10.0 + 51.0);	// バッテリー電圧計算
+      battery_value = (double)analogReadMilliVolts(AD_BATT) / 10.0 * (10.0 + 51.0);	// 電池電圧[mV]を計算する
       break;
     default:
       Serial.printf("sensor state error\n\r");
