@@ -28,20 +28,20 @@
 // 下の基準値・閾値には判定時にSEN_RATIOの倍率を掛ける
 
 // 区画中心で測った前センサ値(1区画先の前壁あり/なし)。調整モード10で測定(設計メモ §7)
-#define SEN_F_WALL_INIT 86
-#define SEN_F_NOWALL_INIT 17
+#define SEN_F_WALL_INIT 73
+#define SEN_F_NOWALL_INIT 14
 
 // 機体が左右の中央にあるときの横センサ値。壁制御の目標値。区画中心では光が柱に当たるので、
 // 前後にずらして光が壁に当たる位置で測る(設計メモ §14)
-#define REF_SEN_R_INIT 220
-#define REF_SEN_L_INIT 360
+#define REF_SEN_R_INIT 270
+#define REF_SEN_L_INIT 381
 
 // 壁があると判断する閾値
-#define TH_SEN_R_INIT 75
-#define TH_SEN_L_INIT 140
+#define TH_SEN_R_INIT 103
+#define TH_SEN_L_INIT 165
 // 前センサは区画境界で判定する。境界で前壁(174mm先)が約335、2区画先の壁(354mm先)だけなら約47なので、
 // その間で見落としにくい低めの値にした(調整モード8のログ、設計メモ §7)
-#define TH_SEN_F_INIT 80
+#define TH_SEN_F_INIT 95
 
 // 横センサが柱を読んだときの値の落ち込みの判定(設計メモ §14)。落ち込み中は負の誤差を制御に使わない
 // 400mm/sで柱の落ち込みは約16mm(40ms)かけて30〜40下がる。比べる間隔が短いとノイズと区別できない

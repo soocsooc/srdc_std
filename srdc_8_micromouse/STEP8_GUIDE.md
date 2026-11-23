@@ -372,10 +372,10 @@ Web ページの最下部にも同じ内容を表示しています。
 | `TIRE_DIAMETER_INIT` | 51.66 | タイヤ径 [mm] |
 | `TREAD_WIDTH_INIT` | 100.95 | トレッド幅 [mm] |
 | `PULSE_PER_REV` | 400 | モータ 1 回転あたりのパルス数 |
-| `REF_SEN_R_INIT`／`REF_SEN_L_INIT` | 220／360 | 横センサの目標値 |
-| `TH_SEN_R_INIT`／`TH_SEN_L_INIT` | 75／140 | 横センサの壁ありなしのしきい値 |
-| `TH_SEN_F_INIT` | 80 | 前センサの壁ありなしのしきい値 |
-| `SEN_F_WALL_INIT`／`SEN_F_NOWALL_INIT` | 86／17 | 調整モード 10 の測定値（記録用） |
+| `REF_SEN_R_INIT`／`REF_SEN_L_INIT` | 270／381 | 横センサの目標値 |
+| `TH_SEN_R_INIT`／`TH_SEN_L_INIT` | 103／165 | 横センサの壁ありなしのしきい値 |
+| `TH_SEN_F_INIT` | 95 | 前センサの壁ありなしのしきい値 |
+| `SEN_F_WALL_INIT`／`SEN_F_NOWALL_INIT` | 73／14 | 調整モード 10 の測定値（記録用） |
 | `TH_SEN_F_APPROACH_INIT` | 330 | モード 2 の到達しきい値（前センサの値） |
 | `TH_SEN_F_APPROACH_SLALOM_INIT` | `TH_SEN_F_APPROACH_INIT` と同じ（330） | モード 3 の到達しきい値（前センサの値） |
 | （`th_sen_r/l_slalom` の初期値） | `TH_SEN_R/L_INIT` と同じ | モード 3 の側壁しきい値 |
