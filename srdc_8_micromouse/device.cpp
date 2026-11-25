@@ -276,6 +276,10 @@ void motorDisable(void)
   digitalWrite(MOTOR_EN, LOW);  // モータドライバをSLEEPにする
 }
 
+// どちらかのスイッチが押されていればtrue。離されるのを待たないので、走行中の停止の判定に使う。
+// 止めた後にswitchGet()を呼んで離されるのを待つ
+bool switchPressed(void) { return (digitalRead(SW1) == LOW) || (digitalRead(SW2) == LOW); }
+
 // 押されたスイッチを取得し、離されるまで待つ。SW1=SW_RM(次)、SW2=SW_CM(決定)
 unsigned char switchGet(void)
 {

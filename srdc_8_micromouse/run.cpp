@@ -265,7 +265,7 @@ void RUN::decelerate(int len, float init_speed)
 
   while (1) {
     stepGet();
-    speedSet(speed, speed);
+    speedSet(speed_target_l, speed_target_r);
     if (step_lr > obj_step) {
       break;
     }

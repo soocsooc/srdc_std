@@ -90,6 +90,8 @@ void MISC::modeExec(int mode)
 {
   // 実行するモードを選択状態として記録する(全モード共通、設計メモ §13参照)
   mode_select = mode;
+  // 走行中はWebからの保存を断る。調整メニューは中でWebを使うので除く(設計メモ §12)
+  g_mode_running = (mode != MODE_ADJUST);
   g_map.unreachable = false;
   motorEnable();
   delay(500);
@@ -190,4 +192,5 @@ void MISC::modeExec(int mode)
 
   ledSet(mode);  // 走行中のLED表示を、実行したモード番号の表示へ戻す(設計メモ §13)
   motorDisable();
+  g_mode_running = false;
 }

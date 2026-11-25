@@ -151,6 +151,11 @@
 // 保存値の範囲チェックの上限。範囲外なら初期値に戻す(設計メモ §12)
 #define SPEED_SANITY_MAX 3000   // 速度の上限[mm/s](下限はMIN_SPEED)
 #define ACCEL_SANITY_MAX 100.0  // 加速度の上限[m/s^2]
+// タイヤ径・トレッド幅[mm]の範囲。0などが入ると1パルスの距離や旋回角の計算で0で割る
+#define TIRE_DIAMETER_SANITY_MIN 20.0f
+#define TIRE_DIAMETER_SANITY_MAX 100.0f
+#define TREAD_WIDTH_SANITY_MIN 50.0f
+#define TREAD_WIDTH_SANITY_MAX 200.0f
 
 // 旋回のタイムアウト[ms]。旋回が終わらないときに止める(設計メモ §8)
 #define TURN_TIMEOUT_MS 3000

@@ -17,12 +17,14 @@
 #include "pico_common.h"
 
 // 前センサの値がthを超えるか、max_lenに達したら終えるoneStep()(設計メモ §4)。
-// debug_log=trueでログを出し、スイッチですぐstop()できる。中断したらtrueを返す
+// debug_log=trueでログを出し、スイッチですぐstop()できる。中断したらtrueを返す。
+// 前センサの値で終えたかどうかはlastThReached()で分かる
 bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
 {
   int obj_step;
   unsigned long last_log_ms = 0;
   bool aborted = false;
+  th_reached = false;
 
   controlInterruptStop();
   accel = 0.0;
@@ -48,7 +50,7 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
         g_sensor.sen_r.is_dip ? "*" : "", g_sensor.sen_l.value, g_sensor.sen_l.is_dip ? "*" : "");
     }
 
-    if (debug_log && (switchGet() != 0)) {
+    if (debug_log && switchPressed()) {
       aborted = true;
       break;
     }
@@ -56,12 +58,14 @@ bool RUN::oneStepDynamic(int max_len, int init_speed, int th, bool debug_log)
       break;  // 前壁がない区画などでは距離の上限で終える
     }
     if (f > th) {
+      th_reached = true;
       break;  // 前センサの値で到達を判定
     }
   }
 
   if (aborted) {
     stop();
+    switchGet();  // 止めてから、スイッチが離されるのを待つ
   } else {
     stay(init_speed);
   }

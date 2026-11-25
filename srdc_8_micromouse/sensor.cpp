@@ -64,9 +64,14 @@ static short senMedian3(unsigned char ch, unsigned short raw)
   return b;
 }
 
-static inline short senFilter(short prev, short in)
+static inline short senFilter(unsigned char ch, short prev, short in)
 {
-  if (prev == 0) return in;  // 起動直後は読み取り値をそのまま使う
+  // 起動直後は読み取り値をそのまま使う。値0は壁がないときにも出るので、印には使わない
+  static bool started[3] = {false, false, false};
+  if (!started[ch]) {
+    started[ch] = true;
+    return in;
+  }
   return (short)(((int)prev * SEN_IIR_A + (int)in) / (SEN_IIR_A + 1));
 }
 
@@ -77,7 +82,7 @@ static inline short senProcess(unsigned char ch, short prev, unsigned short raw)
     g_sensor.sample_reject[ch] = g_sensor.sample_reject[ch] + 1;
     return prev;
   }
-  return senFilter(prev, senMedian3(ch, raw));
+  return senFilter(ch, prev, senMedian3(ch, raw));
 }
 
 // 横センサの壁判定と壁制御用の誤差を更新する。壁ありのときだけP制御に使う。

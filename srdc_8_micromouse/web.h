@@ -16,5 +16,7 @@
 #define SRC_WEB_H_
 
 void webServerSetup(void);
+// モードの実行中ならtrue。この間はWebからのパラメータの保存を断る(設計メモ §12)
+extern volatile bool g_mode_running;
 
 #endif /* SRC_WEB_H_ */

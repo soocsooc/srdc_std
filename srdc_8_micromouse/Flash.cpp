@@ -53,8 +53,10 @@ static const t_param_entry param_table[] = {
   {"goal_y", PARAM_SHORT, &g_map.goal_my, GOAL_Y_INIT, NO_CHECK},
   {"goal_x2", PARAM_SHORT, &g_map.goal_mx2, GOAL_X2_INIT, NO_CHECK},
   {"goal_y2", PARAM_SHORT, &g_map.goal_my2, GOAL_Y2_INIT, NO_CHECK},
-  {"tire_d", PARAM_FLOAT, &g_run.tire_diameter, TIRE_DIAMETER_INIT, NO_CHECK},
-  {"tread_w", PARAM_FLOAT, &g_run.tread_width, TREAD_WIDTH_INIT, NO_CHECK},
+  {"tire_d", PARAM_FLOAT, &g_run.tire_diameter, TIRE_DIAMETER_INIT, TIRE_DIAMETER_SANITY_MIN,
+   TIRE_DIAMETER_SANITY_MAX},
+  {"tread_w", PARAM_FLOAT, &g_run.tread_width, TREAD_WIDTH_INIT, TREAD_WIDTH_SANITY_MIN,
+   TREAD_WIDTH_SANITY_MAX},
   {"con_kp", PARAM_DOUBLE, &g_run.con_wall.kp, CON_WALL_KP_INIT, NO_CHECK},
   {"search_accel", PARAM_FLOAT, &g_run.search_accel, SEARCH_ACCEL_INIT, ACCEL_RANGE},
   {"turn_accel", PARAM_FLOAT, &g_run.turn_accel, TURN_ACCEL_INIT, ACCEL_RANGE},
@@ -378,7 +380,7 @@ void paramRead(void)
   } else {
     Serial.println("- read from file:");
     while (file.available()) {
-      split(file.readStringUntil('\n'), ' ', cmds);
+      split(file.readStringUntil('\n'), ' ', cmds, 2);
       // 削除したパラメータのキーは読み飛ばす(設計メモ §12)
       if (!paramSet(cmds[0], cmds[1])) {
         Serial.print("parameter unknown key (ignored) ");
@@ -400,16 +402,18 @@ void paramRead(void)
   sensorInterruptStart();
 }
 
-int split(String data, char delimiter, String * dst)
+// dataをdelimiterで区切り、dst[0]〜dst[dst_count-1]へ順に足す。続いた区切りは1つとみなす。
+// 区切った数を返す。dst_countより多ければ、そこで止めて-1を返す
+int split(String data, char delimiter, String * dst, int dst_count)
 {
   int index = 0;
-  int arraySize = (sizeof(data) / sizeof((data)[0]));
   int datalength = data.length();
   for (int i = 0; i < datalength; i++) {
     char tmp = data.charAt(i);
     if (tmp == delimiter) {
+      if (dst[index].length() == 0) continue;
       index++;
-      if (index > (arraySize - 1)) return -1;
+      if (index >= dst_count) return -1;
     } else
       dst[index] += tmp;
   }
