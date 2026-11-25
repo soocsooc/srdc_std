@@ -18,6 +18,7 @@
 #include "fast.h"
 #include "search.h"
 #include "flash.h"
+#include "web.h"
 // clang-format on
 
 #endif  // SIM_SHIM_H_

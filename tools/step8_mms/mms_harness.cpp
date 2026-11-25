@@ -72,6 +72,8 @@ void buzzerDisable(void) {}
 void motorEnable(void) {}
 void motorDisable(void) {}
 unsigned char switchGet(void) { return 1; }  // 到達不能の点滅ループを即座に抜ける
+bool switchPressed(void) { return false; }
+volatile bool g_mode_running = false;
 void ADJUST::menu(void) {}
 
 // SPIFFS の /map.txt の代わり(実機の mapWrite/mapCopy と同じ 16x16 バイトの形式)
@@ -430,6 +432,7 @@ void RUN::decelerate(int len, float)
 bool RUN::oneStepDynamic(int max_len, int, int, bool)
 {
   callBegin("oneStepDynamic", max_len);
+  th_reached = false;
   forward(max_len);
   sensorUpdate();
   return false;

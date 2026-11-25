@@ -32,7 +32,7 @@ void paramSerialPoll(void);
 bool paramSet(const String & key, const String & value);
 int paramCount(void);
 const char * paramKey(int index);
-int split(String data, char delimiter, String * dst);
+int split(String data, char delimiter, String * dst, int dst_count);
 void writeFile(fs::FS & fs, String path, String message);
 void appendFile(fs::FS & fs, String path, String message);
 

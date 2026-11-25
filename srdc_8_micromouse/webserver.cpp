@@ -17,6 +17,7 @@
 #define AP_MODE
 
 AsyncWebServer server(80);
+volatile bool g_mode_running = false;
 
 #ifdef AP_MODE
 const char * ssid = "SRDC_STD";
@@ -356,6 +357,7 @@ static String htmlModeSection(void)
 <tr><td>5</td><td>最短走行(スラローム版)。復路はモード3の探索で戻ってFlashへ保存</td></tr>
 <tr><td>6</td><td>Flash上のマップ情報(/map.txt)をボタン操作のみで消去。モータは動かさない</td></tr>
 <tr><td>7</td><td>調整メニューへ移行(モータOFF)</td></tr>
+<tr><td>8</td><td>最短走行(スラローム版)。直進区間をmax speed fasterまで加速し、往路だけ走る(Flashへは保存しない)</td></tr>
 </table>
 <p><h2>調整モード一覧(モード7から選択)</h2></p>
 <table align="center">
@@ -369,7 +371,7 @@ static String htmlModeSection(void)
 <tr><td>7</td><td>連続旋回(S字)・旋回直後の直進・U字を一続きに確認</td></tr>
 <tr><td>8</td><td>モード2・3の到達判定閾値の実測診断。前壁への走行距離と前センサの値をシリアルへ出力</td></tr>
 <tr><td>9</td><td>単発のスラローム旋回の確認(2区画直進した区画で曲がる)。張り出しをシリアルへ出力</td></tr>
-<tr><td>10</td><td>前センサ閾値の校正。区画中央に置き、1区画先(次の区画の奥)の前壁あり→なしの順に「決定」で測り、平均をFRONT Thresholdへ保存</td></tr>
+<tr><td>10</td><td>前センサ閾値の校正。機体の中心を区画境界に合わせて置き、次の区画の奥の壁あり→なし(2区画先の壁は残す)の順に「決定」で測り、平均をFRONT Thresholdへ保存</td></tr>
 <tr><td>11</td><td>Flashに保存した迷路(/map.txt)をシリアルモニタに表示。未知の壁は赤、仮想壁は黄</td></tr>
 <tr><td>)HTML" + String(ADJUST_MODE_EXIT) + R"HTML(</td><td>調整メニューを終了し走行モード選択へ戻る(「決定」の長押しでも戻る)</td></tr>
 </table>
@@ -401,7 +403,7 @@ static String htmlParameterNotes(void)
 <li><b>Slalom ramp len</b>: 旋回の入口・出口で、外輪がこの距離[mm]を走る間に内輪を徐々に落とす/戻す。短いほど張り出しが小さいが、急に曲がり始めるため姿勢が乱れやすい。</li>
 <li><b>Slalom offset(計算値)</b>: 上の3つから計算した、区画中心から旋回の開始・終了点までの距離。区画境界から(90 − この値)mm直進してから曲がる。90を超えると区画内に収まらない。</li>
 <li><b>Search speed</b>: 迷路探索時の巡航速度。大きいほど探索は速いが、壁センサの読み取りや姿勢制御が追いつかず衝突・誤判定のリスクが増える。モード4の旋回前後とモード2の探索では、半区画で止まり切れる速度(Search accel 1.5で約520mm/s)に自動で抑えられる。</li>
-<li><b>max speed</b>: 最短走行(モード4・5)で直線区間を走る最高速度。大きいほどタイムは縮むが、その分加速に必要な距離や、次のカーブ手前での減速が間に合うかの余裕が減る。</li>
+<li><b>max speed</b>: 最短走行(モード4・5)で直線区間を走る最高速度。モード8は代わりにmax speed fasterを使う。大きいほどタイムは縮むが、その分加速に必要な距離や、次のカーブ手前での減速が間に合うかの余裕が減る。</li>
 <li><b>Uturn back len</b> / <b>Wall return len</b> / <b>Uturn speed</b>: 行き止まりUターン(90度旋回→バック→前進×2)とモード2・3のスタート位置合わせでのバック距離・前進距離と速度。バックは壁に確実に当てるため前進より長くし、壁からの位置は前進距離で決まる。</li>
 </ul>
 </div>
@@ -565,6 +567,13 @@ static String buildMazeMapHtml(void)
 // Wi-Fiアクセスポイントとパラメータ設定用Webサーバーを開始
 void webServerSetup(void)
 {
+  // 2回目以降はアクセスポイントとハンドラを作り直さない
+  static bool started = false;
+  if (started) {
+    Serial.println("ESP32_WebServer already running");
+    return;
+  }
+
 #ifdef AP_MODE
   WiFi.softAP(ssid, password);
   WiFi.setTxPower(WEB_WIFI_TX_POWER);
@@ -608,6 +617,11 @@ void webServerSetup(void)
   });
 
   server.on("/get", HTTP_GET, [](AsyncWebServerRequest * request) {
+    // 走行中に保存すると、割り込みを止めたり迷路情報を消したりしてしまう
+    if (g_mode_running) {
+      request->send(409, "text/plain", "running: not saved");
+      return;
+    }
     const short old_maze_x = g_map.maze_x, old_maze_y = g_map.maze_y;
     for (int i = 0; i < paramCount(); i++) {
       const char * key = paramKey(i);
@@ -623,5 +637,6 @@ void webServerSetup(void)
   });
 
   server.begin();
+  started = true;
   Serial.println("ESP32_WebServer start!");
 }

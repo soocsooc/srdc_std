@@ -20,8 +20,10 @@ SEARCH g_search;
 // myposは呼び出し前にg_map.positionInit()で初期化しておくこと
 void SEARCH::lefthandGetWall(char gx, char gy, char gx2, char gy2)
 {
+  const int cruise_speed = g_run.stoppableSpeed(HALF_SECTION);  // 半区画で止まり切れる巡航速度
+
   // スタート区画から北へ半区画進み、最初の区画に入る
-  g_run.startAccelerate(HALF_SECTION, g_run.search_speed);
+  g_run.startAccelerate(HALF_SECTION, cruise_speed);
   g_map.axisUpdate();
 
   while (1) {
@@ -33,7 +35,7 @@ void SEARCH::lefthandGetWall(char gx, char gy, char gx2, char gy2)
     ledWallShow(wall_l, wall_f, wall_r);
 
     // ゴール到達、またはスイッチ押下で探索終了
-    if (g_map.posIn(gx, gy, gx2, gy2) || (switchGet() != 0)) {
+    if (g_map.posIn(gx, gy, gx2, gy2) || switchPressed()) {
       break;
     }
 
@@ -82,7 +84,8 @@ void SEARCH::lefthandGetWall(char gx, char gy, char gx2, char gy2)
   }
 
   // 半区画で減速停止(迷路情報の保存は呼び出し元の modeExec で行う)
-  g_run.decelerate(HALF_SECTION, g_run.search_speed);
+  g_run.decelerate(HALF_SECTION, cruise_speed);
+  switchGet();  // スイッチで終えたときは、離されるのを待つ
 }
 
 // 区画境界から1区画直進する。前半(区画中心まで)は前センサを見張り、th_f_guardを超えたら
@@ -91,7 +94,8 @@ void SEARCH::lefthandGetWall(char gx, char gy, char gx2, char gy2)
 bool SEARCH::straightGuarded(int speed)
 {
   g_run.oneStepDynamic(HALF_SECTION, speed, g_sensor.th_f_guard);
-  if (g_sensor.sen_f.value <= g_sensor.th_f_guard) {
+  // 止まった理由で分ける。センサの値を読み直すと、しきい値を超えて止まった後に値が戻っていることがある
+  if (!g_run.lastThReached()) {
     g_run.oneStep(HALF_SECTION, speed);
     return false;
   }

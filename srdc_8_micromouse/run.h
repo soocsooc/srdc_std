@@ -91,9 +91,12 @@ public:
   void startAccelerate(int len, int finish_speed, bool align = true);
   // 直前の走行関数がループを抜けた時点の走行距離[mm]。stay()でカウンタを0にしても残る
   int lastLenGet(void) const { return step_lr_len; }
+  // 直前のoneStepDynamic()が、前センサの値がthを超えて終えたならtrue(距離の上限や中断ならfalse)
+  bool lastThReached(void) const { return th_reached; }
 
 private:
   int step_lr_len, step_lr;
+  bool th_reached;
   int step_l, step_r;
   volatile double turn_f;  // 旋回の強さ(0〜1)。interrupt()が外輪・内輪の速度に反映する
   volatile bool turn_enable;  // trueの間、interrupt()がturn_fで左右速度に差をつける

@@ -108,6 +108,7 @@ void SEARCH::adachiDynamic(char gx, char gy, char gx2, char gy2)
 void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
 {
   t_global_direction glob_nextdir;
+  int cruise_speed = g_run.stoppableSpeed(HALF_SECTION);  // 半区画で止まり切れる巡航速度
 
   // 現在位置から最初の進行方向へ向きを合わせる
   switch (g_map.nextDirGet(gx, gy, gx2, gy2, &glob_nextdir)) {
@@ -129,8 +130,7 @@ void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
   }
 
   // 後ろ壁に合わせるのはスタート区画から出るときだけ(復路の開始は後ろに壁がない)
-  g_run.startAccelerate(
-    SECTION / 3, g_run.search_speed, (g_map.mypos.x == 0) && (g_map.mypos.y == 0));
+  g_run.startAccelerate(SECTION / 3, cruise_speed, (g_map.mypos.x == 0) && (g_map.mypos.y == 0));
   // 助走を短くした分を最初の距離基準の動作に足して区画境界へ合わせる(設計メモ §4)
   int start_short = HALF_SECTION - SECTION / 3;
 
@@ -148,8 +148,7 @@ void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
     const t_local_direction local_dir = g_map.nextDirGet(gx, gy, gx2, gy2, &glob_nextdir);
     switch (local_dir) {
       case front:
-        g_run.oneStepDynamic(
-          SECTION + start_short, g_run.search_speed, g_sensor.th_approach_slalom);
+        g_run.oneStepDynamic(SECTION + start_short, cruise_speed, g_sensor.th_approach_slalom);
         break;
       case right:
       case left:
@@ -160,7 +159,7 @@ void SEARCH::adachiSlalomDynamic(char gx, char gy, char gx2, char gy2)
         // 当てる壁のある側へ回る(設計メモ §5)
         g_run.decelerate(HALF_SECTION + start_short, g_run.speed);
         turnBack(g_sensor.sen_f.is_wall, is_wall_r, is_wall_l);
-        g_run.accelerate(HALF_SECTION, g_run.search_speed);
+        g_run.accelerate(HALF_SECTION, cruise_speed);
         break;
       case loca_dir_error:
         // motorDisable()はnextDirGet()の中で実行済み(設計メモ §8)

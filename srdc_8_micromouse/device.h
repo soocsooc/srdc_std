@@ -71,6 +71,7 @@ void buzzerDisable(void);
 void motorEnable(void);
 void motorDisable(void);
 unsigned char switchGet(void);
+bool switchPressed(void);
 unsigned short sensorGetR(void);
 unsigned short sensorGetL(void);
 unsigned short sensorGetF(void);

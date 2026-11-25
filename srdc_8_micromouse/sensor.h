@@ -43,7 +43,7 @@ typedef struct
   short th_r, th_l, th_f;
   short th_r_slalom, th_l_slalom;
   short th_approach, th_approach_slalom;
-  // 調整モード10の測定値(区画中央、1区画先の前壁あり/なし)。th_fはこの平均。判定には使わない
+  // 調整モード10の測定値(区画境界、次の区画の奥の壁あり/なし)。モード10はth_fをこの平均にする。判定には使わない
   short f_wall, f_nowall;
 } t_sensor_base;
 

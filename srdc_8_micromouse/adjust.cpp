@@ -87,7 +87,7 @@ void ADJUST::rotationCheck(void)
 }
 
 // 4x4区画コースの最外周をスラローム旋回でつないで周回する。各辺は2区画の直進+角の
-// slalomCell()。switchGet()の判定は角を曲がった後の区画境界でのみ行う(設計メモ §3)。
+// slalomCell()。スイッチの判定は角を曲がった後の区画境界でのみ行う(設計メモ §3)。
 // 旋回はslalomCell(right, true)で呼び、直進中とスラローム中でLEDの表示を変える
 void ADJUST::circuitCheck(void)
 {
@@ -99,9 +99,10 @@ void ADJUST::circuitCheck(void)
   do {
     g_run.straight(SECTION * 2, g_run.speed, g_run.search_speed, g_run.slalom_speed);
     g_run.slalomCell(right, true);
-  } while (switchGet() == 0);
+  } while (!switchPressed());
 
   g_run.decelerate(HALF_SECTION, g_run.speed);
+  switchGet();  // 止めてから、スイッチが離されるのを待つ
   motorDisable();
 }
 
@@ -242,19 +243,20 @@ void ADJUST::mapView(void)
   Serial.printf("\x1b[0m");
 }
 
-// 区画中央に置き、1区画先の前壁あり→なしで前センサを測り、測定値と平均(th_sen_f)を保存する。
+// 機体の中心を区画境界に合わせて置き、次の区画の奥の壁(174mm先)あり→なしで前センサを測り、測定値と平均(th_sen_f)を
+// 保存する。壁の判定と同じ位置で測るので、平均がそのまま閾値に使える
 // LEDは前壁あり=0b0110、なし=0b1001。「次」で中止。詳細は設計メモ §7参照
 void ADJUST::frontThresholdCalib(void)
 {
   short f_wall, f_nowall;
 
-  Serial.println("place at cell center, wall 1 cell ahead (no wall in this cell) -> SW");
+  Serial.println("place center on cell boundary, wall at far side of next cell -> SW");
   ledSet(0b0110);
   if (!frontSensorSample(&f_wall)) return;
   Serial.printf("wall    f=%d\r\n", f_wall);
   g_misc.buttonOk();
 
-  Serial.println("remove the wall -> SW");
+  Serial.println("remove the wall (keep the wall 2 cells ahead) -> SW");
   ledSet(0b1001);
   if (!frontSensorSample(&f_nowall)) return;
   Serial.printf("no wall f=%d\r\n", f_nowall);
@@ -330,12 +332,16 @@ void ADJUST::menu(void)
       case SW_RM:
         l_mode = g_misc.buttonInc(l_mode, ADJUST_MODE_EXIT, 1);
         break;
-      case SW_CM:
+      case SW_CM: {
         g_misc.buttonOk();
-        if (modeExec(l_mode) == 1) {
+        g_mode_running = true;
+        const unsigned char ret = modeExec(l_mode);
+        g_mode_running = false;
+        if (ret == 1) {
           return;
         }
         break;
+      }
       default:
         break;
     }
@@ -414,7 +420,7 @@ unsigned char ADJUST::modeExec(unsigned char l_mode)
       slalomTurnCheck(right);  // 単発の旋回の確認(左を確認するときはleftへ変更)
       break;
     case 10:
-      frontThresholdCalib();  // 1区画先の前壁あり/なしを測り、平均を前センサ閾値にする
+      frontThresholdCalib();  // 区画境界で次の区画の奥の壁あり/なしを測り、平均を前センサ閾値にする
       break;
     case 11:
       mapView();  // Flashに保存した迷路をシリアルモニタに表示
