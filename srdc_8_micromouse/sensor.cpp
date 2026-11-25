@@ -66,7 +66,7 @@ static short senMedian3(unsigned char ch, unsigned short raw)
 
 static inline short senFilter(unsigned char ch, short prev, short in)
 {
-  // 起動直後は読み取り値をそのまま使う。値0は壁がないときにも出るので、印には使わない
+  // 起動直後は読み取り値をそのまま使う。値0は壁がないときにも出るので、起動直後かどうかの判定には使わない
   static bool started[3] = {false, false, false};
   if (!started[ch]) {
     started[ch] = true;
